@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LabVLA</title>
+  <meta name="description" content="【此处填写：项目一句话描述，用于 SEO 与社交分享】" />
+
+  <!-- Open Graph / Twitter Card -->
+  <meta property="og:title" content="【此处填写：项目全名】" />
+  <meta property="og:description" content="【此处填写：项目一句话描述】" />
+  <meta property="og:image" content="assets/images/og-cover.jpg" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind (CDN, 零构建) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['"Space Grotesk"', 'Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            ink: { 950: '#06070A', 900: '#0B0D12', 800: '#11141B', 700: '#1A1E27' },
+            accent: { DEFAULT: '#7C5CFF', soft: '#A78BFA', cyan: '#22D3EE', lime: '#A3E635' },
+          },
+          boxShadow: {
+            glow: '0 0 60px -10px rgba(124,92,255,0.45)',
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body class="bg-ink-950 text-slate-200 antialiased font-sans selection:bg-accent/40 selection:text-white">
+
+  <!-- 背景装饰：星点 + 渐变光斑 -->
+  <div class="bg-decor" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-mask"></div>
+  </div>
+
+  <!-- ======================= 顶部导航 ======================= -->
+  <header class="nav fixed inset-x-0 top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2 group">
+        <span class="logo-mark"></span>
+        <span class="font-display font-semibold tracking-tight text-white">
+          LabVLA
+        </span>
+      </a>
+      <nav class="hidden md:flex items-center gap-8 text-sm text-slate-300">
+        <a href="#features" class="nav-link">亮点</a>
+        <a href="#stats" class="nav-link">数据集</a>
+        <a href="#method" class="nav-link">方法</a>
+        <a href="#results" class="nav-link">结果</a>
+        <a href="#sim2real" class="nav-link">仿真到真实</a>
+        <a href="#bibtex" class="nav-link">引用</a>
+        <a href="#team" class="nav-link">团队</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <a href="https://cn.bing.com/search?q=%E8%B1%86%E5%8C%85&gs_lcrp=EgRlZGdlKgcIAhBFGMIDMgcIABBFGLABMgcIARBFGMIDMgcIAhBFGMIDMgcIAxBFGMIDMgcIBBBFGMIDMgcIBRBFGMIDMgoIBhBFGMIDGPoHMgcIBxBFGMID0gELMzUyMDQyMmowajeoAgiwAgE&FORM=ANNTA1&adppc=EDGEESS&PC=SCOODB" target="_blank" rel="noopener noreferrer" class="btn-ghost hidden sm:inline-flex">论文</a>
+        <a href="#" class="btn-primary">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ======================= Hero (Mosaic) ======================= -->
+    <!--
+      视频墙说明：
+      · 外圈小视频通过 JS 自动生成，数量与样式见 assets/js/main.js 中的 HERO_SMALL_VIDEOS
+      · 中央 2×2 大视频通过 .big-tile 元素填充，见 HERO_BIG_VIDEOS
+      · 暂无视频时显示"动态彩色占位"，给视频路径后自动替换为 <video>
+    -->
+    <section class="hero-mosaic">
+      <!-- 外圈关键帧墙（JS 自动注入 .tile） -->
+      <div class="mosaic-bg" id="mosaicBg" aria-hidden="true"></div>
+
+      <!-- 中央 2×2 大动图（4 个 GIF 循环播放） -->
+      <div class="mosaic-center" id="mosaicCenter">
+        <div class="big-tile" data-big="0"></div>
+        <div class="big-tile" data-big="1"></div>
+        <div class="big-tile" data-big="2"></div>
+        <div class="big-tile" data-big="3"></div>
+      </div>
+
+      <!-- 暗角 -->
+      <div class="hero-overlay" aria-hidden="true"></div>
+
+      <!-- 中心文字（叠加在 4 个 GIF 之上） -->
+      <div class="hero-content">
+        <h1 class="font-display font-bold tracking-tight text-5xl md:text-7xl leading-[1.05] text-white drop-shadow-2xl">
+          LabVLA
+        </h1>
+
+        <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <a href="https://cn.bing.com/search?q=%E8%B1%86%E5%8C%85&gs_lcrp=EgRlZGdlKgcIAhBFGMIDMgcIABBFGLABMgcIARBFGMIDMgcIAhBFGMIDMgcIAxBFGMIDMgcIBBBFGMIDMgcIBRBFGMIDMgoIBhBFGMIDGPoHMgcIBxBFGMID0gELMzUyMDQyMmowajeoAgiwAgE&FORM=ANNTA1&adppc=EDGEESS&PC=SCOODB" target="_blank" rel="noopener noreferrer" class="cta-btn"><span>📄</span> 论文</a>
+          <a href="#" class="cta-btn"><span>📦</span> arXiv</a>
+          <a href="#" class="cta-btn"><span>💻</span> 代码</a>
+          <a href="#" class="cta-btn"><span>🤗</span> 数据集</a>
+          <a href="#" class="cta-btn"><span>🎬</span> 演示视频</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= 作者 + 链接条（已隐藏） =======================
+    <section class="px-6 pb-12">
+      <div class="max-w-5xl mx-auto text-center">
+        <div class="text-slate-300 text-sm md:text-base flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+          <a href="#" class="author">【作者一】<sup>1</sup></a>
+          <span>·</span>
+          <a href="#" class="author">【作者二】<sup>1,2</sup></a>
+          <span>·</span>
+          <a href="#" class="author">【作者三】<sup>2</sup></a>
+          <span>·</span>
+          <a href="#" class="author">【作者四】<sup>1</sup></a>
+        </div>
+        <div class="mt-3 text-slate-500 text-xs md:text-sm">
+          <sup>1</sup> 【单位一】 &nbsp;·&nbsp; <sup>2</sup> 【单位二】
+        </div>
+
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <a href="#" class="cta-btn"><span>📄</span> 论文</a>
+          <a href="#" class="cta-btn"><span>📦</span> arXiv</a>
+          <a href="#" class="cta-btn"><span>💻</span> 代码</a>
+          <a href="#" class="cta-btn"><span>🤗</span> 数据集</a>
+          <a href="#" class="cta-btn"><span>🎬</span> 演示视频</a>
+        </div>
+      </div>
+    </section>
+    -->
+
+    <!-- ======================= Highlights / Features ======================= -->
+    <section id="features" class="section">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head">
+          <h2 class="section-title">核心亮点</h2>
+          <p class="section-sub">
+            【此处填写：本节副标题，简述项目的差异化优势】
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 mt-12">
+          <article class="feature-card">
+            <div class="feature-card__media">
+              <div class="placeholder">
+                <span class="placeholder-tag">演示 · 1:1</span>
+                <span class="placeholder-text">【亮点 1 演示视频/图】</span>
+              </div>
+            </div>
+            <h3 class="feature-card__title">【亮点 1 标题】</h3>
+            <p class="feature-card__desc">【此处填写：亮点 1 一句话描述】</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-card__media">
+              <div class="placeholder">
+                <span class="placeholder-tag">演示 · 1:1</span>
+                <span class="placeholder-text">【亮点 2 演示视频/图】</span>
+              </div>
+            </div>
+            <h3 class="feature-card__title">【亮点 2 标题】</h3>
+            <p class="feature-card__desc">【此处填写：亮点 2 一句话描述】</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-card__media">
+              <div class="placeholder">
+                <span class="placeholder-tag">演示 · 1:1</span>
+                <span class="placeholder-text">【亮点 3 演示视频/图】</span>
+              </div>
+            </div>
+            <h3 class="feature-card__title">【亮点 3 标题】</h3>
+            <p class="feature-card__desc">【此处填写：亮点 3 一句话描述】</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Dataset Overview / Stats ======================= -->
+    <section id="stats" class="section">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head">
+          <h2 class="section-title">数据集概览</h2>
+          <p class="section-sub">
+            【此处填写：数据集规模、多样性与构成的一句话总览】
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-12">
+          <div class="stat-card"><div class="stat-num">【数字】</div><div class="stat-label">【指标 1】</div></div>
+          <div class="stat-card"><div class="stat-num">【数字】</div><div class="stat-label">【指标 2】</div></div>
+          <div class="stat-card"><div class="stat-num">【数字】</div><div class="stat-label">【指标 3】</div></div>
+          <div class="stat-card"><div class="stat-num">【数字】</div><div class="stat-label">【指标 4】</div></div>
+          <div class="stat-card"><div class="stat-num">【数字】</div><div class="stat-label">【指标 5】</div></div>
+          <div class="stat-card"><div class="stat-num">【数字】</div><div class="stat-label">【指标 6】</div></div>
+        </div>
+
+        <div class="mt-12 panel">
+          <div class="placeholder aspect-[16/7]">
+            <span class="placeholder-tag">图 · 16:7</span>
+            <span class="placeholder-text">【此处放数据集统计图（任务/物体/本体分布等）】</span>
+          </div>
+          <p class="mt-4 text-sm text-slate-400 text-center">图：【此处填写图注】</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Method ======================= -->
+    <section id="method" class="section">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head">
+          <h2 class="section-title">方法</h2>
+          <p class="section-sub">【此处填写：方法部分副标题】</p>
+        </div>
+
+        <div class="grid lg:grid-cols-5 gap-8 mt-12 items-center">
+          <div class="lg:col-span-3 panel">
+            <div class="placeholder aspect-[16/9]">
+              <span class="placeholder-tag">图 · 16:9</span>
+              <span class="placeholder-text">【此处放方法 / Pipeline 架构图】</span>
+            </div>
+          </div>
+          <div class="lg:col-span-2 space-y-5">
+            <h3 class="text-2xl font-display font-semibold text-white">【方法子标题】</h3>
+            <p class="text-slate-300 leading-relaxed">
+              【此处填写：方法描述（3–5 行），介绍核心思想、输入输出、关键创新点】
+            </p>
+            <ul class="bullet-list">
+              <li>【要点 1】</li>
+              <li>【要点 2】</li>
+              <li>【要点 3】</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Qualitative Results ======================= -->
+    <section id="results" class="section">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head">
+          <h2 class="section-title">定性结果</h2>
+          <p class="section-sub">【此处填写：跨任务 / 跨本体的代表性 rollout 展示】</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag">视频</span><span class="placeholder-text">【任务视频 1】</span></div>
+            <figcaption><span class="tag">任务</span>【任务名 1】</figcaption>
+          </figure>
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag">视频</span><span class="placeholder-text">【任务视频 2】</span></div>
+            <figcaption><span class="tag">任务</span>【任务名 2】</figcaption>
+          </figure>
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag">视频</span><span class="placeholder-text">【任务视频 3】</span></div>
+            <figcaption><span class="tag">任务</span>【任务名 3】</figcaption>
+          </figure>
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag">视频</span><span class="placeholder-text">【任务视频 4】</span></div>
+            <figcaption><span class="tag">任务</span>【任务名 4】</figcaption>
+          </figure>
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag">视频</span><span class="placeholder-text">【任务视频 5】</span></div>
+            <figcaption><span class="tag">任务</span>【任务名 5】</figcaption>
+          </figure>
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag">视频</span><span class="placeholder-text">【任务视频 6】</span></div>
+            <figcaption><span class="tag">任务</span>【任务名 6】</figcaption>
+          </figure>
+        </div>
+
+        <div class="mt-16">
+          <h3 class="text-2xl font-display font-semibold text-white text-center">定量对比</h3>
+          <div class="panel mt-6 overflow-x-auto">
+            <table class="result-table">
+              <thead>
+                <tr>
+                  <th>方法</th>
+                  <th>【指标 1】</th>
+                  <th>【指标 2】</th>
+                  <th>【指标 3】</th>
+                  <th>平均</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>【基线 1】</td><td>【数值】</td><td>【数值】</td><td>【数值】</td><td>【数值】</td></tr>
+                <tr><td>【基线 2】</td><td>【数值】</td><td>【数值】</td><td>【数值】</td><td>【数值】</td></tr>
+                <tr class="ours"><td>本方法</td><td class="best">【数值】</td><td class="best">【数值】</td><td class="best">【数值】</td><td class="best">【数值】</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Sim-to-Real ======================= -->
+    <section id="sim2real" class="section">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head">
+          <h2 class="section-title">仿真到真实迁移</h2>
+          <p class="section-sub">【此处填写：仅用仿真数据训练，直接部署到真实世界】</p>
+        </div>
+
+        <div class="space-y-8 mt-12">
+          <div class="grid md:grid-cols-2 gap-5">
+            <figure class="result-tile">
+              <div class="placeholder aspect-video"><span class="placeholder-tag">仿真</span><span class="placeholder-text">【仿真训练视频 1】</span></div>
+              <figcaption><span class="tag tag-cyan">仿真</span>【任务名】</figcaption>
+            </figure>
+            <figure class="result-tile">
+              <div class="placeholder aspect-video"><span class="placeholder-tag">真实</span><span class="placeholder-text">【真实世界执行视频 1】</span></div>
+              <figcaption><span class="tag tag-lime">真实</span>【任务名】</figcaption>
+            </figure>
+          </div>
+          <div class="grid md:grid-cols-2 gap-5">
+            <figure class="result-tile">
+              <div class="placeholder aspect-video"><span class="placeholder-tag">仿真</span><span class="placeholder-text">【仿真训练视频 2】</span></div>
+              <figcaption><span class="tag tag-cyan">仿真</span>【任务名】</figcaption>
+            </figure>
+            <figure class="result-tile">
+              <div class="placeholder aspect-video"><span class="placeholder-tag">真实</span><span class="placeholder-text">【真实世界执行视频 2】</span></div>
+              <figcaption><span class="tag tag-lime">真实</span>【任务名】</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= BibTeX ======================= -->
+    <section id="bibtex" class="section">
+      <div class="max-w-4xl mx-auto px-6">
+        <div class="section-head">
+          <h2 class="section-title">引用</h2>
+          <p class="section-sub">如果本工作对你有帮助，欢迎引用。</p>
+        </div>
+
+        <div class="bibtex-wrap mt-10">
+          <button class="copy-btn" data-copy-target="#bibtex-code" aria-label="复制 BibTeX">
+            <span class="copy-default">复制</span>
+            <span class="copy-done">已复制 ✓</span>
+          </button>
+<pre id="bibtex-code"><code>@article{【此处填 bibkey】,
+  title   = {【此处填论文标题】},
+  author  = {【此处填作者列表，使用 and 分隔】},
+  journal = {【此处填期刊 / 会议，例如 arXiv preprint arXiv:2026.xxxxx】},
+  year    = {【此处填年份】}
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Team ======================= -->
+    <section id="team" class="section">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head">
+          <h2 class="section-title">团队</h2>
+          <p class="section-sub">核心贡献者与指导老师。</p>
+        </div>
+
+        <h3 class="team-subhead">核心贡献者</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mt-6">
+          <a href="#" class="member-card">
+            <div class="avatar"><div class="placeholder"><span class="placeholder-text">头像</span></div></div>
+            <div class="member-name">【贡献者 1】</div>
+          </a>
+          <a href="#" class="member-card">
+            <div class="avatar"><div class="placeholder"><span class="placeholder-text">头像</span></div></div>
+            <div class="member-name">【贡献者 2】</div>
+          </a>
+          <a href="#" class="member-card">
+            <div class="avatar"><div class="placeholder"><span class="placeholder-text">头像</span></div></div>
+            <div class="member-name">【贡献者 3】</div>
+          </a>
+          <a href="#" class="member-card">
+            <div class="avatar"><div class="placeholder"><span class="placeholder-text">头像</span></div></div>
+            <div class="member-name">【贡献者 4】</div>
+          </a>
+          <a href="#" class="member-card">
+            <div class="avatar"><div class="placeholder"><span class="placeholder-text">头像</span></div></div>
+            <div class="member-name">【贡献者 5】</div>
+          </a>
+          <a href="#" class="member-card">
+            <div class="avatar"><div class="placeholder"><span class="placeholder-text">头像</span></div></div>
+            <div class="member-name">【贡献者 6】</div>
+          </a>
+        </div>
+
+        <h3 class="team-subhead mt-14">指导老师</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mt-6">
+          <a href="#" class="member-card">
+            <div class="avatar"><div class="placeholder"><span class="placeholder-text">头像</span></div></div>
+            <div class="member-name">【导师 1】</div>
+          </a>
+          <a href="#" class="member-card">
+            <div class="avatar"><div class="placeholder"><span class="placeholder-text">头像</span></div></div>
+            <div class="member-name">【导师 2】</div>
+          </a>
+          <a href="#" class="member-card">
+            <div class="avatar"><div class="placeholder"><span class="placeholder-text">头像</span></div></div>
+            <div class="member-name">【导师 3】</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Acknowledgements ======================= -->
+    <section class="section">
+      <div class="max-w-4xl mx-auto px-6">
+        <div class="section-head">
+          <h2 class="section-title">致谢</h2>
+        </div>
+        <p class="mt-8 text-slate-300 leading-relaxed text-center">
+          【此处填写：致谢内容（资助、合作机构、模板出处等）】
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================= Footer ======================= -->
+  <footer class="footer">
+    <div class="max-w-7xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8 items-start">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="logo-mark"></span>
+          <span class="font-display font-semibold text-white">【此处填项目名】</span>
+        </div>
+        <p class="mt-3 text-sm text-slate-400 max-w-xs">【此处填写：底部一句话简介】</p>
+      </div>
+      <div>
+        <h4 class="footer-h">链接</h4>
+        <ul class="footer-list">
+          <li><a href="https://cn.bing.com/search?q=%E8%B1%86%E5%8C%85&gs_lcrp=EgRlZGdlKgcIAhBFGMIDMgcIABBFGLABMgcIARBFGMIDMgcIAhBFGMIDMgcIAxBFGMIDMgcIBBBFGMIDMgcIBRBFGMIDMgoIBhBFGMIDGPoHMgcIBxBFGMID0gELMzUyMDQyMmowajeoAgiwAgE&FORM=ANNTA1&adppc=EDGEESS&PC=SCOODB" target="_blank" rel="noopener noreferrer">论文</a></li>
+          <li><a href="#">arXiv</a></li>
+          <li><a href="#">代码</a></li>
+          <li><a href="#">数据集</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-h">联系</h4>
+        <ul class="footer-list">
+          <li><a href="mailto:#">【联系邮箱】</a></li>
+          <li><a href="#">【Twitter / 微博】</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/5">
+      <div class="max-w-7xl mx-auto px-6 py-6 text-xs text-slate-500 flex flex-wrap justify-between gap-2">
+        <span>© <span id="year"></span> 【此处填项目名】保留所有权利。</span>
+        <span>替换占位即可上线 ♥</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
