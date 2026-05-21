@@ -18,12 +18,12 @@ const HERO_SMALL_VIDEOS = Array.from(
   (_, i) => `${FRAME_DIR}/${i}.jpg`
 );
 
-/* 中央 2×2 四个 GIF（左上→右下） */
+/* 中央 2×2 四个动图（已由 GIF 转 MP4，体积 ~96% 减少） */
 const HERO_BIG_VIDEOS = [
-  'assets/media/gifs/01.gif',
-  'assets/media/gifs/02.gif',
-  'assets/media/gifs/04.gif',
-  'assets/media/gifs/03.gif',
+  'assets/media/gifs/01.mp4',
+  'assets/media/gifs/02.mp4',
+  'assets/media/gifs/04.mp4',
+  'assets/media/gifs/03.mp4',
 ];
 
 /* 外圈小图格子总数 */
