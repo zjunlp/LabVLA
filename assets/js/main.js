@@ -5,18 +5,11 @@
 /* ---------------------------------------------------------
    Hero 视频/图片墙配置
    ---------------------------------------------------------
-   · 外圈：frames/0.jpg … 连续编号（仅首页背景墙）
+   · 外圈：mosaic/column-01.jpg … column-08.jpg（合成列图，避免首屏几十个请求）
    · 中央 2×2：assets/media/gifs/01–04.mp4
    · 下方各板块 .placeholder 保持 HTML 占位，不自动填图
    支持的扩展名：.mp4 / .webm（用 <video>）；.gif / .jpg / .png（用 <img>）
 */
-
-const FRAME_DIR = 'assets/media/frames';
-const FRAME_COUNT = 104;
-const HERO_SMALL_VIDEOS = Array.from(
-  { length: FRAME_COUNT },
-  (_, i) => `${FRAME_DIR}/${i}.jpg`
-);
 
 /* 中央 2×2 四个动图（已由 GIF 转 MP4，体积 ~96% 减少） */
 const HERO_BIG_VIDEOS = [
@@ -32,6 +25,11 @@ const HERO_BIG_POSTERS = [
   'assets/media/posters/04.jpg',
   'assets/media/posters/03.jpg',
 ];
+
+const HERO_MOSAIC_COLUMNS = Array.from(
+  { length: 8 },
+  (_, i) => `assets/media/mosaic/column-${String(i + 1).padStart(2, '0')}.jpg`
+);
 
 /* 外圈小图格子总数 */
 const HERO_SMALL_COUNT = 96;
@@ -69,13 +67,17 @@ const HERO_SMALL_COUNT = 96;
         return img;
       }
       const v = document.createElement('video');
-      v.src = mediaPath;
       if (opts.poster) v.poster = opts.poster;
       v.autoplay = true;
       v.loop = true;
       v.muted = true;
       v.playsInline = true;
       v.preload = opts.preload || 'metadata';
+      if (opts.deferSrc) {
+        v.dataset.src = mediaPath;
+      } else {
+        v.src = mediaPath;
+      }
       return v;
     }
     const ph = document.createElement('div');
@@ -86,53 +88,41 @@ const HERO_SMALL_COUNT = 96;
     return ph;
   };
 
-  /* Fisher–Yates 洗牌（让外圈关键帧分布更均匀） */
-  const shuffled = (arr) => {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  };
-
   const mosaicBg = $('#mosaicBg');
+  const stripLoadPromises = [];
   if (mosaicBg) {
-    if (HERO_SMALL_VIDEOS.length) {
+    if (HERO_MOSAIC_COLUMNS.length) {
       // 多列纵向无限流动
       mosaicBg.classList.add('mosaic-bg--flow');
-      const COLUMN_COUNT = 8;     // 列数
-        const PER_COLUMN  = 6;      // 每列基础图片数（实际 DOM 复制 2 份以实现无缝循环）
-      const pool = shuffled(HERO_SMALL_VIDEOS);
       const frag = document.createDocumentFragment();
-      let cursor = 0;
-      for (let c = 0; c < COLUMN_COUNT; c++) {
+      HERO_MOSAIC_COLUMNS.forEach((src, c) => {
         const col = document.createElement('div');
         col.className = 'mosaic-col';
-        // 每列时长/方向略有不同
         col.style.setProperty('--dur', `${36 + (c % 4) * 9}s`);
         col.style.setProperty('--dir', c % 2 === 0 ? 'normal' : 'reverse');
         col.style.setProperty('--delay', `-${(c * 3.4).toFixed(2)}s`);
 
-        const items = [];
-        for (let i = 0; i < PER_COLUMN; i++) {
-          items.push(pool[(cursor++) % pool.length]);
-        }
-        // 复制一倍实现无缝衔接
-        [...items, ...items].forEach((src) => {
-          const tile = document.createElement('div');
-          tile.className = 'tile';
-          const img = document.createElement('img');
-          img.src = src;
-          img.loading = 'eager';
-          img.decoding = 'async';
-          img.fetchPriority = 'low';
-          img.alt = '';
-          tile.appendChild(img);
-          col.appendChild(tile);
-        });
+        const img = document.createElement('img');
+        img.className = 'mosaic-strip';
+        img.loading = 'eager';
+        img.decoding = 'async';
+        img.fetchPriority = 'high';
+        img.alt = '';
+        stripLoadPromises.push(new Promise(resolve => {
+          const done = () => {
+            img.classList.add('is-loaded');
+            resolve();
+          };
+          if (img.complete) done();
+          else {
+            img.addEventListener('load', done, { once: true });
+            img.addEventListener('error', done, { once: true });
+          }
+        }));
+        img.src = src;
+        col.appendChild(img);
         frag.appendChild(col);
-      }
+      });
       mosaicBg.appendChild(frag);
     } else {
       // 兜底：占位动画格子
@@ -157,9 +147,28 @@ const HERO_SMALL_COUNT = 96;
     const dur = 10;
     el.appendChild(buildTileInner(HERO_BIG_VIDEOS[idx], hue, delay, dur, {
       poster: HERO_BIG_POSTERS[idx],
-      preload: 'auto',
+      preload: 'none',
+      deferSrc: true,
     }));
   });
+
+  const startDeferredVideos = () => {
+    $$('video[data-src]').forEach((video) => {
+      const src = video.dataset.src;
+      if (!src) return;
+      video.src = src;
+      delete video.dataset.src;
+      video.load();
+      video.play().catch(() => {});
+    });
+  };
+  if (stripLoadPromises.length) {
+    const stripsReady = Promise.allSettled(stripLoadPromises);
+    const maxWait = new Promise(resolve => setTimeout(resolve, 1400));
+    Promise.race([stripsReady, maxWait]).then(startDeferredVideos);
+  } else {
+    startDeferredVideos();
+  }
 
   /* ---------- 锚点高亮 ---------- */
   const sections = $$('main section[id]');

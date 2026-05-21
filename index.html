@@ -22,6 +22,15 @@
   <link rel="preload" as="image" href="assets/media/posters/02.jpg" fetchpriority="high" />
   <link rel="preload" as="image" href="assets/media/posters/03.jpg" fetchpriority="high" />
   <link rel="preload" as="image" href="assets/media/posters/04.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/mosaic/hero-preview.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/mosaic/column-01.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/mosaic/column-02.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/mosaic/column-03.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/mosaic/column-04.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/mosaic/column-05.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/mosaic/column-06.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/mosaic/column-07.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/mosaic/column-08.jpg" fetchpriority="high" />
 
   <!-- Tailwind (CDN, 零构建) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -46,7 +55,7 @@
     };
   </script>
 
-  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260521-mosaic2" />
 </head>
 
 <body class="bg-ink-950 text-slate-200 antialiased font-sans selection:bg-accent/40 selection:text-white">
@@ -89,7 +98,7 @@
     <!-- ======================= Hero (Mosaic) ======================= -->
     <!--
       视频墙说明：
-      · 外圈小视频通过 JS 自动生成，数量与样式见 assets/js/main.js 中的 HERO_SMALL_VIDEOS
+      · 外圈背景通过 JS 自动生成，列图配置见 assets/js/main.js 中的 HERO_MOSAIC_COLUMNS
       · 中央 2×2 大视频通过 .big-tile 元素填充，见 HERO_BIG_VIDEOS
       · 暂无视频时显示"动态彩色占位"，给视频路径后自动替换为 <video>
     -->
@@ -475,6 +484,6 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js"></script>
+  <script src="assets/js/main.js?v=20260521-mosaic2"></script>
 </body>
 </html>
