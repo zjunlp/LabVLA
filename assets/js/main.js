@@ -6,7 +6,7 @@
    Hero 视频/图片墙配置
    ---------------------------------------------------------
    · 外圈：frames/0.jpg … 连续编号（仅首页背景墙）
-   · 中央 2×2：assets/media/gifs/01–04.gif
+   · 中央 2×2：assets/media/gifs/01–04.mp4
    · 下方各板块 .placeholder 保持 HTML 占位，不自动填图
    支持的扩展名：.mp4 / .webm（用 <video>）；.gif / .jpg / .png（用 <img>）
 */
@@ -24,6 +24,13 @@ const HERO_BIG_VIDEOS = [
   'assets/media/gifs/02.mp4',
   'assets/media/gifs/04.mp4',
   'assets/media/gifs/03.mp4',
+];
+
+const HERO_BIG_POSTERS = [
+  'assets/media/posters/01.jpg',
+  'assets/media/posters/02.jpg',
+  'assets/media/posters/04.jpg',
+  'assets/media/posters/03.jpg',
 ];
 
 /* 外圈小图格子总数 */
@@ -50,23 +57,25 @@ const HERO_SMALL_COUNT = 96;
   /* ---------- Hero 视频/图片墙生成 ---------- */
   const isImageSrc = (s) => /\.(gif|jpe?g|png|webp|avif)(\?|#|$)/i.test(s);
 
-  const buildTileInner = (mediaPath, hue, delay, dur) => {
+  const buildTileInner = (mediaPath, hue, delay, dur, opts = {}) => {
     if (mediaPath) {
       if (isImageSrc(mediaPath)) {
         const img = document.createElement('img');
         img.src = mediaPath;
-        img.loading = 'lazy';
+        img.loading = opts.loading || 'lazy';
         img.decoding = 'async';
+        if (opts.fetchPriority) img.fetchPriority = opts.fetchPriority;
         img.alt = '';
         return img;
       }
       const v = document.createElement('video');
       v.src = mediaPath;
+      if (opts.poster) v.poster = opts.poster;
       v.autoplay = true;
       v.loop = true;
       v.muted = true;
       v.playsInline = true;
-      v.preload = 'metadata';
+      v.preload = opts.preload || 'metadata';
       return v;
     }
     const ph = document.createElement('div');
@@ -93,7 +102,7 @@ const HERO_SMALL_COUNT = 96;
       // 多列纵向无限流动
       mosaicBg.classList.add('mosaic-bg--flow');
       const COLUMN_COUNT = 8;     // 列数
-      const PER_COLUMN  = 9;      // 每列基础图片数（实际 DOM 复制 2 份以实现无缝循环）
+        const PER_COLUMN  = 6;      // 每列基础图片数（实际 DOM 复制 2 份以实现无缝循环）
       const pool = shuffled(HERO_SMALL_VIDEOS);
       const frag = document.createDocumentFragment();
       let cursor = 0;
@@ -115,8 +124,9 @@ const HERO_SMALL_COUNT = 96;
           tile.className = 'tile';
           const img = document.createElement('img');
           img.src = src;
-          img.loading = 'lazy';
+          img.loading = 'eager';
           img.decoding = 'async';
+          img.fetchPriority = 'low';
           img.alt = '';
           tile.appendChild(img);
           col.appendChild(tile);
@@ -145,7 +155,10 @@ const HERO_SMALL_COUNT = 96;
     const hue = [260, 200, 320, 160][idx] ?? 240;
     const delay = idx * 1.7;
     const dur = 10;
-    el.appendChild(buildTileInner(HERO_BIG_VIDEOS[idx], hue, delay, dur));
+    el.appendChild(buildTileInner(HERO_BIG_VIDEOS[idx], hue, delay, dur, {
+      poster: HERO_BIG_POSTERS[idx],
+      preload: 'auto',
+    }));
   });
 
   /* ---------- 锚点高亮 ---------- */
