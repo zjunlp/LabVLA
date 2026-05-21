@@ -5,11 +5,19 @@
 /* ---------------------------------------------------------
    Hero 视频/图片墙配置
    ---------------------------------------------------------
-   · 外圈：mosaic/column-01.jpg … column-08.jpg（合成列图，避免首屏几十个请求）
+   · 外圈：frames/0.jpg … 连续编号（保持原始 8 列 × 9 图 × 2 份方格结构）
    · 中央 2×2：assets/media/gifs/01–04.mp4
    · 下方各板块 .placeholder 保持 HTML 占位，不自动填图
    支持的扩展名：.mp4 / .webm（用 <video>）；.gif / .jpg / .png（用 <img>）
 */
+
+const FRAME_DIR = 'assets/media/frames';
+const FRAME_COUNT = 104;
+const FRAME_VERSION = '20260521-gridrestore';
+const HERO_SMALL_VIDEOS = Array.from(
+  { length: FRAME_COUNT },
+  (_, i) => `${FRAME_DIR}/${i}.jpg?v=${FRAME_VERSION}`
+);
 
 /* 中央 2×2 四个动图（已由 GIF 转 MP4，体积 ~96% 减少） */
 const HERO_BIG_VIDEOS = [
@@ -25,11 +33,6 @@ const HERO_BIG_POSTERS = [
   'assets/media/posters/04.jpg',
   'assets/media/posters/03.jpg',
 ];
-
-const HERO_MOSAIC_COLUMNS = Array.from(
-  { length: 8 },
-  (_, i) => `assets/media/mosaic/column-${String(i + 1).padStart(2, '0')}.jpg`
-);
 
 /* 外圈小图格子总数 */
 const HERO_SMALL_COUNT = 96;
@@ -59,11 +62,12 @@ const HERO_SMALL_COUNT = 96;
     if (mediaPath) {
       if (isImageSrc(mediaPath)) {
         const img = document.createElement('img');
-        img.src = mediaPath;
         img.loading = opts.loading || 'lazy';
         img.decoding = 'async';
         if (opts.fetchPriority) img.fetchPriority = opts.fetchPriority;
         img.alt = '';
+        if (opts.deferSrc) img.dataset.src = mediaPath;
+        else img.src = mediaPath;
         return img;
       }
       const v = document.createElement('video');
@@ -88,41 +92,66 @@ const HERO_SMALL_COUNT = 96;
     return ph;
   };
 
+  const seededRandom = (seed) => {
+    let state = seed >>> 0;
+    return () => {
+      state = (state * 1664525 + 1013904223) >>> 0;
+      return state / 4294967296;
+    };
+  };
+
+  /* Deterministic shuffle keeps the one-shot preview aligned with the real tiles. */
+  const shuffled = (arr) => {
+    const a = arr.slice();
+    const random = seededRandom(20260521);
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
   const mosaicBg = $('#mosaicBg');
-  const stripLoadPromises = [];
+  const tileLoadPromises = [];
   if (mosaicBg) {
-    if (HERO_MOSAIC_COLUMNS.length) {
+    if (HERO_SMALL_VIDEOS.length) {
       // 多列纵向无限流动
-      mosaicBg.classList.add('mosaic-bg--flow');
+      mosaicBg.classList.add('mosaic-bg--flow', 'mosaic-bg--priming');
+      const COLUMN_COUNT = 8;     // 列数
+      const PER_COLUMN = 9;       // 每列基础图片数（实际 DOM 复制 2 份以实现无缝循环）
+      const pool = shuffled(HERO_SMALL_VIDEOS);
       const frag = document.createDocumentFragment();
-      HERO_MOSAIC_COLUMNS.forEach((src, c) => {
+      let cursor = 0;
+      for (let c = 0; c < COLUMN_COUNT; c++) {
         const col = document.createElement('div');
         col.className = 'mosaic-col';
         col.style.setProperty('--dur', `${36 + (c % 4) * 9}s`);
         col.style.setProperty('--dir', c % 2 === 0 ? 'normal' : 'reverse');
         col.style.setProperty('--delay', `-${(c * 3.4).toFixed(2)}s`);
 
-        const img = document.createElement('img');
-        img.className = 'mosaic-strip';
-        img.loading = 'eager';
-        img.decoding = 'async';
-        img.fetchPriority = 'high';
-        img.alt = '';
-        stripLoadPromises.push(new Promise(resolve => {
-          const done = () => {
-            img.classList.add('is-loaded');
-            resolve();
-          };
-          if (img.complete) done();
-          else {
+        const items = [];
+        for (let i = 0; i < PER_COLUMN; i++) {
+          items.push(pool[(cursor++) % pool.length]);
+        }
+        [...items, ...items].forEach((src) => {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          const img = document.createElement('img');
+          img.loading = 'eager';
+          img.decoding = 'async';
+          img.fetchPriority = 'low';
+          img.alt = '';
+          tileLoadPromises.push(new Promise(resolve => {
+            const done = () => resolve();
             img.addEventListener('load', done, { once: true });
             img.addEventListener('error', done, { once: true });
-          }
-        }));
-        img.src = src;
-        col.appendChild(img);
+          }));
+          img.src = src;
+          tile.appendChild(img);
+          col.appendChild(tile);
+        });
         frag.appendChild(col);
-      });
+      }
       mosaicBg.appendChild(frag);
     } else {
       // 兜底：占位动画格子
@@ -138,6 +167,17 @@ const HERO_SMALL_COUNT = 96;
       }
       mosaicBg.appendChild(frag);
     }
+  }
+
+  const revealMosaicTiles = () => {
+    if (!mosaicBg) return;
+    mosaicBg.classList.remove('mosaic-bg--priming');
+    mosaicBg.classList.add('mosaic-bg--ready');
+  };
+  if (tileLoadPromises.length) {
+    Promise.allSettled(tileLoadPromises).then(revealMosaicTiles);
+  } else {
+    revealMosaicTiles();
   }
 
   /* 中央 2×2 大动图 */
@@ -162,10 +202,10 @@ const HERO_SMALL_COUNT = 96;
       video.play().catch(() => {});
     });
   };
-  if (stripLoadPromises.length) {
-    const stripsReady = Promise.allSettled(stripLoadPromises);
-    const maxWait = new Promise(resolve => setTimeout(resolve, 1400));
-    Promise.race([stripsReady, maxWait]).then(startDeferredVideos);
+  if (tileLoadPromises.length) {
+    const tilesReady = Promise.allSettled(tileLoadPromises);
+    const maxWait = new Promise(resolve => setTimeout(resolve, 2200));
+    Promise.race([tilesReady, maxWait]).then(startDeferredVideos);
   } else {
     startDeferredVideos();
   }

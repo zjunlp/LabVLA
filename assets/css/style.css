@@ -254,34 +254,49 @@ body { -webkit-font-smoothing: antialiased; background: #000 !important; }
 .mosaic-col {
   flex: 1 1 0;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   position: relative;
   z-index: 1;
-  overflow: hidden;
-}
-.mosaic-strip {
-  width: 100%;
-  height: auto;
-  display: block;
-  opacity: 0;
-  filter: brightness(0.5) saturate(0.95);
   animation: colScroll var(--dur, 40s) linear infinite;
   animation-direction: var(--dir, normal);
   animation-delay: var(--delay, 0s);
-  transition: opacity .18s ease, filter .35s ease;
   will-change: transform;
 }
-.mosaic-strip.is-loaded {
-  opacity: 1;
+.mosaic-bg--flow .tile {
+  flex: 0 0 auto;
+  height: clamp(110px, 13vh, 170px);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0B0D12;
+  filter: brightness(0.5) saturate(0.95);
+  transition: filter .35s ease, transform .35s ease, background .2s ease;
 }
-.mosaic-col:hover .mosaic-strip {
-  filter: brightness(0.9) saturate(1.05);
+.mosaic-bg--flow .tile:hover {
+  filter: brightness(1) saturate(1.1);
+  transform: scale(1.04);
+  z-index: 1;
+}
+.mosaic-bg--flow .tile img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: opacity .2s ease;
+}
+.mosaic-bg--priming .tile {
+  background: transparent;
+}
+.mosaic-bg--priming .tile img {
+  opacity: 0;
+}
+.mosaic-bg--ready .tile img {
+  opacity: 1;
 }
 @keyframes colScroll {
   0%   { transform: translateY(0); }
   100% { transform: translateY(-50%); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mosaic-strip { animation: none; }
+  .mosaic-col { animation: none; }
 }
 @media (max-width: 768px) {
   .mosaic-bg.mosaic-bg--flow { gap: 4px; }
