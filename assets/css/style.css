@@ -63,6 +63,30 @@ body { -webkit-font-smoothing: antialiased; background: #000 !important; }
   color: #e2e8f0; background: rgba(255,255,255,0.02);
 }
 .btn-ghost:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.22); }
+.lang-toggle {
+  min-width: 64px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.04);
+  color: #e2e8f0;
+  font-size: .82rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.lang-toggle:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(124,92,255,0.45);
+  color: #fff;
+}
+.lang-toggle:focus-visible {
+  outline: 2px solid rgba(34,211,238,0.8);
+  outline-offset: 2px;
+}
 
 .cta-btn {
   padding: .8rem 1.25rem; border-radius: 12px;
