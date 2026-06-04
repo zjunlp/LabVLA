@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.omx/
+.omc/
+.claude/
+outputs/
+outputs*/
+logs/
+wandb/
+*.log

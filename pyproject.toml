@@ -1,0 +1,111 @@
+# LabVLA_v3 pytest + coverage + lint config.
+# Plan-A Phase 0 — establishes test infra for all downstream work.
+#
+# Run tests:   pytest
+# Coverage:    pytest --cov=src --cov=data_process
+# Marker usage examples:
+#   pytest -m "unit"              # fast CPU-only unit tests
+#   pytest -m "not requires_data" # skip tests needing real dataset on disk
+#   pytest -m "not gpu"           # skip tests needing GPU
+
+# F22 fix: add minimal [project] metadata so the repo declares its name,
+# Python requirement, and (where pinned) dependency set. Heavy runtime deps
+# (torch, accelerate, deepspeed, transformers, etc.) are intentionally NOT
+# pinned here because they are environment-specific — operators install them
+# via the project's conda env. The metadata block exists so `pip install -e .`
+# and downstream tools like `python -c "import importlib.metadata; ..."` work.
+[project]
+name = "labvla"
+version = "0.3.0"
+description = "LabVLA Vision-Language-Action policy (Qwen3-VL + DiT cross-attention head)."
+# P2-G fix (round1): removed `readme = "README.md"` because the repo
+# intentionally does not ship a root README.md (see the [tool.setuptools]
+# NOTE below — this project is not pip-installable). A dangling readme path
+# made some PEP 621 build backends warn or fail on metadata read. Add the
+# field back if/when a real README lands at the repo root.
+requires-python = ">=3.10"
+authors = [{name = "BaochangRen"}]
+license = {text = "Apache-2.0"}
+# Lightweight runtime deps that are stable across the supported environments.
+# Heavyweight ML stack (torch/accelerate/deepspeed/transformers) stays out of
+# this list to avoid pinning a constellation that conflicts with the conda
+# env operators actually use.
+dependencies = [
+    "numpy",
+    "safetensors",
+    "msgpack",
+    "websockets",
+    "pyarrow",
+    "pandas",
+    "draccus",
+]
+
+# NOTE: this project does NOT ship as a pip-installable package today; it's
+# consumed via `PYTHONPATH=src:.` (see launch scripts and CLAUDE.md). The
+# `[project]` block above only exists so distribution-introspection tools
+# (importlib.metadata, pip show, etc.) can read the metadata, and so future
+# packaging work has a starting point. Most subdirectories under src/ are
+# intentionally NOT Python packages (no __init__.py) and adding them just
+# to satisfy setuptools.packages.find would mask runtime layout issues — so
+# we explicitly suppress automatic package discovery rather than wire it
+# up to broken globs.
+[tool.setuptools]
+packages = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = [
+    "--tb=short",
+    "--strict-markers",
+    "-q",
+]
+markers = [
+    "unit: pure-logic unit test, no I/O, no torch.cuda, no model load",
+    "cpu_only: uses torch/numpy on CPU, no GPU required",
+    "requires_data: needs a real LeRobot dataset on disk",
+    "slow: >10 s on a single CPU core",
+    "gpu: needs a real GPU + real VLM weights (skipped by default CI)",
+]
+filterwarnings = [
+    # Don't let a DeprecationWarning from transformers poison the run.
+    "default::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["src", "data_process"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    # Deployment + scripts are end-to-end; covered via integration tests
+    # (when they land in later phases), not the unit/integration sweep.
+    "deployment/*",
+    "scripts/*",
+]
+parallel = false
+
+[tool.coverage.report]
+# Coverage baseline evolution:
+#   Phase 0 baseline           → ~10%
+#   Plan-A Phase 1-4 landed    → 47% (397 tests)
+#   Sprint 2 + Sprint 3 landed → 42% (429 tests, +1765 LoC from new helpers)
+# The drop from 47 → 42 is the expected denominator lift from Sprint 2/3 adding
+# ~1700 lines of hardening/helper code (_reader_base.py, Liger version-gated
+# patch, sprint2a/b/3 logic). Gate set to 40 with a small buffer; Sprint 4's
+# remaining test-polish work + nightly GPU CI should bring this back to ≥45.
+fail_under = 40
+show_missing = true
+skip_covered = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]   # line length — many configs have long URLs / block comments
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]

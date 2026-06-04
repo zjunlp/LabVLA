@@ -1,0 +1,20 @@
+{
+    "bf16": {
+        "enabled": true
+    },
+    "zero_optimization": {
+        "stage": 2,
+        "allgather_partitions": true,
+        "allgather_bucket_size": 5e8,
+        "overlap_comm": true,
+        "reduce_scatter": true,
+        "reduce_bucket_size": 5e8,
+        "contiguous_gradients": true
+    },
+    "gradient_accumulation_steps": "auto",
+    "_comment_gradient_clipping": "DeepSpeed performs gradient clipping inside engine.step() driven by THIS value. NOTE: under DeepSpeed, accelerate's clip_grad_norm_ does NOT clip (it only returns the global norm), so clipping MUST come from here. scripts/train.py overrides this at runtime with --grad_clip_norm (when >0) before accelerator.prepare; this 0.0 is only the fallback when --grad_clip_norm<=0 (clipping explicitly disabled).",
+    "gradient_clipping": 0.0,
+    "train_batch_size": "auto",
+    "train_micro_batch_size_per_gpu": "auto",
+    "wall_clock_breakdown": false
+}
