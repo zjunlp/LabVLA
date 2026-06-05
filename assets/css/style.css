@@ -687,6 +687,20 @@ body.edit-mode [data-i18n]:hover {
   border-right: 2px solid #22D3EE;
   transform: translateY(-50%) rotate(45deg);
 }
+.workflow-media {
+  aspect-ratio: 27 / 17;
+  min-height: 260px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.28);
+  border: 1px solid rgba(255,255,255,0.075);
+}
+.workflow-media video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
 
 @media (max-width: 1024px) {
   .task-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -727,6 +741,12 @@ body.edit-mode [data-i18n]:hover {
   border-radius: 10px;
   overflow: hidden;
   background: rgba(0,0,0,0.28);
+}
+.dual-task-card__media video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 .dual-task-card h3 {
   margin-top: .7rem;

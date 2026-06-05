@@ -113,7 +113,7 @@ const HERO_SMALL_COUNT = 96;
       'tasks.atomic.10': 'Atomic Task 10',
       'workflow.kicker': 'Composable Workflow',
       'workflow.title': 'Atomic tasks can be chained into a complete lab workflow.',
-      'workflow.desc': 'Reserve this area for one representative workflow assembled from multiple atomic tasks.',
+      'workflow.desc': 'A complete rollout composes multiple atomic skills into a longer executable lab workflow.',
       'workflow.step1': 'Task 01',
       'workflow.step2': 'Task 04',
       'workflow.step3': 'Task 07',
@@ -485,7 +485,7 @@ const HERO_SMALL_COUNT = 96;
     'tasks.robot.08': 'FR3',
     'workflow.kicker': '可组合工作流',
     'workflow.title': '原子任务可以串联成完整的实验工作流。',
-    'workflow.desc': '这里预留一个由多个原子任务组成的代表性 workflow 展示。',
+    'workflow.desc': '完整 rollout 将多个原子技能组合成更长的可执行实验工作流。',
     'workflow.step1': '任务 01',
     'workflow.step2': '任务 04',
     'workflow.step3': '任务 07',
@@ -981,6 +981,30 @@ const HERO_SMALL_COUNT = 96;
     { rootMargin: '320px 0px', threshold: 0.05 }
   );
   taskVideos.forEach(video => taskVideoIO.observe(video));
+
+  /* ---------- Showcase video lazy loading ---------- */
+  const showcaseVideos = $$('video[data-video-src]');
+  const loadShowcaseVideo = (video) => {
+    if (!video.dataset.videoSrc) return;
+    video.src = video.dataset.videoSrc;
+    delete video.dataset.videoSrc;
+    video.load();
+  };
+  const showcaseVideoIO = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+          loadShowcaseVideo(video);
+          video.play().catch(() => {});
+        } else if (!video.paused) {
+          video.pause();
+        }
+      });
+    },
+    { rootMargin: '320px 0px', threshold: 0.05 }
+  );
+  showcaseVideos.forEach(video => showcaseVideoIO.observe(video));
 
   $$('.copy-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
