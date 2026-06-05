@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -47,7 +47,7 @@
     };
   </script>
 
-  <link rel="stylesheet" href="assets/css/style.css?v=20260522-i18n" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260605-cta-emoji-icons" />
 </head>
 
 <body class="bg-ink-950 text-slate-200 antialiased font-sans selection:bg-accent/40 selection:text-white">
@@ -72,14 +72,17 @@
       <nav class="hidden md:flex items-center gap-8 text-sm text-slate-300">
         <a href="#features" class="nav-link" data-i18n="nav.features">Highlights</a>
         <a href="#stats" class="nav-link" data-i18n="nav.dataset">Dataset</a>
+        <a href="#dual-tasks" class="nav-link" data-i18n="nav.dual_tasks">Dual-arm</a>
         <a href="#method" class="nav-link" data-i18n="nav.method">Method</a>
+        <a href="#assets" class="nav-link" data-i18n="nav.assets">Assets</a>
         <a href="#results" class="nav-link" data-i18n="nav.results">Results</a>
         <a href="#sim2real" class="nav-link" data-i18n="nav.sim2real">Sim-to-Real</a>
         <a href="#bibtex" class="nav-link" data-i18n="nav.bibtex">Citation</a>
         <a href="#team" class="nav-link" data-i18n="nav.team">Team</a>
       </nav>
       <div class="flex items-center gap-2">
-        <button type="button" class="lang-toggle" id="langToggle" data-i18n="lang.toggle" data-i18n-aria="lang.aria">中文</button>
+        <button type="button" class="edit-toggle" id="editToggle">Edit</button>
+        <button type="button" class="lang-toggle" id="langToggle" data-i18n="lang.toggle" data-i18n-aria="lang.aria">涓枃</button>
         <a href="https://cn.bing.com/search?q=%E8%B1%86%E5%8C%85&gs_lcrp=EgRlZGdlKgcIAhBFGMIDMgcIABBFGLABMgcIARBFGMIDMgcIAhBFGMIDMgcIAxBFGMIDMgcIBBBFGMIDMgcIBRBFGMIDMgoIBhBFGMIDGPoHMgcIBxBFGMID0gELMzUyMDQyMmowajeoAgiwAgE&FORM=ANNTA1&adppc=EDGEESS&PC=SCOODB" target="_blank" rel="noopener noreferrer" class="btn-ghost hidden sm:inline-flex" data-i18n="link.paper">Paper</a>
         <a href="#" class="btn-primary">GitHub</a>
       </div>
@@ -90,16 +93,16 @@
 
     <!-- ======================= Hero (Mosaic) ======================= -->
     <!--
-      视频墙说明：
-      · 外圈小图通过 JS 自动生成，数量与样式见 assets/js/main.js 中的 HERO_SMALL_VIDEOS
-      · 中央 2×2 大视频通过 .big-tile 元素填充，见 HERO_BIG_VIDEOS
-      · 暂无视频时显示"动态彩色占位"，给视频路径后自动替换为 <video>
+      瑙嗛澧欒鏄庯細
+      路 澶栧湀灏忓浘閫氳繃 JS 鑷姩鐢熸垚锛屾暟閲忎笌鏍峰紡瑙?assets/js/main.js 涓殑 HERO_SMALL_VIDEOS
+      路 涓ぎ 2脳2 澶ц棰戦€氳繃 .big-tile 鍏冪礌濉厖锛岃 HERO_BIG_VIDEOS
+      路 鏆傛棤瑙嗛鏃舵樉绀?鍔ㄦ€佸僵鑹插崰浣?锛岀粰瑙嗛璺緞鍚庤嚜鍔ㄦ浛鎹负 <video>
     -->
     <section class="hero-mosaic">
-      <!-- 外圈关键帧墙（JS 自动注入 .tile） -->
+      <!-- 澶栧湀鍏抽敭甯у锛圝S 鑷姩娉ㄥ叆 .tile锛?-->
       <div class="mosaic-bg" id="mosaicBg" aria-hidden="true"></div>
 
-      <!-- 中央 2×2 大动图（4 个 GIF 循环播放） -->
+      <!-- 涓ぎ 2脳2 澶у姩鍥撅紙4 涓?GIF 寰幆鎾斁锛?-->
       <div class="mosaic-center" id="mosaicCenter">
         <div class="big-tile" data-big="0"></div>
         <div class="big-tile" data-big="1"></div>
@@ -107,47 +110,47 @@
         <div class="big-tile" data-big="3"></div>
       </div>
 
-      <!-- 暗角 -->
+      <!-- 鏆楄 -->
       <div class="hero-overlay" aria-hidden="true"></div>
 
-      <!-- 中心文字（叠加在 4 个 GIF 之上） -->
+      <!-- 涓績鏂囧瓧锛堝彔鍔犲湪 4 涓?GIF 涔嬩笂锛?-->
       <div class="hero-content">
         <h1 class="font-display font-bold tracking-tight text-5xl md:text-7xl leading-[1.05] text-white drop-shadow-2xl">
           LabVLA
         </h1>
 
         <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <a href="https://cn.bing.com/search?q=%E8%B1%86%E5%8C%85&gs_lcrp=EgRlZGdlKgcIAhBFGMIDMgcIABBFGLABMgcIARBFGMIDMgcIAhBFGMIDMgcIAxBFGMIDMgcIBBBFGMIDMgcIBRBFGMIDMgoIBhBFGMIDGPoHMgcIBxBFGMID0gELMzUyMDQyMmowajeoAgiwAgE&FORM=ANNTA1&adppc=EDGEESS&PC=SCOODB" target="_blank" rel="noopener noreferrer" class="cta-btn"><span>📄</span> <span data-i18n="link.paper">Paper</span></a>
-          <a href="#" class="cta-btn"><span>📦</span> arXiv</a>
-          <a href="#" class="cta-btn"><span>💻</span> <span data-i18n="link.code">Code</span></a>
-          <a href="#" class="cta-btn"><span>🤗</span> <span data-i18n="link.dataset">Dataset</span></a>
-          <a href="#" class="cta-btn"><span>🎬</span> <span data-i18n="link.demo">Demo Video</span></a>
+          <a href="https://cn.bing.com/search?q=%E8%B1%86%E5%8C%85&gs_lcrp=EgRlZGdlKgcIAhBFGMIDMgcIABBFGLABMgcIARBFGMIDMgcIAhBFGMIDMgcIAxBFGMIDMgcIBBBFGMIDMgcIBRBFGMIDMgoIBhBFGMIDGPoHMgcIBxBFGMID0gELMzUyMDQyMmowajeoAgiwAgE&FORM=ANNTA1&adppc=EDGEESS&PC=SCOODB" target="_blank" rel="noopener noreferrer" class="cta-btn"><span class="cta-icon">&#128196;</span> <span data-i18n="link.paper">Paper</span></a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128218;</span> arXiv</a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128187;</span> <span data-i18n="link.code">Code</span></a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128450;&#65039;</span> <span data-i18n="link.dataset">Dataset</span></a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#127916;</span> <span data-i18n="link.demo">Demo Video</span></a>
         </div>
       </div>
     </section>
 
-    <!-- ======================= 作者 + 链接条（已隐藏） =======================
+    <!-- ======================= 浣滆€?+ 閾炬帴鏉★紙宸查殣钘忥級 =======================
     <section class="px-6 pb-12">
       <div class="max-w-5xl mx-auto text-center">
         <div class="text-slate-300 text-sm md:text-base flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
-          <a href="#" class="author">【作者一】<sup>1</sup></a>
-          <span>·</span>
-          <a href="#" class="author">【作者二】<sup>1,2</sup></a>
-          <span>·</span>
-          <a href="#" class="author">【作者三】<sup>2</sup></a>
-          <span>·</span>
-          <a href="#" class="author">【作者四】<sup>1</sup></a>
+          <a href="#" class="author">銆愪綔鑰呬竴銆?sup>1</sup></a>
+          <span>路</span>
+          <a href="#" class="author">銆愪綔鑰呬簩銆?sup>1,2</sup></a>
+          <span>路</span>
+          <a href="#" class="author">銆愪綔鑰呬笁銆?sup>2</sup></a>
+          <span>路</span>
+          <a href="#" class="author">銆愪綔鑰呭洓銆?sup>1</sup></a>
         </div>
         <div class="mt-3 text-slate-500 text-xs md:text-sm">
-          <sup>1</sup> 【单位一】 &nbsp;·&nbsp; <sup>2</sup> 【单位二】
+          <sup>1</sup> 銆愬崟浣嶄竴銆?&nbsp;路&nbsp; <sup>2</sup> 銆愬崟浣嶄簩銆?
         </div>
 
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <a href="#" class="cta-btn"><span>📄</span> 论文</a>
-          <a href="#" class="cta-btn"><span>📦</span> arXiv</a>
-          <a href="#" class="cta-btn"><span>💻</span> 代码</a>
-          <a href="#" class="cta-btn"><span>🤗</span> 数据集</a>
-          <a href="#" class="cta-btn"><span>🎬</span> 演示视频</a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128196;</span> 论文</a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128218;</span> arXiv</a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128187;</span> 代码</a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128450;&#65039;</span> 数据集</a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#127916;</span> 演示视频</a>
         </div>
       </div>
     </section>
@@ -157,17 +160,22 @@
     <section id="features" class="section">
       <div class="max-w-7xl mx-auto px-6">
         <div class="section-head">
-          <h2 class="section-title" data-i18n="features.title">Highlights</h2>
+          <h2 class="section-title" data-i18n="features.title">Robot Platforms</h2>
           <p class="section-sub">
             <span data-i18n="features.subtitle">Add a concise summary of the project's key differentiators here.</span>
           </p>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-6 mt-12">
+        <figure class="embodiment-portrait mt-12">
+          <img src="assets/media/robots/arm_group_portrait.png?v=20260605-portrait"
+               alt="RoboGenesis 11 robot embodiments — 8 single-arm and 3 dual-arm" loading="lazy" />
+        </figure>
+
+        <div class="hidden">
           <article class="feature-card">
             <div class="feature-card__media">
               <div class="placeholder">
-                <span class="placeholder-tag" data-i18n="placeholder.demo_square">Demo · 1:1</span>
+                <span class="placeholder-tag" data-i18n="placeholder.demo_square">Demo 路 1:1</span>
                 <span class="placeholder-text" data-i18n="features.demo1">Highlight 1 demo video/image</span>
               </div>
             </div>
@@ -178,7 +186,7 @@
           <article class="feature-card">
             <div class="feature-card__media">
               <div class="placeholder">
-                <span class="placeholder-tag" data-i18n="placeholder.demo_square">Demo · 1:1</span>
+                <span class="placeholder-tag" data-i18n="placeholder.demo_square">Demo 路 1:1</span>
                 <span class="placeholder-text" data-i18n="features.demo2">Highlight 2 demo video/image</span>
               </div>
             </div>
@@ -189,7 +197,7 @@
           <article class="feature-card">
             <div class="feature-card__media">
               <div class="placeholder">
-                <span class="placeholder-tag" data-i18n="placeholder.demo_square">Demo · 1:1</span>
+                <span class="placeholder-tag" data-i18n="placeholder.demo_square">Demo 路 1:1</span>
                 <span class="placeholder-text" data-i18n="features.demo3">Highlight 3 demo video/image</span>
               </div>
             </div>
@@ -204,13 +212,43 @@
     <section id="stats" class="section">
       <div class="max-w-7xl mx-auto px-6">
         <div class="section-head">
-          <h2 class="section-title" data-i18n="dataset.title">Dataset Overview</h2>
+          <h2 class="section-title" data-i18n="dataset.title">Multi-task Capabilities</h2>
           <p class="section-sub">
-            <span data-i18n="dataset.subtitle">Add a one-sentence overview of dataset scale, diversity, and composition.</span>
+            <span data-i18n="dataset.subtitle">Ten atomic lab tasks can be demonstrated independently or composed into longer workflows.</span>
           </p>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-12">
+        <div class="task-grid mt-12">
+          <article class="task-card" data-task-slot="atomic-01"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/open_door.mp4" poster="assets/media/tasks-web/open_door.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.01">Open Door</h3><span class="task-card__robot" data-i18n="tasks.robot.01">UR5e</span></article>
+          <article class="task-card" data-task-slot="atomic-02"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/close_door.mp4" poster="assets/media/tasks-web/close_door.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.02">Close Door</h3><span class="task-card__robot" data-i18n="tasks.robot.02">UR16e</span></article>
+          <article class="task-card" data-task-slot="atomic-03"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/place.mp4" poster="assets/media/tasks-web/place.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.03">Place</h3><span class="task-card__robot" data-i18n="tasks.robot.03">Rizon 4</span></article>
+          <article class="task-card" data-task-slot="atomic-04"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/pour.mp4" poster="assets/media/tasks-web/pour.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.04">Pour</h3><span class="task-card__robot" data-i18n="tasks.robot.04">Franka</span></article>
+          <article class="task-card" data-task-slot="atomic-05"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/pick.mp4" poster="assets/media/tasks-web/pick.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.05">Pick</h3><span class="task-card__robot" data-i18n="tasks.robot.05">Festo</span></article>
+          <article class="task-card" data-task-slot="atomic-06"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/shake.mp4" poster="assets/media/tasks-web/shake.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.06">Shake</h3><span class="task-card__robot" data-i18n="tasks.robot.06">Franka</span></article>
+          <article class="task-card" data-task-slot="atomic-07"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/stir.mp4" poster="assets/media/tasks-web/stir.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.07">Stir</h3><span class="task-card__robot" data-i18n="tasks.robot.07">UR5e</span></article>
+          <article class="task-card" data-task-slot="atomic-08"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/heat_liquid.mp4" poster="assets/media/tasks-web/heat_liquid.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.08">Heat Liquid</h3><span class="task-card__robot" data-i18n="tasks.robot.08">FR3</span></article>
+          <article class="task-card hidden" data-task-slot="atomic-09"><div class="task-card__media"><div class="placeholder"><span class="placeholder-tag" data-i18n="tasks.atomic.tag">Atomic Task</span><span class="placeholder-text" data-i18n="tasks.media_slot">Image / video slot</span></div></div><h3 data-i18n="tasks.atomic.09">Atomic Task 09</h3></article>
+          <article class="task-card hidden" data-task-slot="atomic-10"><div class="task-card__media"><div class="placeholder"><span class="placeholder-tag" data-i18n="tasks.atomic.tag">Atomic Task</span><span class="placeholder-text" data-i18n="tasks.media_slot">Image / video slot</span></div></div><h3 data-i18n="tasks.atomic.10">Atomic Task 10</h3></article>
+        </div>
+
+        <div class="workflow-panel mt-12">
+          <div class="workflow-panel__copy">
+            <span class="workflow-kicker" data-i18n="workflow.kicker">Composable Workflow</span>
+            <h3 data-i18n="workflow.title">Atomic tasks can be chained into a complete lab workflow.</h3>
+            <p data-i18n="workflow.desc">Reserve this area for one representative workflow assembled from multiple atomic tasks.</p>
+          </div>
+          <div class="workflow-lane" aria-label="Workflow placeholder">
+            <div class="workflow-step" data-i18n="workflow.step1">Task 01</div>
+            <div class="workflow-arrow"></div>
+            <div class="workflow-step" data-i18n="workflow.step2">Task 04</div>
+            <div class="workflow-arrow"></div>
+            <div class="workflow-step" data-i18n="workflow.step3">Task 07</div>
+            <div class="workflow-arrow"></div>
+            <div class="workflow-step" data-i18n="workflow.step4">Task 10</div>
+          </div>
+        </div>
+
+        <div class="hidden">
           <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric1">Metric 1</div></div>
           <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric2">Metric 2</div></div>
           <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric3">Metric 3</div></div>
@@ -219,12 +257,61 @@
           <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric6">Metric 6</div></div>
         </div>
 
-        <div class="mt-12 panel">
+        <div class="hidden mt-12 panel">
           <div class="placeholder aspect-[16/7]">
-            <span class="placeholder-tag" data-i18n="placeholder.figure_16_7">Figure · 16:7</span>
+            <span class="placeholder-tag" data-i18n="placeholder.figure_16_7">Figure 路 16:7</span>
             <span class="placeholder-text" data-i18n="dataset.chart">Dataset statistics figure (task/object/embodiment distributions)</span>
           </div>
           <p class="mt-4 text-sm text-slate-400 text-center" data-i18n="dataset.caption">Figure: add caption here.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Dual-arm Task Showcase ======================= -->
+    <section id="dual-tasks" class="section">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head">
+          <h2 class="section-title" data-i18n="dual_tasks.title">Dual-arm Task Showcase</h2>
+          <p class="section-sub" data-i18n="dual_tasks.subtitle">Reserve four slots for bimanual manipulation tasks and coordinated dual-arm demonstrations.</p>
+        </div>
+
+        <div class="dual-task-grid mt-12">
+          <article class="dual-task-card">
+            <div class="dual-task-card__media">
+              <div class="placeholder">
+                <span class="placeholder-tag" data-i18n="dual_tasks.tag">Dual-arm Task</span>
+                <span class="placeholder-text" data-i18n="dual_tasks.slot1">Dual-arm task slot 01</span>
+              </div>
+            </div>
+            <h3 data-i18n="dual_tasks.card1">Dual-arm Task 01</h3>
+          </article>
+          <article class="dual-task-card">
+            <div class="dual-task-card__media">
+              <div class="placeholder">
+                <span class="placeholder-tag" data-i18n="dual_tasks.tag">Dual-arm Task</span>
+                <span class="placeholder-text" data-i18n="dual_tasks.slot2">Dual-arm task slot 02</span>
+              </div>
+            </div>
+            <h3 data-i18n="dual_tasks.card2">Dual-arm Task 02</h3>
+          </article>
+          <article class="dual-task-card">
+            <div class="dual-task-card__media">
+              <div class="placeholder">
+                <span class="placeholder-tag" data-i18n="dual_tasks.tag">Dual-arm Task</span>
+                <span class="placeholder-text" data-i18n="dual_tasks.slot3">Dual-arm task slot 03</span>
+              </div>
+            </div>
+            <h3 data-i18n="dual_tasks.card3">Dual-arm Task 03</h3>
+          </article>
+          <article class="dual-task-card">
+            <div class="dual-task-card__media">
+              <div class="placeholder">
+                <span class="placeholder-tag" data-i18n="dual_tasks.tag">Dual-arm Task</span>
+                <span class="placeholder-text" data-i18n="dual_tasks.slot4">Dual-arm task slot 04</span>
+              </div>
+            </div>
+            <h3 data-i18n="dual_tasks.card4">Dual-arm Task 04</h3>
+          </article>
         </div>
       </div>
     </section>
@@ -233,14 +320,23 @@
     <section id="method" class="section">
       <div class="max-w-7xl mx-auto px-6">
         <div class="section-head">
-          <h2 class="section-title" data-i18n="method.title">Method</h2>
-          <p class="section-sub" data-i18n="method.subtitle">Add a concise subtitle for the method section.</p>
+          <h2 class="section-title" data-i18n="method.title">Randomization</h2>
+          <p class="section-sub" data-i18n="method.subtitle">We randomize scene appearance, camera viewpoint, object layout, obstacles, and tabletop conditions to improve robustness.</p>
         </div>
 
-        <div class="grid lg:grid-cols-5 gap-8 mt-12 items-center">
+        <div class="randomization-grid randomization-presets mt-12" data-random-presets>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/scene.jpg" data-random-label="Scene"><img src="assets/media/randomization/scene.jpg" alt="Scene randomization" loading="lazy" /><span data-i18n="random.scene">Scene</span><small data-i18n="random.click">Click to switch</small></button>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/lighting.jpg" data-random-label="Lighting"><img src="assets/media/randomization/lighting.jpg" alt="Lighting randomization" loading="lazy" /><span data-i18n="random.lighting">Lighting</span><small data-i18n="random.click">Click to switch</small></button>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/position.jpg" data-random-label="Position"><img src="assets/media/randomization/position.jpg" alt="Position randomization" loading="lazy" /><span data-i18n="random.position">Position</span><small data-i18n="random.click">Click to switch</small></button>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/objects.jpg" data-random-label="Objects"><img src="assets/media/randomization/objects.jpg" alt="Object randomization" loading="lazy" /><span data-i18n="random.objects">Objects</span><small data-i18n="random.click">Click to switch</small></button>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/obstacles.jpg" data-random-label="Obstacles"><img src="assets/media/randomization/obstacles.jpg" alt="Obstacle randomization" loading="lazy" /><span data-i18n="random.obstacles">Obstacles</span><small data-i18n="random.click">Click to switch</small></button>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/tabletop-b.jpg" data-random-label="Tabletop B"><img src="assets/media/randomization/tabletop-b.jpg" alt="Tabletop randomization variant" loading="lazy" /><span data-i18n="random.tabletop_b">Tabletop B</span><small data-i18n="random.click">Click to switch</small></button>
+        </div>
+
+        <div class="hidden grid lg:grid-cols-5 gap-8 mt-12 items-center">
           <div class="lg:col-span-3 panel">
             <div class="placeholder aspect-[16/9]">
-              <span class="placeholder-tag" data-i18n="placeholder.figure_16_9">Figure · 16:9</span>
+              <span class="placeholder-tag" data-i18n="placeholder.figure_16_9">Figure 路 16:9</span>
               <span class="placeholder-text" data-i18n="method.figure">Method / pipeline architecture figure</span>
             </div>
           </div>
@@ -259,15 +355,98 @@
       </div>
     </section>
 
-    <!-- ======================= Qualitative Results ======================= -->
+    <!-- ======================= Asset Generation ======================= -->
+    <section id="assets" class="section">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head">
+          <h2 class="section-title" data-i18n="assets.title">Asset Generation</h2>
+          <p class="section-sub" data-i18n="assets.subtitle">Generate reusable objects, containers, tools, and scene props for composing lab environments.</p>
+        </div>
+
+        <div class="asset-generation-panel mt-12">
+          <div class="asset-generation-copy asset-generation-copy--stats">
+            <span class="workflow-kicker" data-i18n="assets.kicker">Reusable Assets</span>
+            <div class="asset-stats__summary asset-stats__summary--hero">
+              <div><span>2947</span><small data-i18n="assets.stat_total">Total assets</small></div>
+              <div><span>16</span><small data-i18n="assets.stat_categories">Categories</small></div>
+              <div><span>288</span><small data-i18n="assets.stat_fine">Fine classes</small></div>
+            </div>
+          </div>
+          <div class="asset-grid">
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-01.png" alt="Generated fume hoods asset 01" loading="lazy" /><figcaption data-i18n="assets.caption1">Fume Hoods 01</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-02.png" alt="Generated fume hoods asset 02" loading="lazy" /><figcaption data-i18n="assets.caption2">Fume Hoods 02</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-03.png" alt="Generated fume hoods asset 03" loading="lazy" /><figcaption data-i18n="assets.caption3">Fume Hoods 03</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-04.png" alt="Generated fume hoods asset 04" loading="lazy" /><figcaption data-i18n="assets.caption4">Fume Hoods 04</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-ball-mill-01.png" alt="Generated ball mills asset 01" loading="lazy" /><figcaption data-i18n="assets.caption5">Ball Mills 01</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-ball-mill-02.png" alt="Generated ball mills asset 02" loading="lazy" /><figcaption data-i18n="assets.caption6">Ball Mills 02</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-ball-mill-03.png" alt="Generated ball mills asset 03" loading="lazy" /><figcaption data-i18n="assets.caption7">Ball Mills 03</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-ball-mill-04.png" alt="Generated ball mills asset 04" loading="lazy" /><figcaption data-i18n="assets.caption8">Ball Mills 04</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-09.png" alt="Generated critical point dryers asset 01" loading="lazy" /><figcaption data-i18n="assets.caption9">Critical Point Dryers 01</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-10.png" alt="Generated critical point dryers asset 02" loading="lazy" /><figcaption data-i18n="assets.caption10">Critical Point Dryers 02</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-11.png" alt="Generated critical point dryers asset 03" loading="lazy" /><figcaption data-i18n="assets.caption11">Critical Point Dryers 03</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-12.png" alt="Generated critical point dryers asset 04" loading="lazy" /><figcaption data-i18n="assets.caption12">Critical Point Dryers 04</figcaption></figure>
+          </div>
+          <div class="asset-stats__chart" aria-label="Asset category distribution">
+            <h3 data-i18n="assets.distribution">Asset category distribution</h3>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Analytical Instruments</span><em>476</em></div><div class="asset-bar__track"><i style="width:100%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Measuring</span><em>326</em></div><div class="asset-bar__track"><i style="width:68.49%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Wet Chemistry Glassware</span><em>319</em></div><div class="asset-bar__track"><i style="width:67.02%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Synthesis</span><em>251</em></div><div class="asset-bar__track"><i style="width:52.73%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Furniture</span><em>234</em></div><div class="asset-bar__track"><i style="width:49.16%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Biochemistry</span><em>219</em></div><div class="asset-bar__track"><i style="width:46.01%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Heating</span><em>202</em></div><div class="asset-bar__track"><i style="width:42.44%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Centrifugation</span><em>178</em></div><div class="asset-bar__track"><i style="width:37.39%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Plastics</span><em>166</em></div><div class="asset-bar__track"><i style="width:34.87%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Electrochemical</span><em>161</em></div><div class="asset-bar__track"><i style="width:33.82%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Safety</span><em>117</em></div><div class="asset-bar__track"><i style="width:24.58%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Metal Supports</span><em>109</em></div><div class="asset-bar__track"><i style="width:22.90%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Gas Vacuum</span><em>79</em></div><div class="asset-bar__track"><i style="width:16.60%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Ceramics</span><em>67</em></div><div class="asset-bar__track"><i style="width:14.08%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Lab Supplies</span><em>29</em></div><div class="asset-bar__track"><i style="width:6.09%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Tubing Connectors</span><em>14</em></div><div class="asset-bar__track"><i style="width:2.94%"></i></div></div>
+          </div>
+        </div>
+
+        <div class="asset-stats mt-8">
+          <div class="asset-stats__top">
+            <h3 data-i18n="assets.top_fine">Top fine-grained asset classes</h3>
+            <div class="asset-chip-row">
+              <span><strong>lab benches</strong><em>18</em></span>
+              <span><strong>corrosive cabinets</strong><em>18</em></span>
+              <span><strong>chemical cabinets</strong><em>18</em></span>
+              <span><strong>fume hoods</strong><em>18</em></span>
+              <span><strong>flammable cabinets</strong><em>18</em></span>
+              <span><strong>wall shelves</strong><em>17</em></span>
+              <span><strong>balance tables</strong><em>17</em></span>
+              <span><strong>ion chromatography</strong><em>17</em></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Scene Generation ======================= -->
     <section id="results" class="section">
       <div class="max-w-7xl mx-auto px-6">
         <div class="section-head">
-          <h2 class="section-title" data-i18n="results.title">Qualitative Results</h2>
-          <p class="section-sub" data-i18n="results.subtitle">Add representative rollouts across tasks and embodiments.</p>
+          <h2 class="section-title" data-i18n="results.title">Scene Generation</h2>
+          <p class="section-sub" data-i18n="results.subtitle">Generate diverse lab scenes from task requirements, objects, and layout constraints.</p>
         </div>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
+        <div class="scene-generation-hero mt-12">
+          <div class="scene-generation-preview">
+            <img data-scene-preview src="assets/media/scene-generation/scene-01.jpg" alt="Generated scene preview" loading="lazy" />
+            <button class="scene-nav scene-nav--prev" type="button" data-scene-step="-1" aria-label="Previous scene"></button>
+            <button class="scene-nav scene-nav--next" type="button" data-scene-step="1" aria-label="Next scene"></button>
+            <span class="scene-preview-label" data-scene-preview-label data-i18n="scene.caption1">Scene 01</span>
+          </div>
+          <div class="scene-generation-copy">
+            <h3 data-i18n="scene.title">From task specification to executable lab scenes.</h3>
+            <p data-i18n="scene.desc">Generated scenes vary workspace layout, object placement, container positions, and environmental context.</p>
+          </div>
+        </div>
+
+        <div class="hidden grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
           <figure class="result-tile">
             <div class="placeholder aspect-video"><span class="placeholder-tag" data-i18n="placeholder.video">Video</span><span class="placeholder-text" data-i18n="results.video1">Task video 1</span></div>
             <figcaption><span class="tag" data-i18n="label.task">Task</span><span data-i18n="results.task1">Task name 1</span></figcaption>
@@ -294,7 +473,7 @@
           </figure>
         </div>
 
-        <div class="mt-16">
+        <div class="hidden mt-16">
           <h3 class="text-2xl font-display font-semibold text-white text-center" data-i18n="results.quant">Quantitative Comparison</h3>
           <div class="panel mt-6 overflow-x-auto">
             <table class="result-table">
@@ -477,6 +656,6 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js?v=20260522-i18n"></script>
+  <script src="assets/js/main.js?v=20260605-cta-emoji-icons"></script>
 </body>
 </html>

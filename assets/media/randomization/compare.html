@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>t0005 图片对比</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      background: #f0f2f5;
+      padding: 32px 24px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 32px;
+      color: #222;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(700px, 1fr));
+      gap: 28px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: #1a73e8;
+      color: #fff;
+    }
+
+    .card-header .folder-name {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .card-header .tag {
+      font-size: 12px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 20px;
+      padding: 2px 10px;
+    }
+
+    .card-body {
+      display: flex;
+      gap: 0;
+    }
+
+    .img-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 12px 10px;
+      border-right: 1px solid #eee;
+    }
+
+    .img-wrap:last-child {
+      border-right: none;
+    }
+
+    .img-wrap img {
+      width: 100%;
+      max-height: 260px;
+      object-fit: contain;
+      border-radius: 6px;
+      background: #f7f7f7;
+    }
+
+    .img-label {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .card-footer {
+      padding: 10px 18px 14px;
+      font-size: 13px;
+      color: #333;
+      border-top: 1px solid #f0f0f0;
+      line-height: 1.7;
+    }
+
+    .card-footer strong {
+      color: #1a73e8;
+    }
+
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      color: #bbb;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<h1>t0005 各场景与 base 对比</h1>
+
+<div class="grid">
+
+  <!-- 场景变 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="folder-name">场景变</span>
+      <span class="tag">场景变化</span>
+    </div>
+    <div class="card-body">
+      <div class="img-wrap">
+        <img src="base_t0005.jpg" alt="base t0005" />
+        <span class="img-label">base（参考）</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="img-wrap">
+        <img src="场景变_t0005.jpg" alt="场景变 t0005" />
+        <span class="img-label">场景变 t0005</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <strong>变化内容：</strong>场景场景发生改变，其余条件保持不变。
+    </div>
+  </div>
+
+  <!-- 光照变 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="folder-name">光照变</span>
+      <span class="tag">光照变化</span>
+    </div>
+    <div class="card-body">
+      <div class="img-wrap">
+        <img src="base_t0005.jpg" alt="base t0005" />
+        <span class="img-label">base（参考）</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="img-wrap">
+        <img src="光照变_t0005.jpg" alt="光照变 t0005" />
+        <span class="img-label">光照变 t0005</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <strong>变化内容：</strong>场景光照条件发生改变（亮度/方向/色温等），其余条件保持不变。
+    </div>
+  </div>
+
+  <!-- 摄像头位置 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="folder-name">摄像头位置</span>
+      <span class="tag">摄像头位置变化</span>
+    </div>
+    <div class="card-body">
+      <div class="img-wrap">
+        <img src="base_t0005.jpg" alt="base t0005" />
+        <span class="img-label">base（参考）</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="img-wrap">
+        <img src="摄像头位置_t0005.jpg" alt="摄像头位置 t0005" />
+        <span class="img-label">摄像头位置 t0005</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <strong>变化内容：</strong>摄像头拍摄角度或位置发生偏移，其余条件保持不变。
+    </div>
+  </div>
+
+  <!-- 位置变化 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="folder-name">位置变化</span>
+      <span class="tag">物体位置变化</span>
+    </div>
+    <div class="card-body">
+      <div class="img-wrap">
+        <img src="base_t0005.jpg" alt="base t0005" />
+        <span class="img-label">base（参考）</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="img-wrap">
+        <img src="位置变化_t0005.jpg" alt="位置变化 t0005" />
+        <span class="img-label">位置变化 t0005</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <strong>变化内容：</strong>场景中物体位置发生改变，其余条件保持不变。
+    </div>
+  </div>
+
+  <!-- 物品变 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="folder-name">物品变</span>
+      <span class="tag">物品变化</span>
+    </div>
+    <div class="card-body">
+      <div class="img-wrap">
+        <img src="base_t0005.jpg" alt="base t0005" />
+        <span class="img-label">base（参考）</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="img-wrap">
+        <img src="物品变_t0005.jpg" alt="物品变 t0005" />
+        <span class="img-label">物品变 t0005</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <strong>变化内容：</strong>场景中出现的物品种类或外观发生改变，其余条件保持不变。
+    </div>
+  </div>
+
+  <!-- 障碍物 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="folder-name">障碍物</span>
+      <span class="tag">障碍物介入</span>
+    </div>
+    <div class="card-body">
+      <div class="img-wrap">
+        <img src="base_t0005.jpg" alt="base t0005" />
+        <span class="img-label">base（参考）</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="img-wrap">
+        <img src="障碍物_t0005.jpg" alt="障碍物 t0005" />
+        <span class="img-label">障碍物 t0005</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <strong>变化内容：</strong>场景中引入障碍物，对视野或操作产生干扰，其余条件保持不变。
+    </div>
+  </div>
+
+  <!-- 桌面变 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="folder-name">桌面变</span>
+      <span class="tag">桌面变化</span>
+    </div>
+    <div class="card-body">
+      <div class="img-wrap">
+        <img src="base_t0005.jpg" alt="base t0005" />
+        <span class="img-label">base（参考）</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="img-wrap">
+        <img src="桌面变_t0005.jpg" alt="桌面变 t0005" />
+        <span class="img-label">桌面变 t0005</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <strong>变化内容：</strong>桌面纹理、颜色或材质发生改变，其余条件保持不变。
+    </div>
+  </div>
+
+  <!-- 桌面变2 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="folder-name">桌面变2</span>
+      <span class="tag">桌面变化（第二组）</span>
+    </div>
+    <div class="card-body">
+      <div class="img-wrap">
+        <img src="base_t0005.jpg" alt="base t0005" />
+        <span class="img-label">base（参考）</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="img-wrap">
+        <img src="桌面变2_t0005.jpg" alt="桌面变2 t0005" />
+        <span class="img-label">桌面变2 t0005</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <strong>变化内容：</strong>桌面纹理、颜色或材质发生改变（第二组对照），其余条件保持不变。
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
