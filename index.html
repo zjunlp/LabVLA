@@ -47,7 +47,7 @@
     };
   </script>
 
-  <link rel="stylesheet" href="assets/css/style.css?v=20260607-nav-language" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260607-task-label-inline" />
 </head>
 
 <body class="bg-ink-950 text-slate-200 antialiased font-sans selection:bg-accent/40 selection:text-white">
@@ -167,7 +167,7 @@
 
         <figure class="embodiment-portrait mt-12">
           <img src="assets/media/robots/arm_group_portrait.png?v=20260605-portrait"
-               alt="RoboGenesis 11 robot embodiments — 8 single-arm and 3 dual-arm" loading="lazy" />
+               alt="RoboGenesis 12 robot embodiments — 9 single-arm and 3 dual-arm" loading="lazy" />
         </figure>
 
         <div class="hidden">
@@ -404,7 +404,7 @@
       <div class="max-w-7xl mx-auto px-6">
         <div class="section-head">
           <h2 class="section-title" data-i18n="results.title">Scene Generation</h2>
-          <p class="section-sub" data-i18n="results.subtitle">Generate diverse lab scenes from task requirements, objects, and layout constraints.</p>
+          <p class="section-sub" data-i18n="results.subtitle">Build complete lab scenes step by step from an empty room to final lighting and rendering.</p>
         </div>
 
         <div class="scene-generation-hero mt-12">
@@ -417,6 +417,15 @@
           <div class="scene-generation-copy">
             <h3 data-i18n="scene.title">From task specification to executable lab scenes.</h3>
             <p data-i18n="scene.desc">Generated scenes vary workspace layout, object placement, container positions, and environmental context.</p>
+            <ol class="scene-stage-list" aria-label="Scene construction stages">
+              <li data-i18n="scene.stage1">Empty room (very dark)</li>
+              <li data-i18n="scene.stage2">Tables, cabinets, and benches</li>
+              <li data-i18n="scene.stage3">Large lab equipment</li>
+              <li data-i18n="scene.stage4">Desktop tools and small assets</li>
+              <li data-i18n="scene.stage5">Materials and textures</li>
+              <li data-i18n="scene.stage6">Wall fixtures, signs, and safety cues</li>
+              <li data-i18n="scene.stage7">Final lighting and rendering</li>
+            </ol>
           </div>
         </div>
 
@@ -630,6 +639,6 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js?v=20260607-workflow-copy"></script>
+  <script src="assets/js/main.js?v=20260607-scene-build-process"></script>
 </body>
 </html>
