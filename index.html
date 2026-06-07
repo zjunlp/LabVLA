@@ -47,7 +47,7 @@
     };
   </script>
 
-  <link rel="stylesheet" href="assets/css/style.css?v=20260606-four-video-showcase" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260607-nav-language" />
 </head>
 
 <body class="bg-ink-950 text-slate-200 antialiased font-sans selection:bg-accent/40 selection:text-white">
@@ -81,8 +81,7 @@
         <a href="#team" class="nav-link" data-i18n="nav.team">Team</a>
       </nav>
       <div class="flex items-center gap-2">
-        <button type="button" class="edit-toggle" id="editToggle">Edit</button>
-        <button type="button" class="lang-toggle" id="langToggle" data-i18n="lang.toggle" data-i18n-aria="lang.aria">涓枃</button>
+        <button type="button" class="lang-toggle" id="langToggle" data-i18n="lang.toggle" data-i18n-aria="lang.aria">Chinese</button>
         <a href="https://cn.bing.com/search?q=%E8%B1%86%E5%8C%85&gs_lcrp=EgRlZGdlKgcIAhBFGMIDMgcIABBFGLABMgcIARBFGMIDMgcIAhBFGMIDMgcIAxBFGMIDMgcIBBBFGMIDMgcIBRBFGMIDMgoIBhBFGMIDGPoHMgcIBxBFGMID0gELMzUyMDQyMmowajeoAgiwAgE&FORM=ANNTA1&adppc=EDGEESS&PC=SCOODB" target="_blank" rel="noopener noreferrer" class="btn-ghost hidden sm:inline-flex" data-i18n="link.paper">Paper</a>
         <a href="#" class="btn-primary">GitHub</a>
       </div>
@@ -278,12 +277,14 @@
               <video data-video-src="assets/media/workflow/workflow-franka-mobile-navigation.mp4" poster="assets/media/workflow/workflow-franka-mobile-navigation.jpg" muted loop playsinline preload="none"></video>
             </div>
             <h3 data-i18n="workflow.card1">Franka Mobile Navigation</h3>
+            <span class="task-card__robot" data-i18n="workflow.tag.mobile">Mobile</span>
           </article>
           <article class="workflow-showcase-card">
             <div class="workflow-showcase-card__media">
               <video data-video-src="assets/media/workflow/workflow-franka-16step-camera1-transparent-pourback-2160x1360.mp4" poster="assets/media/workflow/workflow-franka-A_R1_12a_00008-cam1.jpg" muted loop playsinline preload="none"></video>
             </div>
-            <h3 data-i18n="workflow.card2">Workflow 02</h3>
+            <h3 data-i18n="workflow.card2">Franka 16-step Workflow</h3>
+            <span class="task-card__robot" data-i18n="workflow.tag.long">16-step</span>
           </article>
         </div>
       </div>
@@ -629,6 +630,6 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js?v=20260606-showcase-title"></script>
+  <script src="assets/js/main.js?v=20260607-nav-language"></script>
 </body>
 </html>

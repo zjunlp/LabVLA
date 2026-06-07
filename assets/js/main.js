@@ -46,7 +46,7 @@ const HERO_SMALL_COUNT = 96;
       'meta.description': 'LabVLA project page for vision-language-action research.',
       'meta.og_title': 'LabVLA',
       'meta.og_description': 'LabVLA project page for vision-language-action research.',
-      'lang.toggle': '中文',
+      'lang.toggle': 'Chinese',
       'lang.aria': 'Switch to Chinese',
       'nav.features': 'Robots',
       'nav.dataset': 'Tasks',
@@ -115,12 +115,14 @@ const HERO_SMALL_COUNT = 96;
       'single_tasks.title': 'Single-arm Task Showcase',
       'single_tasks.subtitle': 'Atomic manipulation skills demonstrated across single-arm robot platforms.',
       'workflow.kicker': 'Composable Workflow',
-      'workflow.page_title': 'Workflow & Dual-arm Showcase',
-      'workflow.page_subtitle': 'Four demonstrations highlight coordinated dual-arm manipulation and chained lab workflows.',
+      'workflow.page_title': 'Workflow Demonstrations',
+      'workflow.page_subtitle': 'Dual-arm manipulation and long-horizon robot workflows are shown together in one compact gallery.',
       'workflow.title': 'Atomic tasks can be chained into a complete lab workflow.',
       'workflow.desc': 'A complete rollout composes multiple atomic skills into a longer executable lab workflow.',
       'workflow.card1': 'Franka Mobile Navigation',
-      'workflow.card2': 'Workflow 02',
+      'workflow.card2': 'Franka 16-step Workflow',
+      'workflow.tag.mobile': 'Mobile',
+      'workflow.tag.long': '16-step',
       'workflow.step1': 'Task 01',
       'workflow.step2': 'Task 04',
       'workflow.step3': 'Task 07',
@@ -393,16 +395,18 @@ const HERO_SMALL_COUNT = 96;
   };
 
   Object.assign(I18N.en, {
-    'lang.toggle': '中文',
+    'lang.toggle': 'Chinese',
     'dataset.subtitle': 'A suite of atomic manipulation tasks can be demonstrated independently or composed into complete lab workflows.',
     'nav.workflow': 'Workflow',
     'workflow.kicker': 'Composable Workflow',
-    'workflow.page_title': 'Workflow & Dual-arm Showcase',
-    'workflow.page_subtitle': 'Four demonstrations highlight coordinated dual-arm manipulation and chained lab workflows.',
+    'workflow.page_title': 'Workflow Demonstrations',
+    'workflow.page_subtitle': 'Dual-arm manipulation and long-horizon robot workflows are shown together in one compact gallery.',
     'workflow.title': 'Atomic tasks can be chained into a complete lab workflow.',
     'workflow.desc': 'A complete rollout composes multiple atomic skills into a longer executable lab workflow.',
     'workflow.card1': 'Franka Mobile Navigation',
-    'workflow.card2': 'Workflow 02',
+    'workflow.card2': 'Franka 16-step Workflow',
+    'workflow.tag.mobile': 'Mobile',
+    'workflow.tag.long': '16-step',
     'workflow.step1': 'Task 01',
     'workflow.step2': 'Task 04',
     'workflow.step3': 'Task 07',
@@ -492,12 +496,14 @@ const HERO_SMALL_COUNT = 96;
     'single_tasks.title': '单臂任务展示',
     'single_tasks.subtitle': '展示不同单臂机器人平台上的原子操作技能。',
     'workflow.kicker': '可组合工作流',
-    'workflow.page_title': '工作流与双臂任务展示',
-    'workflow.page_subtitle': '集中展示双臂协同操作与长程工作流的四个代表性视频。',
+    'workflow.page_title': '工作流演示',
+    'workflow.page_subtitle': '将双臂协同操作与长程机器人工作流集中在同一个紧凑展示区。',
     'workflow.title': '原子任务可以串联成完整的实验工作流。',
     'workflow.desc': '完整 rollout 将多个原子技能组合成更长的可执行实验工作流。',
     'workflow.card1': 'Franka 移动导航',
-    'workflow.card2': '工作流 02',
+    'workflow.card2': 'Franka 16步工作流',
+    'workflow.tag.mobile': '移动导航',
+    'workflow.tag.long': '16步',
     'workflow.step1': '任务 01',
     'workflow.step2': '任务 04',
     'workflow.step3': '任务 07',
@@ -620,24 +626,6 @@ const HERO_SMALL_COUNT = 96;
   });
 
   let currentLang = 'en';
-  const EDIT_STORAGE_KEY = 'labvlaTextEdits';
-  const loadTextEdits = () => {
-    try {
-      return JSON.parse(localStorage.getItem(EDIT_STORAGE_KEY) || '{}');
-    } catch {
-      return {};
-    }
-  };
-  const saveTextEdits = (edits) => {
-    localStorage.setItem(EDIT_STORAGE_KEY, JSON.stringify(edits));
-  };
-  let textEdits = loadTextEdits();
-  const applyTextEdits = () => {
-    $$('[data-i18n]').forEach((el) => {
-      const key = `${currentLang}:${el.dataset.i18n}`;
-      if (typeof textEdits[key] === 'string') el.textContent = textEdits[key];
-    });
-  };
   const setMetaContent = (selector, value) => {
     const el = $(selector);
     if (el && value) el.setAttribute('content', value);
@@ -659,7 +647,6 @@ const HERO_SMALL_COUNT = 96;
       const text = dict[el.dataset.i18nAria];
       if (typeof text === 'string') el.setAttribute('aria-label', text);
     });
-    applyTextEdits();
     if (typeof refreshSceneLabel === 'function') refreshSceneLabel();
   };
 
@@ -674,38 +661,6 @@ const HERO_SMALL_COUNT = 96;
       applyLanguage(currentLang === 'en' ? 'zh' : 'en');
     });
   }
-  const editToggle = $('#editToggle');
-  if (editToggle) {
-    editToggle.addEventListener('click', () => {
-      const isActive = document.body.classList.toggle('edit-mode');
-      editToggle.classList.toggle('is-active', isActive);
-      editToggle.textContent = isActive ? 'Done' : 'Edit';
-    });
-  }
-  document.addEventListener('click', (event) => {
-    if (!document.body.classList.contains('edit-mode')) return;
-    const target = event.target.closest('[data-i18n]');
-    if (!target || target.closest('#editToggle')) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const key = `${currentLang}:${target.dataset.i18n}`;
-    const next = prompt('Edit text', target.textContent.trim());
-    if (next === null) return;
-    textEdits[key] = next;
-    saveTextEdits(textEdits);
-    target.textContent = next;
-  }, true);
-  document.addEventListener('keydown', (event) => {
-    if (!document.body.classList.contains('edit-mode')) return;
-    if (!event.altKey || event.key.toLowerCase() !== 'r') return;
-    if (!confirm(`Reset edited ${currentLang.toUpperCase()} text?`)) return;
-    Object.keys(textEdits).forEach((key) => {
-      if (key.startsWith(`${currentLang}:`)) delete textEdits[key];
-    });
-    saveTextEdits(textEdits);
-    applyLanguage(currentLang);
-  });
-
   /* ---------- 导航滚动态 ---------- */
   const nav = $('.nav');
   const onScroll = () => {
