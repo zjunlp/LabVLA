@@ -47,7 +47,7 @@
     };
   </script>
 
-  <link rel="stylesheet" href="assets/css/style.css?v=20260606-workflow-dual-video" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260606-four-video-showcase" />
 </head>
 
 <body class="bg-ink-950 text-slate-200 antialiased font-sans selection:bg-accent/40 selection:text-white">
@@ -72,7 +72,7 @@
       <nav class="hidden md:flex items-center gap-8 text-sm text-slate-300">
         <a href="#features" class="nav-link" data-i18n="nav.features">Highlights</a>
         <a href="#stats" class="nav-link" data-i18n="nav.dataset">Dataset</a>
-        <a href="#dual-tasks" class="nav-link" data-i18n="nav.dual_tasks">Dual-arm</a>
+        <a href="#workflow" class="nav-link" data-i18n="nav.workflow">Workflow</a>
         <a href="#method" class="nav-link" data-i18n="nav.method">Method</a>
         <a href="#assets" class="nav-link" data-i18n="nav.assets">Assets</a>
         <a href="#results" class="nav-link" data-i18n="nav.results">Results</a>
@@ -231,17 +231,6 @@
           <article class="task-card hidden" data-task-slot="atomic-10"><div class="task-card__media"><div class="placeholder"><span class="placeholder-tag" data-i18n="tasks.atomic.tag">Atomic Task</span><span class="placeholder-text" data-i18n="tasks.media_slot">Image / video slot</span></div></div><h3 data-i18n="tasks.atomic.10">Atomic Task 10</h3></article>
         </div>
 
-        <div class="workflow-panel mt-12">
-          <div class="workflow-panel__copy">
-            <span class="workflow-kicker" data-i18n="workflow.kicker">Composable Workflow</span>
-            <h3 data-i18n="workflow.title">Atomic tasks can be chained into a complete lab workflow.</h3>
-            <p data-i18n="workflow.desc">A complete rollout composes multiple atomic skills into a longer executable lab workflow.</p>
-          </div>
-          <div class="workflow-media">
-            <video data-video-src="assets/media/workflow/workflow-demo.mp4" poster="assets/media/workflow/workflow-demo.jpg" muted loop playsinline preload="none"></video>
-          </div>
-        </div>
-
         <div class="hidden">
           <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric1">Metric 1</div></div>
           <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric2">Metric 2</div></div>
@@ -261,44 +250,40 @@
       </div>
     </section>
 
-    <!-- ======================= Dual-arm Task Showcase ======================= -->
-    <section id="dual-tasks" class="section">
+    <!-- ======================= Long Workflow Showcase ======================= -->
+    <section id="workflow" class="section workflow-section">
       <div class="max-w-7xl mx-auto px-6">
         <div class="section-head">
-          <h2 class="section-title" data-i18n="dual_tasks.title">Dual-arm Task Showcase</h2>
-          <p class="section-sub" data-i18n="dual_tasks.subtitle">Reserve four slots for bimanual manipulation tasks and coordinated dual-arm demonstrations.</p>
+          <h2 class="section-title" data-i18n="workflow.page_title">Workflow & Dual-arm Showcase</h2>
+          <p class="section-sub" data-i18n="workflow.page_subtitle">Four demonstrations highlight coordinated dual-arm manipulation and chained lab workflows.</p>
         </div>
 
-        <div class="dual-task-grid mt-12">
-          <article class="dual-task-card">
-            <div class="dual-task-card__media">
+        <div class="workflow-showcase-grid mt-12">
+          <article id="dual-tasks" class="workflow-showcase-card">
+            <div class="workflow-showcase-card__media">
               <video data-video-src="assets/media/dual-tasks/dual-arm-01.mp4" poster="assets/media/dual-tasks/dual-arm-01.jpg" muted loop playsinline preload="none"></video>
             </div>
             <h3 data-i18n="dual_tasks.card1">Dual-arm Task 01</h3>
+            <span class="task-card__robot" data-i18n="tasks.robot.dual">Dual-arm</span>
           </article>
-          <article class="dual-task-card">
-            <div class="dual-task-card__media">
+          <article class="workflow-showcase-card">
+            <div class="workflow-showcase-card__media">
               <video data-video-src="assets/media/dual-tasks/dual-arm-02.mp4" poster="assets/media/dual-tasks/dual-arm-02.jpg" muted loop playsinline preload="none"></video>
             </div>
             <h3 data-i18n="dual_tasks.card2">Dual-arm Task 02</h3>
+            <span class="task-card__robot" data-i18n="tasks.robot.dual">Dual-arm</span>
           </article>
-          <article class="dual-task-card">
-            <div class="dual-task-card__media">
-              <div class="placeholder">
-                <span class="placeholder-tag" data-i18n="dual_tasks.tag">Dual-arm Task</span>
-                <span class="placeholder-text" data-i18n="dual_tasks.slot3">Dual-arm task slot 03</span>
-              </div>
+          <article class="workflow-showcase-card">
+            <div class="workflow-showcase-card__media">
+              <video data-video-src="assets/media/workflow/workflow-franka-mobile-navigation.mp4" poster="assets/media/workflow/workflow-franka-mobile-navigation.jpg" muted loop playsinline preload="none"></video>
             </div>
-            <h3 data-i18n="dual_tasks.card3">Dual-arm Task 03</h3>
+            <h3 data-i18n="workflow.card1">Franka Mobile Navigation</h3>
           </article>
-          <article class="dual-task-card">
-            <div class="dual-task-card__media">
-              <div class="placeholder">
-                <span class="placeholder-tag" data-i18n="dual_tasks.tag">Dual-arm Task</span>
-                <span class="placeholder-text" data-i18n="dual_tasks.slot4">Dual-arm task slot 04</span>
-              </div>
+          <article class="workflow-showcase-card">
+            <div class="workflow-showcase-card__media">
+              <video data-video-src="assets/media/workflow/workflow-franka-16step-camera1-transparent-pourback-2160x1360.mp4" poster="assets/media/workflow/workflow-franka-A_R1_12a_00008-cam1.jpg" muted loop playsinline preload="none"></video>
             </div>
-            <h3 data-i18n="dual_tasks.card4">Dual-arm Task 04</h3>
+            <h3 data-i18n="workflow.card2">Workflow 02</h3>
           </article>
         </div>
       </div>
@@ -644,6 +629,6 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js?v=20260606-workflow-dual-video"></script>
+  <script src="assets/js/main.js?v=20260606-showcase-title"></script>
 </body>
 </html>

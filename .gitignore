@@ -8,3 +8,11 @@ outputs*/
 logs/
 wandb/
 *.log
+unused_assets/
+.chrome-*/
+.tmp_*/
+_remote_*/
+backups/
+docs/
+tmp_*.py
+tmp_*.sh
