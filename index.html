@@ -47,7 +47,7 @@
     };
   </script>
 
-  <link rel="stylesheet" href="assets/css/style.css?v=20260607-task-label-inline" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260608-seven-task-progress" />
 </head>
 
 <body class="bg-ink-950 text-slate-200 antialiased font-sans selection:bg-accent/40 selection:text-white">
@@ -63,13 +63,11 @@
   <!-- ======================= 顶部导航 ======================= -->
   <header class="nav fixed inset-x-0 top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-      <a href="#top" class="flex items-center gap-2 group">
-        <span class="logo-mark"></span>
-        <span class="font-display font-semibold tracking-tight text-white">
-          LabVLA
-        </span>
+      <a href="#top" class="brand-logo group" aria-label="LabVLA home">
+        <img class="logo-symbol" src="assets/images/logo/labvla-symbol.png?v=20260608-brand" alt="" aria-hidden="true" />
+        <img class="logo-wordmark" src="assets/images/logo/labvla-wordmark-nav.png?v=20260608-brand" alt="LabVLA" />
       </a>
-      <nav class="hidden md:flex items-center gap-8 text-sm text-slate-300">
+      <nav class="hidden xl:flex items-center gap-8 text-sm text-slate-300">
         <a href="#features" class="nav-link" data-i18n="nav.features">Highlights</a>
         <a href="#stats" class="nav-link" data-i18n="nav.dataset">Dataset</a>
         <a href="#workflow" class="nav-link" data-i18n="nav.workflow">Workflow</a>
@@ -82,8 +80,6 @@
       </nav>
       <div class="flex items-center gap-2">
         <button type="button" class="lang-toggle" id="langToggle" data-i18n="lang.toggle" data-i18n-aria="lang.aria">Chinese</button>
-        <a href="https://cn.bing.com/search?q=%E8%B1%86%E5%8C%85&gs_lcrp=EgRlZGdlKgcIAhBFGMIDMgcIABBFGLABMgcIARBFGMIDMgcIAhBFGMIDMgcIAxBFGMIDMgcIBBBFGMIDMgcIBRBFGMIDMgoIBhBFGMIDGPoHMgcIBxBFGMID0gELMzUyMDQyMmowajeoAgiwAgE&FORM=ANNTA1&adppc=EDGEESS&PC=SCOODB" target="_blank" rel="noopener noreferrer" class="btn-ghost hidden sm:inline-flex" data-i18n="link.paper">Paper</a>
-        <a href="#" class="btn-primary">GitHub</a>
       </div>
     </div>
   </header>
@@ -121,9 +117,8 @@
         <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
           <a href="https://cn.bing.com/search?q=%E8%B1%86%E5%8C%85&gs_lcrp=EgRlZGdlKgcIAhBFGMIDMgcIABBFGLABMgcIARBFGMIDMgcIAhBFGMIDMgcIAxBFGMIDMgcIBBBFGMIDMgcIBRBFGMIDMgoIBhBFGMIDGPoHMgcIBxBFGMID0gELMzUyMDQyMmowajeoAgiwAgE&FORM=ANNTA1&adppc=EDGEESS&PC=SCOODB" target="_blank" rel="noopener noreferrer" class="cta-btn"><span class="cta-icon">&#128196;</span> <span data-i18n="link.paper">Paper</span></a>
           <a href="#" class="cta-btn"><span class="cta-icon">&#128218;</span> arXiv</a>
-          <a href="#" class="cta-btn"><span class="cta-icon">&#128187;</span> <span data-i18n="link.code">Code</span></a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128187;</span> <span data-i18n="link.code">GitHub</span></a>
           <a href="#" class="cta-btn"><span class="cta-icon">&#128450;&#65039;</span> <span data-i18n="link.dataset">Dataset</span></a>
-          <a href="#" class="cta-btn"><span class="cta-icon">&#127916;</span> <span data-i18n="link.demo">Demo Video</span></a>
         </div>
       </div>
     </section>
@@ -159,14 +154,14 @@
     <section id="features" class="section">
       <div class="max-w-7xl mx-auto px-6">
         <div class="section-head">
-          <h2 class="section-title" data-i18n="features.title">Robot Platforms</h2>
+          <h2 class="section-title" data-i18n="features.title">Multi-Embodiment Robot Platform</h2>
           <p class="section-sub">
             <span data-i18n="features.subtitle">Add a concise summary of the project's key differentiators here.</span>
           </p>
         </div>
 
         <figure class="embodiment-portrait mt-12">
-          <img src="assets/media/robots/arm_group_portrait.png?v=20260605-portrait"
+          <img src="assets/media/robots/arm_group_portrait_real_material.png?v=20260608-real-material"
                alt="RoboGenesis 12 robot embodiments — 9 single-arm and 3 dual-arm" loading="lazy" />
         </figure>
 
@@ -213,21 +208,19 @@
         <div class="section-head">
           <h2 class="section-title" data-i18n="dataset.title">Multi-task Capabilities</h2>
           <p class="section-sub">
-            <span data-i18n="dataset.subtitle">Ten atomic lab tasks can be demonstrated independently or composed into longer workflows.</span>
+            <span data-i18n="dataset.subtitle">A suite of atomic manipulation tasks can be demonstrated independently or composed into complete lab workflows.</span>
           </p>
         </div>
 
         <div class="task-grid mt-12">
-          <article class="task-card" data-task-slot="atomic-01"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/open_door.mp4" poster="assets/media/tasks-web/open_door.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.01">Open Door</h3><span class="task-card__robot" data-i18n="tasks.robot.01">UR5e</span></article>
-          <article class="task-card" data-task-slot="atomic-02"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/close_door.mp4" poster="assets/media/tasks-web/close_door.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.02">Close Door</h3><span class="task-card__robot" data-i18n="tasks.robot.02">UR16e</span></article>
-          <article class="task-card" data-task-slot="atomic-03"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/place.mp4" poster="assets/media/tasks-web/place.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.03">Place</h3><span class="task-card__robot" data-i18n="tasks.robot.03">Rizon 4</span></article>
-          <article class="task-card" data-task-slot="atomic-04"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/pour.mp4" poster="assets/media/tasks-web/pour.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.04">Pour</h3><span class="task-card__robot" data-i18n="tasks.robot.04">Franka</span></article>
-          <article class="task-card" data-task-slot="atomic-05"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/pick.mp4" poster="assets/media/tasks-web/pick.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.05">Pick</h3><span class="task-card__robot" data-i18n="tasks.robot.05">Festo</span></article>
-          <article class="task-card" data-task-slot="atomic-06"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/shake.mp4" poster="assets/media/tasks-web/shake.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.06">Shake</h3><span class="task-card__robot" data-i18n="tasks.robot.06">Franka</span></article>
-          <article class="task-card" data-task-slot="atomic-07"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/stir.mp4" poster="assets/media/tasks-web/stir.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.07">Stir</h3><span class="task-card__robot" data-i18n="tasks.robot.07">UR5e</span></article>
-          <article class="task-card" data-task-slot="atomic-08"><div class="task-card__media"><video data-task-src="assets/media/tasks-web/heat_liquid.mp4" poster="assets/media/tasks-web/heat_liquid.jpg" muted loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.08">Heat Liquid</h3><span class="task-card__robot" data-i18n="tasks.robot.08">FR3</span></article>
-          <article class="task-card hidden" data-task-slot="atomic-09"><div class="task-card__media"><div class="placeholder"><span class="placeholder-tag" data-i18n="tasks.atomic.tag">Atomic Task</span><span class="placeholder-text" data-i18n="tasks.media_slot">Image / video slot</span></div></div><h3 data-i18n="tasks.atomic.09">Atomic Task 09</h3></article>
-          <article class="task-card hidden" data-task-slot="atomic-10"><div class="task-card__media"><div class="placeholder"><span class="placeholder-tag" data-i18n="tasks.atomic.tag">Atomic Task</span><span class="placeholder-text" data-i18n="tasks.media_slot">Image / video slot</span></div></div><h3 data-i18n="tasks.atomic.10">Atomic Task 10</h3></article>
+          <article class="task-card" data-task-slot="atomic-01"><div class="task-card__media"><video data-task-src="assets/media/tasks/open.mp4" poster="assets/media/tasks/open.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.01">Open Door</h3><span class="task-card__robot" data-i18n="tasks.robot.01">UR5e</span></article>
+          <article class="task-card" data-task-slot="atomic-02"><div class="task-card__media"><video data-task-src="assets/media/tasks/close.mp4" poster="assets/media/tasks/close.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.02">Close Door</h3><span class="task-card__robot" data-i18n="tasks.robot.02">UR16e</span></article>
+          <article class="task-card" data-task-slot="atomic-05"><div class="task-card__media"><video data-task-src="assets/media/tasks/pick.mp4" poster="assets/media/tasks/pick.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.05">Pick</h3><span class="task-card__robot" data-i18n="tasks.robot.05">Festo</span></article>
+          <article class="task-card" data-task-slot="atomic-07"><div class="task-card__media"><video data-task-src="assets/media/tasks/stir.mp4" poster="assets/media/tasks/stir.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.07">Stir</h3><span class="task-card__robot" data-i18n="tasks.robot.07">UR5e</span></article>
+          <article class="task-card" data-task-slot="atomic-03"><div class="task-card__media"><video data-task-src="assets/media/tasks/place.mp4" poster="assets/media/tasks/place.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.03">Place</h3><span class="task-card__robot" data-i18n="tasks.robot.03">Rizon 4</span></article>
+          <article class="task-card" data-task-slot="atomic-08"><div class="task-card__media"><video data-task-src="assets/media/tasks/heat.mp4" poster="assets/media/tasks/heat.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.08">Heat Liquid</h3><span class="task-card__robot" data-i18n="tasks.robot.08">FR3</span></article>
+          <article class="task-card" data-task-slot="atomic-06"><div class="task-card__media"><video data-task-src="assets/media/tasks/shake.mp4" poster="assets/media/tasks/shake.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.06">Shake</h3><span class="task-card__robot" data-i18n="tasks.robot.06">Franka</span></article>
+          <article class="task-card" data-task-slot="atomic-04"><div class="task-card__media"><video data-task-src="assets/media/tasks/pour.mp4" poster="assets/media/tasks/pour.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.04">Pour</h3><span class="task-card__robot" data-i18n="tasks.robot.04">Franka</span></article>
         </div>
 
         <div class="hidden">
@@ -262,15 +255,15 @@
             <div class="workflow-showcase-card__media">
               <video data-video-src="assets/media/dual-tasks/dual-arm-01.mp4" poster="assets/media/dual-tasks/dual-arm-01.jpg" muted loop playsinline preload="none"></video>
             </div>
-            <h3 data-i18n="dual_tasks.card1">Dual-arm Task 01</h3>
-            <span class="task-card__robot" data-i18n="tasks.robot.dual">Dual-arm</span>
+            <h3 data-i18n="dual_tasks.card1">Lift2</h3>
+            <span class="task-card__robot" data-i18n="dual_tasks.robot1">Lift2</span>
           </article>
           <article class="workflow-showcase-card">
             <div class="workflow-showcase-card__media">
               <video data-video-src="assets/media/dual-tasks/dual-arm-02.mp4" poster="assets/media/dual-tasks/dual-arm-02.jpg" muted loop playsinline preload="none"></video>
             </div>
-            <h3 data-i18n="dual_tasks.card2">Dual-arm Task 02</h3>
-            <span class="task-card__robot" data-i18n="tasks.robot.dual">Dual-arm</span>
+            <h3 data-i18n="dual_tasks.card2">Split Aloha</h3>
+            <span class="task-card__robot" data-i18n="dual_tasks.robot2">Split Aloha</span>
           </article>
           <article class="workflow-showcase-card">
             <div class="workflow-showcase-card__media">
@@ -404,27 +397,39 @@
       <div class="max-w-7xl mx-auto px-6">
         <div class="section-head">
           <h2 class="section-title" data-i18n="results.title">Scene Generation</h2>
-          <p class="section-sub" data-i18n="results.subtitle">Build complete lab scenes step by step from an empty room to final lighting and rendering.</p>
+          <p class="section-sub" data-i18n="results.subtitle">Build complete lab scenes step by step from an empty room to an executable task setup.</p>
         </div>
 
         <div class="scene-generation-hero mt-12">
           <div class="scene-generation-preview">
-            <img data-scene-preview src="assets/media/scene-generation/scene-01.jpg" alt="Generated scene preview" loading="lazy" />
+            <img data-scene-preview src="assets/media/scene-generation/progression-small620116-07-robot-task-objects.jpg" alt="Generated scene preview" loading="lazy" />
             <button class="scene-nav scene-nav--prev" type="button" data-scene-step="-1" aria-label="Previous scene"></button>
             <button class="scene-nav scene-nav--next" type="button" data-scene-step="1" aria-label="Next scene"></button>
-            <span class="scene-preview-label" data-scene-preview-label data-i18n="scene.caption1">Scene 01</span>
+            <span class="scene-preview-label">
+              <span class="scene-preview-count" data-scene-count-label>Scene 01 / 04</span>
+              <span class="scene-preview-stage" data-scene-stage-label>Stage 07 / 07</span>
+            </span>
+            <div class="scene-progress" role="group" aria-label="Scene construction stage">
+              <button class="scene-progress__step" type="button" data-scene-stage="0" aria-label="Stage 01"><span>01</span></button>
+              <button class="scene-progress__step" type="button" data-scene-stage="1" aria-label="Stage 02"><span>02</span></button>
+              <button class="scene-progress__step" type="button" data-scene-stage="2" aria-label="Stage 03"><span>03</span></button>
+              <button class="scene-progress__step" type="button" data-scene-stage="3" aria-label="Stage 04"><span>04</span></button>
+              <button class="scene-progress__step" type="button" data-scene-stage="4" aria-label="Stage 05"><span>05</span></button>
+              <button class="scene-progress__step" type="button" data-scene-stage="5" aria-label="Stage 06"><span>06</span></button>
+              <button class="scene-progress__step is-active" type="button" data-scene-stage="6" aria-label="Stage 07"><span>07</span></button>
+            </div>
           </div>
           <div class="scene-generation-copy">
-            <h3 data-i18n="scene.title">From task specification to executable lab scenes.</h3>
-            <p data-i18n="scene.desc">Generated scenes vary workspace layout, object placement, container positions, and environmental context.</p>
+            <h3 data-i18n="scene.title">From an empty room to a complete lab.</h3>
+            <p data-i18n="scene.desc">The same viewpoint shows how room structure, furniture, equipment, assets, materials, safety cues, and task execution elements are added step by step.</p>
             <ol class="scene-stage-list" aria-label="Scene construction stages">
-              <li data-i18n="scene.stage1">Empty room (very dark)</li>
-              <li data-i18n="scene.stage2">Tables, cabinets, and benches</li>
-              <li data-i18n="scene.stage3">Large lab equipment</li>
-              <li data-i18n="scene.stage4">Desktop tools and small assets</li>
-              <li data-i18n="scene.stage5">Materials and textures</li>
-              <li data-i18n="scene.stage6">Wall fixtures, signs, and safety cues</li>
-              <li data-i18n="scene.stage7">Final lighting and rendering</li>
+              <li data-scene-stage-item="0"><button type="button" data-scene-stage="0"><span data-i18n="scene.stage1">Empty room</span></button></li>
+              <li data-scene-stage-item="1"><button type="button" data-scene-stage="1"><span data-i18n="scene.stage2">Tables, cabinets, and benches</span></button></li>
+              <li data-scene-stage-item="2"><button type="button" data-scene-stage="2"><span data-i18n="scene.stage3">Large lab equipment</span></button></li>
+              <li data-scene-stage-item="3"><button type="button" data-scene-stage="3"><span data-i18n="scene.stage4">Desktop tools and small assets</span></button></li>
+              <li data-scene-stage-item="4"><button type="button" data-scene-stage="4"><span data-i18n="scene.stage5">Materials and textures</span></button></li>
+              <li data-scene-stage-item="5"><button type="button" data-scene-stage="5"><span data-i18n="scene.stage6">Wall fixtures, signs, and safety cues</span></button></li>
+              <li class="is-active" data-scene-stage-item="6"><button type="button" data-scene-stage="6"><span data-i18n="scene.stage7">Robot arm and task-related objects</span></button></li>
             </ol>
           </div>
         </div>
@@ -608,9 +613,9 @@
   <footer class="footer">
     <div class="max-w-7xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8 items-start">
       <div>
-        <div class="flex items-center gap-2">
-          <span class="logo-mark"></span>
-          <span class="font-display font-semibold text-white">LabVLA</span>
+        <div class="brand-logo brand-logo--footer">
+          <img class="logo-symbol" src="assets/images/logo/labvla-symbol.png?v=20260608-brand" alt="" aria-hidden="true" />
+          <img class="logo-wordmark" src="assets/images/logo/labvla-wordmark-nav.png?v=20260608-brand" alt="LabVLA" />
         </div>
         <p class="mt-3 text-sm text-slate-400 max-w-xs" data-i18n="footer.desc">Add a concise project description here.</p>
       </div>
@@ -639,6 +644,6 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js?v=20260607-scene-build-process"></script>
+  <script src="assets/js/main.js?v=20260609-nav-hero-links"></script>
 </body>
 </html>

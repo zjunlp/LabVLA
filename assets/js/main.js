@@ -59,7 +59,7 @@ const HERO_SMALL_COUNT = 96;
       'nav.bibtex': 'Citation',
       'nav.team': 'Team',
       'link.paper': 'Paper',
-      'link.code': 'Code',
+      'link.code': 'GitHub',
       'link.dataset': 'Dataset',
       'link.demo': 'Demo Video',
       'features.title': 'Multi-Embodiment Robot Platform',
@@ -92,7 +92,7 @@ const HERO_SMALL_COUNT = 96;
       'robots.dual.02': 'Dual-arm Robot 02',
       'robots.dual.03': 'Dual-arm Robot 03',
       'dataset.title': 'Multi-task Capabilities',
-      'dataset.subtitle': 'Ten atomic lab tasks can be demonstrated independently or composed into longer workflows.',
+      'dataset.subtitle': 'A suite of atomic manipulation tasks can be demonstrated independently or composed into complete lab workflows.',
       'stat.number': 'Number',
       'dataset.metric1': 'Metric 1',
       'dataset.metric2': 'Metric 2',
@@ -110,8 +110,6 @@ const HERO_SMALL_COUNT = 96;
       'tasks.atomic.06': 'Shake',
       'tasks.atomic.07': 'Stir',
       'tasks.atomic.08': 'Heat Liquid',
-      'tasks.atomic.09': 'Atomic Task 09',
-      'tasks.atomic.10': 'Atomic Task 10',
       'single_tasks.title': 'Single-arm Task Showcase',
       'single_tasks.subtitle': 'Atomic manipulation skills demonstrated across single-arm robot platforms.',
       'workflow.kicker': 'Composable Workflow',
@@ -129,8 +127,8 @@ const HERO_SMALL_COUNT = 96;
       'workflow.step4': 'Task 10',
       'dual_tasks.title': 'Dual-arm Task Showcase',
       'dual_tasks.subtitle': 'Bimanual manipulation demonstrations with coordinated dual-arm execution.',
-      'dual_tasks.card1': 'Dual-arm Task 01',
-      'dual_tasks.card2': 'Dual-arm Task 02',
+      'dual_tasks.card1': 'Lift2',
+      'dual_tasks.card2': 'Split Aloha',
       'placeholder.figure_16_7': 'Figure · 16:7',
       'dataset.chart': 'Dataset statistics figure (task/object/embodiment distributions)',
       'dataset.caption': 'Figure: add caption here.',
@@ -183,19 +181,20 @@ const HERO_SMALL_COUNT = 96;
       'assets.stat_fine': 'Fine classes',
       'assets.top_fine': 'Top fine-grained asset classes',
       'results.title': 'Scene Generation',
-      'results.subtitle': 'Build complete lab scenes step by step from an empty room to final lighting and rendering.',
+      'results.subtitle': 'Build complete lab scenes step by step from an empty room to an executable task setup.',
       'placeholder.video': 'Video',
       'label.task': 'Task',
       'scene.kicker': 'Procedural Generation',
-      'scene.title': 'Build high-fidelity lab scenes from an empty room.',
-      'scene.desc': 'The pipeline starts with a visible room shell, then adds functional furniture, lab equipment, desktop assets, materials, safety cues, lighting, shadows, and camera viewpoints.',
-      'scene.stage1': 'Empty room (very dark)',
+      'scene.title': 'From an empty room to a complete lab.',
+      'scene.desc': 'The same viewpoint shows how room structure, furniture, equipment, assets, materials, safety cues, and task execution elements are added step by step.',
+      'scene.process_kicker': 'Scene Build Progression',
+      'scene.stage1': 'Empty room',
       'scene.stage2': 'Tables, cabinets, and benches',
       'scene.stage3': 'Large lab equipment',
       'scene.stage4': 'Desktop tools and small assets',
       'scene.stage5': 'Materials and textures',
       'scene.stage6': 'Wall fixtures, signs, and safety cues',
-      'scene.stage7': 'Final lighting and rendering',
+      'scene.stage7': 'Robot arm and task-related objects',
       'scene.preview_tag': 'Generated Scene / Asset',
       'scene.preview': 'Main scene and asset generation preview',
       'scene.token1': 'Task',
@@ -215,6 +214,9 @@ const HERO_SMALL_COUNT = 96;
       'scene.caption4': 'Scene 04',
       'scene.caption5': 'Small Scene 02',
       'scene.caption6': 'Small Scene 03',
+      'scene.small2006': 'Compact Lab Scene',
+      'scene.large3010': 'Large Lab Scene',
+      'scene.stage_label': 'Stage {current} / {total}',
       'results.video1': 'Task video 1',
       'results.video2': 'Task video 2',
       'results.video3': 'Task video 3',
@@ -292,7 +294,7 @@ const HERO_SMALL_COUNT = 96;
       'nav.bibtex': '引用',
       'nav.team': '团队',
       'link.paper': '论文',
-      'link.code': '代码',
+      'link.code': 'GitHub',
       'link.dataset': '数据集',
       'link.demo': '演示视频',
       'features.title': '核心亮点',
@@ -423,8 +425,8 @@ const HERO_SMALL_COUNT = 96;
     'nav.dual_tasks': 'Dual-arm',
     'dual_tasks.title': 'Dual-arm Task Showcase',
     'dual_tasks.subtitle': 'Bimanual manipulation demonstrations with coordinated dual-arm execution.',
-    'dual_tasks.card1': 'Dual-arm Task 01',
-    'dual_tasks.card2': 'Dual-arm Task 02',
+    'dual_tasks.card1': 'Lift2',
+    'dual_tasks.card2': 'Split Aloha',
     'tasks.robot.01': 'UR5e',
     'tasks.robot.02': 'UR16e',
     'tasks.robot.03': 'Rizon 4',
@@ -453,7 +455,7 @@ const HERO_SMALL_COUNT = 96;
     'nav.bibtex': '引用',
     'nav.team': '团队',
     'link.paper': '论文',
-    'link.code': '代码',
+    'link.code': 'GitHub',
     'link.dataset': '数据集',
     'link.demo': '演示视频',
 
@@ -489,8 +491,6 @@ const HERO_SMALL_COUNT = 96;
     'tasks.atomic.06': '摇晃',
     'tasks.atomic.07': '搅拌',
     'tasks.atomic.08': '加热液体',
-    'tasks.atomic.09': '原子任务 09',
-    'tasks.atomic.10': '原子任务 10',
     'tasks.robot.01': 'UR5e',
     'tasks.robot.02': 'UR16e',
     'tasks.robot.03': 'Rizon 4',
@@ -566,17 +566,18 @@ const HERO_SMALL_COUNT = 96;
     'assets.stat_fine': '细分类别',
     'assets.top_fine': '高频细粒度资产类别',
     'results.title': '场景生成',
-    'results.subtitle': '从空房间开始逐步添加布局、设备、资产、材质和光照，生成完整实验室场景。',
+    'results.subtitle': '从空房间开始逐步添加布局、设备、资产、材质、环境元素和任务执行对象，生成完整实验室场景。',
     'scene.kicker': '程序化生成',
-    'scene.title': '从空房间逐步搭建高保真实验室场景。',
-    'scene.desc': '流程先生成墙面、地面和基础空间布局，再依次加入桌柜操作台、大型实验设备、桌面器具、材质纹理、标识与安全提示，最后调整光源、阴影和相机视角完成渲染。',
-    'scene.stage1': '空房间（非常暗）',
+    'scene.title': '从空房间到完整实验室。',
+    'scene.desc': '同一视角下逐步加入空间结构、桌柜、实验设备、小型资产、材质、安全提示，以及任务执行所需元素。',
+    'scene.process_kicker': '场景进化过程',
+    'scene.stage1': '空房间',
     'scene.stage2': '添加桌柜/操作台',
     'scene.stage3': '添加大型实验设备',
     'scene.stage4': '添加桌面器具和小型资产',
     'scene.stage5': '添加材质与纹理',
     'scene.stage6': '添加挂件、标识和安全提示',
-    'scene.stage7': '调整最终光照并渲染完整场景',
+    'scene.stage7': '添加机器臂和执行任务相关物品',
     'scene.preview_tag': '生成场景 / 资产',
     'scene.preview': '主场景生成预览',
     'scene.token1': '任务',
@@ -596,6 +597,9 @@ const HERO_SMALL_COUNT = 96;
     'scene.caption4': '场景 04',
     'scene.caption5': '小场景 02',
     'scene.caption6': '小场景 03',
+    'scene.small2006': '小型实验室场景',
+    'scene.large3010': '大型实验室场景',
+    'scene.stage_label': '阶段 {current} / {total}',
 
     'sim.title': '仿真到真实迁移',
     'sim.subtitle': '展示从仿真训练到真实世界部署的迁移效果。',
@@ -639,7 +643,38 @@ const HERO_SMALL_COUNT = 96;
     'footer.note': '发布前请替换占位内容。',
   });
 
-  let currentLang = 'en';
+  Object.assign(I18N.en, {
+    'scene.index_label': 'Scene {current} / {total}',
+    'scene.small620116': 'Lab Scene 03',
+    'scene.large630101': 'Lab Scene 04',
+    'scene.large630109': 'Lab Scene 05',
+    'scene.large630113': 'Lab Scene 06',
+  });
+
+  Object.assign(I18N.zh, {
+    'scene.index_label': '\u573a\u666f {current} / {total}',
+    'scene.small620116': '\u5b9e\u9a8c\u5ba4\u573a\u666f 03',
+    'scene.large630101': '\u5b9e\u9a8c\u5ba4\u573a\u666f 04',
+    'scene.large630109': '\u5b9e\u9a8c\u5ba4\u573a\u666f 05',
+    'scene.large630113': '\u5b9e\u9a8c\u5ba4\u573a\u666f 06',
+  });
+
+  Object.assign(I18N.en, {
+    'dual_tasks.card1': 'Lift2',
+    'dual_tasks.card2': 'Split Aloha',
+    'dual_tasks.robot1': 'Lift2',
+    'dual_tasks.robot2': 'Split Aloha',
+  });
+
+  Object.assign(I18N.zh, {
+    'dual_tasks.card1': 'Lift2',
+    'dual_tasks.card2': 'Split Aloha',
+    'dual_tasks.robot1': 'Lift2',
+    'dual_tasks.robot2': 'Split Aloha',
+  });
+
+  const DEFAULT_LANG = 'en';
+  let currentLang = DEFAULT_LANG;
   const setMetaContent = (selector, value) => {
     const el = $(selector);
     if (el && value) el.setAttribute('content', value);
@@ -668,7 +703,7 @@ const HERO_SMALL_COUNT = 96;
   const yearEl = $('#year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  applyLanguage('en');
+  applyLanguage(DEFAULT_LANG);
   const langToggle = $('#langToggle');
   if (langToggle) {
     langToggle.addEventListener('click', () => {
@@ -887,42 +922,189 @@ const HERO_SMALL_COUNT = 96;
   });
 
   /* ---------- BibTeX 复制 ---------- */
-  /* ---------- Scene preview switcher ---------- */
+  /* ---------- Scene progression switcher ---------- */
   const scenePreview = $('[data-scene-preview]');
   const scenePreviewLabel = $('[data-scene-preview-label]');
-  const sceneItems = [
-    { src: 'assets/media/scene-generation/scene-01.jpg', labelKey: 'scene.caption1', label: 'Scene 01' },
-    { src: 'assets/media/scene-generation/scene-02.jpg', labelKey: 'scene.caption2', label: 'Scene 02' },
-    { src: 'assets/media/scene-generation/scene-03.jpg', labelKey: 'scene.caption3', label: 'Scene 03' },
-    { src: 'assets/media/scene-generation/scene-04.jpg', labelKey: 'scene.caption4', label: 'Scene 04' },
+  const sceneCountLabel = $('[data-scene-count-label]');
+  const sceneStageLabel = $('[data-scene-stage-label]');
+  const sceneStageControls = $$('[data-scene-stage]');
+  const sceneStageItems = $$('[data-scene-stage-item]');
+  const sceneProgress = $('.scene-progress');
+  const sceneProgressSteps = $$('.scene-progress__step[data-scene-stage]');
+  const sceneStageSlugs = [
+    '01-empty-room',
+    '02-tables-counters',
+    '03-lab-equipment',
+    '04-tabletop-kit',
+    '05-materials-textures',
+    '06-wall-signs',
+    '07-robot-task-objects',
   ];
+  const sceneStageKeys = [
+    'scene.stage1',
+    'scene.stage2',
+    'scene.stage3',
+    'scene.stage4',
+    'scene.stage5',
+    'scene.stage6',
+    'scene.stage7',
+  ];
+  const sceneItems = [
+    { prefix: 'small620116', labelKey: 'scene.small620116', label: 'Lab Scene 03' },
+    { prefix: 'large630101', labelKey: 'scene.large630101', label: 'Lab Scene 04' },
+    { prefix: 'large630109', labelKey: 'scene.large630109', label: 'Lab Scene 05' },
+    { prefix: 'large630113', labelKey: 'scene.large630113', label: 'Lab Scene 06' },
+  ];
+  const defaultSceneStageIndex = sceneStageSlugs.length - 1;
   let activeSceneIndex = 0;
-  const setScene = (index) => {
+  let activeStageIndex = defaultSceneStageIndex;
+  let isSceneProgressDragging = false;
+  let sceneProgressPointerId = null;
+  let sceneProgressSuppressClick = false;
+  const twoDigit = (value) => String(value).padStart(2, '0');
+  const clampStage = (index) => Math.min(Math.max(index, 0), sceneStageSlugs.length - 1);
+  const stageFromProgressPoint = (clientX) => {
+    if (!sceneProgress || !sceneProgressSteps.length) return activeStageIndex;
+    let bestStage = activeStageIndex;
+    let bestDistance = Infinity;
+    sceneProgressSteps.forEach((step, index) => {
+      const rect = step.getBoundingClientRect();
+      const distance = Math.abs(clientX - (rect.left + rect.width / 2));
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestStage = index;
+      }
+    });
+    return clampStage(bestStage);
+  };
+  const setSceneProgressThumb = (stageIndex, clientX = null) => {
+    if (!sceneProgress || !sceneProgressSteps.length) return;
+    const stage = clampStage(stageIndex);
+    const step = sceneProgressSteps[stage];
+    const progressRect = sceneProgress.getBoundingClientRect();
+    const stepRect = step.getBoundingClientRect();
+    if (!progressRect.width || !stepRect.width) return;
+    let left = stepRect.left - progressRect.left;
+    const width = stepRect.width;
+    if (typeof clientX === 'number') {
+      const firstRect = sceneProgressSteps[0].getBoundingClientRect();
+      const lastRect = sceneProgressSteps[sceneProgressSteps.length - 1].getBoundingClientRect();
+      const minLeft = firstRect.left - progressRect.left;
+      const maxLeft = lastRect.left - progressRect.left;
+      left = Math.min(Math.max(clientX - progressRect.left - width / 2, minLeft), maxLeft);
+    }
+    sceneProgress.style.setProperty('--scene-active-left', `${left}px`);
+    sceneProgress.style.setProperty('--scene-active-width', `${width}px`);
+  };
+  const applySceneProgressDrag = (clientX) => {
+    const stage = stageFromProgressPoint(clientX);
+    if (stage !== activeStageIndex) setScene(activeSceneIndex, stage);
+    setSceneProgressThumb(stage, clientX);
+  };
+  const getStageLabel = (dict, index) => {
+    const template = dict['scene.stage_label'] || I18N.en['scene.stage_label'];
+    return template
+      .replace('{current}', twoDigit(index + 1))
+      .replace('{total}', twoDigit(sceneStageSlugs.length));
+  };
+  const getSceneCountLabel = (dict, index) => {
+    const template = dict['scene.index_label'] || I18N.en['scene.index_label'];
+    return template
+      .replace('{current}', twoDigit(index + 1))
+      .replace('{total}', twoDigit(sceneItems.length));
+  };
+  const setScene = (index, stageIndex = activeStageIndex) => {
     if (!scenePreview) return;
     activeSceneIndex = (index + sceneItems.length) % sceneItems.length;
+    activeStageIndex = clampStage(stageIndex);
     const item = sceneItems[activeSceneIndex];
     const dict = I18N[currentLang] || I18N.en;
-    const label = dict[item.labelKey] || item.label;
-    scenePreview.src = item.src;
-    scenePreview.alt = label;
+    const sceneLabel = dict[item.labelKey] || item.label;
+    const stageText = dict[sceneStageKeys[activeStageIndex]] || I18N.en[sceneStageKeys[activeStageIndex]];
+    const stageLabel = getStageLabel(dict, activeStageIndex);
+    scenePreview.src = `assets/media/scene-generation/progression-${item.prefix}-${sceneStageSlugs[activeStageIndex]}.jpg`;
+    scenePreview.alt = `${sceneLabel} - ${stageText}`;
     if (scenePreviewLabel) {
       scenePreviewLabel.dataset.i18n = item.labelKey;
-      scenePreviewLabel.textContent = label;
+      scenePreviewLabel.textContent = sceneLabel;
+    }
+    if (sceneCountLabel) sceneCountLabel.textContent = getSceneCountLabel(dict, activeSceneIndex);
+    if (sceneStageLabel) sceneStageLabel.textContent = stageLabel;
+    sceneStageControls.forEach(control => {
+      const controlStage = clampStage(Number(control.dataset.sceneStage) || 0);
+      const isActive = controlStage === activeStageIndex;
+      const controlStageText = dict[sceneStageKeys[controlStage]] || I18N.en[sceneStageKeys[controlStage]];
+      const controlStageLabel = getStageLabel(dict, controlStage);
+      if (control.classList.contains('scene-progress__step')) {
+        control.classList.toggle('is-active', isActive);
+      }
+      control.setAttribute('aria-pressed', String(isActive));
+      control.setAttribute('aria-label', `${controlStageLabel}: ${controlStageText}`);
+    });
+    sceneStageItems.forEach(itemEl => {
+      const isActive = Number(itemEl.dataset.sceneStageItem) === activeStageIndex;
+      itemEl.classList.toggle('is-active', isActive);
+      if (isActive) itemEl.setAttribute('aria-current', 'step');
+      else itemEl.removeAttribute('aria-current');
+    });
+    if (!isSceneProgressDragging) {
+      requestAnimationFrame(() => setSceneProgressThumb(activeStageIndex));
     }
   };
   refreshSceneLabel = () => {
-    if (!scenePreviewLabel) return;
-    const item = sceneItems[activeSceneIndex];
-    const dict = I18N[currentLang] || I18N.en;
-    scenePreviewLabel.dataset.i18n = item.labelKey;
-    scenePreviewLabel.textContent = dict[item.labelKey] || item.label;
+    setScene(activeSceneIndex, activeStageIndex);
   };
   $$('[data-scene-step]').forEach(btn => {
     btn.addEventListener('click', () => {
       const step = Number(btn.dataset.sceneStep) || 1;
-      setScene(activeSceneIndex + step);
+      setScene(activeSceneIndex + step, defaultSceneStageIndex);
     });
   });
+  sceneStageControls.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setScene(activeSceneIndex, Number(btn.dataset.sceneStage) || 0);
+    });
+  });
+  if (sceneProgress) {
+    sceneProgress.addEventListener('click', (event) => {
+      if (!sceneProgressSuppressClick) return;
+      event.preventDefault();
+      event.stopPropagation();
+      sceneProgressSuppressClick = false;
+    }, true);
+    sceneProgress.addEventListener('pointerdown', (event) => {
+      if (event.button && event.button !== 0) return;
+      isSceneProgressDragging = true;
+      sceneProgressPointerId = event.pointerId;
+      sceneProgressSuppressClick = true;
+      sceneProgress.classList.add('is-dragging');
+      if (sceneProgress.setPointerCapture) {
+        try { sceneProgress.setPointerCapture(event.pointerId); } catch (_) {}
+      }
+      applySceneProgressDrag(event.clientX);
+      event.preventDefault();
+    });
+    sceneProgress.addEventListener('pointermove', (event) => {
+      if (!isSceneProgressDragging || event.pointerId !== sceneProgressPointerId) return;
+      applySceneProgressDrag(event.clientX);
+      event.preventDefault();
+    });
+    const endSceneProgressDrag = (event) => {
+      if (!isSceneProgressDragging || event.pointerId !== sceneProgressPointerId) return;
+      const stage = stageFromProgressPoint(event.clientX);
+      isSceneProgressDragging = false;
+      sceneProgressPointerId = null;
+      sceneProgress.classList.remove('is-dragging');
+      if (sceneProgress.releasePointerCapture) {
+        try { sceneProgress.releasePointerCapture(event.pointerId); } catch (_) {}
+      }
+      setScene(activeSceneIndex, stage);
+    };
+    sceneProgress.addEventListener('pointerup', endSceneProgressDrag);
+    sceneProgress.addEventListener('pointercancel', endSceneProgressDrag);
+    window.addEventListener('resize', () => setSceneProgressThumb(activeStageIndex), { passive: true });
+  }
+  setScene(0, defaultSceneStageIndex);
 
   /* ---------- Atomic task video lazy loading ---------- */
   const taskVideos = $$('#stats .task-card__media video[data-task-src]');
