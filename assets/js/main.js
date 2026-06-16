@@ -24,14 +24,22 @@ const HERO_BIG_VIDEOS = [
   'assets/media/gifs/01.mp4',
   'assets/media/gifs/02.mp4',
   'assets/media/gifs/04.mp4',
-  'assets/media/gifs/03.mp4?v=20260615-v2',
+  'assets/media/gifs/03.mp4?v=20260617-trim4',
 ];
 
 const HERO_BIG_POSTERS = [
   'assets/media/posters/01.jpg',
   'assets/media/posters/02.jpg',
   'assets/media/posters/04.jpg',
-  'assets/media/posters/03.jpg?v=20260615-v2',
+  'assets/media/posters/03.jpg?v=20260617-trim4',
+];
+
+/* object-position per tile (null = center default) */
+const HERO_BIG_OBJECT_POSITION = [
+  null,
+  null,
+  null,
+  '49.8% 98.6%',
 ];
 
 /* Fallback outer-ring tile count when no media paths are set */
@@ -1304,6 +1312,7 @@ const HERO_SMALL_COUNT = 96;
       } else {
         v.src = mediaPath;
       }
+      if (opts.objectPosition) v.style.objectPosition = opts.objectPosition;
       return v;
     }
     const ph = document.createElement('div');
@@ -1411,6 +1420,7 @@ const HERO_SMALL_COUNT = 96;
       poster: HERO_BIG_POSTERS[idx],
       preload: 'none',
       deferSrc: true,
+      objectPosition: HERO_BIG_OBJECT_POSITION[idx],
     }));
   });
 
