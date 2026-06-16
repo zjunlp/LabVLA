@@ -1,0 +1,287 @@
+﻿??,??,??
+biochemistry,anaerobic chambers,15
+biochemistry,biosafety cabinets,15
+biochemistry,cell counters,15
+biochemistry,co2 incubators,15
+biochemistry,electroporators,15
+biochemistry,flow cytometers,15
+biochemistry,gel electrophoresis,14
+biochemistry,gel imaging,14
+biochemistry,hybridization ovens,15
+biochemistry,laminar flow hoods,15
+biochemistry,liquid handlers,13
+biochemistry,microplate readers,12
+biochemistry,pcr machines,15
+biochemistry,uv crosslinkers,15
+biochemistry,western blot,14
+centrifugation,critical point dryers,15
+centrifugation,cryostats,15
+centrifugation,freeze dryers,15
+centrifugation,gel dryers,15
+centrifugation,high speed centrifuges,15
+centrifugation,microcentrifuges,14
+centrifugation,microtomes,15
+centrifugation,spe manifolds,15
+centrifugation,speedvac concentrators,14
+centrifugation,sputter coaters,15
+centrifugation,tissue homogenizers,15
+centrifugation,ultracentrifuges,15
+ceramics,ceramic labware,8
+ceramics,ceramic misc,9
+ceramics,clay triangles,10
+ceramics,combustion boats,2
+ceramics,crucibles,14
+ceramics,evaporating dishes,10
+ceramics,mortars pestles,10
+ceramics,spot plates,2
+ceramics,zirconia beads,2
+electrochemical,battery test equipment,14
+electrochemical,conductivity electrodes,15
+electrochemical,do orp electrodes,15
+electrochemical,electrochemical cells,14
+electrochemical,ion selective electrodes,14
+electrochemical,ph electrodes,15
+electrochemical,potentiostats,15
+electrochemical,qcm sensors,14
+electrochemical,reference electrodes,15
+electrochemical,rotating disk electrodes,15
+electrochemical,working electrodes,15
+furniture,balance tables,17
+furniture,chemical cabinets,18
+furniture,cleanroom pass through,16
+furniture,corrosive cabinets,18
+furniture,drying racks,16
+furniture,flammable cabinets,18
+furniture,fume hoods,18
+furniture,instrument carts,15
+furniture,lab benches,18
+furniture,lab sinks,17
+furniture,lab stools chairs,15
+furniture,misc lab furniture,16
+furniture,under bench cabinets,15
+furniture,wall shelves,17
+gas_vacuum,flow meters,10
+gas_vacuum,gas cylinders,10
+gas_vacuum,gas generators,9
+gas_vacuum,gas manifolds,10
+gas_vacuum,gas sampling bags,2
+gas_vacuum,liquid nitrogen dewars,9
+gas_vacuum,vacuum gauges,9
+gas_vacuum,vacuum pumps rotary,10
+gas_vacuum,water circulating pumps,9
+heating,alcohol lamps,15
+heating,autoclaves,15
+heating,bunsen burners,12
+heating,dry block heaters,15
+heating,drying ovens,15
+heating,general incubators,15
+heating,heat guns,15
+heating,heating mantles,11
+heating,hot plates,15
+heating,microwave digestion,14
+heating,muffle furnaces,15
+heating,oil baths,12
+heating,shaking incubators,14
+heating,water baths,15
+instruments,Raman microscope with confocal optics,1
+instruments,X ray fluorescence spectrometer,1
+instruments,accelerating rate calorimeter,1
+instruments,afm microscopes,7
+instruments,analytical balance with draft shield,1
+instruments,atomic absorption,16
+instruments,automated liquid handler,1
+instruments,automated solid phase extraction,1
+instruments,automatic melting point apparatus,1
+instruments,benchtop spray dryer,1
+instruments,bet analyzers,15
+instruments,capillary electrophoresis,15
+instruments,capillary electrophoresis with UV,1
+instruments,chiral HPLC system,1
+instruments,contact angle meters,15
+instruments,critical point dryer,1
+instruments,differential scanning calorimeter,1
+instruments,disc centrifuge particle sizer,1
+instruments,dls analyzers,15
+instruments,dma analyzers,15
+instruments,double beam UV Vis spectrophotometer,1
+instruments,dsc analyzers,15
+instruments,dynamic light scattering instrument,1
+instruments,elemental analyzers,12
+instruments,fiber optic UV process analyzer,1
+instruments,flash chromatography,15
+instruments,flow injection analysis system,1
+instruments,fluorescence spectrometer with xenon lamp,1
+instruments,fluorescence spectrometers,13
+instruments,freeze dryer with manifold,1
+instruments,ftir spectrometers,15
+instruments,gas chromatograph with FID and TCD,1
+instruments,gc ms systems,16
+instruments,gc systems,15
+instruments,gel documentation system,1
+instruments,gpc sec,15
+instruments,headspace autosampler,1
+instruments,hplc systems,16
+instruments,icp ms,15
+instruments,icp oes,15
+instruments,ion chromatography,16
+instruments,isothermal titration calorimeter,1
+instruments,lc ms systems,15
+instruments,mass spectrometers,15
+instruments,mercury porosimeters,5
+instruments,microct scanners,1
+instruments,microfluidic chip based analyzer,1
+instruments,microplate reader,1
+instruments,moisture analyzer with halogen heater,1
+instruments,multi gas analyzer with NDIR,1
+instruments,nanoindentation tester,1
+instruments,near infrared process analyzer,1
+instruments,nmr spectrometers,16
+instruments,polarimeter with LED source,1
+instruments,portable gas chromatograph,1
+instruments,raman spectrometers,17
+instruments,refractometer with Peltier control,1
+instruments,rotary evaporator with chiller,1
+instruments,sem microscopes,15
+instruments,size exclusion chromatography system,1
+instruments,tga analyzers,15
+instruments,thermal desorption unit,1
+instruments,thermogravimetric analyzer,1
+instruments,thermomechanical analyzer,1
+instruments,toc analyzers,15
+instruments,ultrasonic cell disruptor,1
+instruments,uv vis spectrophotometers,15
+instruments,xrd diffractometers,13
+instruments,xrf analyzers,13
+lab_supplies,bench liners,1
+lab_supplies,cuvettes standalone,2
+lab_supplies,desiccants molecular sieves,1
+lab_supplies,filter paper,1
+lab_supplies,kimwipes tissues,2
+lab_supplies,lab cleaning tools,2
+lab_supplies,lab notebooks,2
+lab_supplies,magnetic stir bars,2
+lab_supplies,marker pens labels,2
+lab_supplies,nmr tubes standalone,2
+lab_supplies,parafilm dispensers,2
+lab_supplies,ph paper strips,2
+lab_supplies,rubber stoppers,2
+lab_supplies,sample vials supplies,2
+lab_supplies,thermo hygrometers,2
+lab_supplies,timers stopwatches,2
+measuring,analytical balances,15
+measuring,bomb calorimeters,15
+measuring,conductivity meters,13
+measuring,density meters,15
+measuring,digital thermometers,15
+measuring,dissolved oxygen meters,15
+measuring,glass burettes,15
+measuring,glass thermometers,15
+measuring,infrared thermometers,15
+measuring,ion meters,15
+measuring,karl fischer,15
+measuring,melting point apparatus,15
+measuring,micropipettes,15
+measuring,ph meters,14
+measuring,polarimeters,15
+measuring,precision balances,14
+measuring,refractometers,15
+measuring,rheometers,15
+measuring,sieve shakers,15
+measuring,tensiometers,15
+measuring,turbidity meters,15
+measuring,viscometers,15
+metal_supports,beaker tongs,9
+metal_supports,burette clamps,9
+metal_supports,cork borers,2
+metal_supports,crucible tongs,10
+metal_supports,forceps tweezers,10
+metal_supports,funnel racks,10
+metal_supports,iron stands,10
+metal_supports,lab jacks,10
+metal_supports,pipette stands,10
+metal_supports,test tube holders,9
+metal_supports,test tube racks,10
+metal_supports,tripods,10
+plastics,bottle top filters,12
+plastics,cell culture flasks,12
+plastics,centrifuge tubes,12
+plastics,cryogenic vials,9
+plastics,multiwell plates,12
+plastics,pcr tubes,5
+plastics,petri dishes,12
+plastics,pipette tips,3
+plastics,plastic funnels labware,12
+plastics,plastic reagent bottles,13
+plastics,reagent reservoirs,11
+plastics,sample vials,12
+plastics,serological pipettes,3
+plastics,spray bottles,12
+plastics,syringe filters,4
+plastics,transfer pipettes,4
+plastics,wash bottles,14
+plastics,weighing boats,4
+safety,aed defibrillators,6
+safety,emergency showers,6
+safety,eyewash stations,9
+safety,face shields,5
+safety,fire blankets,5
+safety,fire extinguishers,4
+safety,first aid kits,14
+safety,gas detectors,15
+safety,glove boxes safety,3
+safety,lab coats,2
+safety,safety goggles,4
+safety,safety signage,15
+safety,spill kits,13
+safety,waste containers,15
+synthesis,autoclave reactors,14
+synthesis,ball mills,15
+synthesis,circulating chillers,15
+synthesis,electrospinning setups,5
+synthesis,flow chemistry,15
+synthesis,glove boxes,15
+synthesis,homogenizers,15
+synthesis,hydrogenation apparatus,13
+synthesis,overhead stirrers,15
+synthesis,peristaltic pumps,15
+synthesis,photoreactors,15
+synthesis,rotary evaporators,13
+synthesis,schlenk lines,13
+synthesis,solvent purification,14
+synthesis,spray dryers,15
+synthesis,syringe pumps,14
+synthesis,ultrasonic cleaners,15
+synthesis,ultrasonic processors,15
+tubing_connectors,glass tubing pieces,2
+tubing_connectors,ground glass adapters,2
+tubing_connectors,hose barb connectors,2
+tubing_connectors,luer fittings,2
+tubing_connectors,ptfe tubing,2
+tubing_connectors,pvc tubing,2
+tubing_connectors,tubing clamps,2
+wet_chemistry_glassware,beakers,15
+wet_chemistry_glassware,buchner funnels,15
+wet_chemistry_glassware,chromatography columns,15
+wet_chemistry_glassware,condensers,15
+wet_chemistry_glassware,desiccators,15
+wet_chemistry_glassware,distillation adapters,15
+wet_chemistry_glassware,dropping funnels,14
+wet_chemistry_glassware,drying tubes,2
+wet_chemistry_glassware,erlenmeyer flasks,13
+wet_chemistry_glassware,filter flasks,14
+wet_chemistry_glassware,flat bottom flasks,15
+wet_chemistry_glassware,fractionating columns,15
+wet_chemistry_glassware,gas washing bottles,15
+wet_chemistry_glassware,glass tubing and rods,2
+wet_chemistry_glassware,graduated cylinders,15
+wet_chemistry_glassware,pear shaped flasks,14
+wet_chemistry_glassware,reagent bottles glass,15
+wet_chemistry_glassware,round bottom flasks,15
+wet_chemistry_glassware,separatory funnels,15
+wet_chemistry_glassware,sintered funnels,15
+wet_chemistry_glassware,soxhlet extractors,15
+wet_chemistry_glassware,specific gravity bottles,2
+wet_chemistry_glassware,test tubes,14
+wet_chemistry_glassware,volumetric flasks,15
+wet_chemistry_glassware,watch glasses crystallization,2
+wet_chemistry_glassware,weighing bottles,2

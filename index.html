@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LabVLA</title>
+  <meta name="description" content="LabVLA project page for vision-language-action research." />
+
+  <!-- Open Graph / Twitter Card -->
+  <meta property="og:title" content="LabVLA" />
+  <meta property="og:description" content="LabVLA project page for vision-language-action research." />
+  <meta property="og:image" content="assets/images/og-cover.jpg" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Fonts (self-hosted Latin subset; replaces cross-border Google Fonts) -->
+  <link rel="stylesheet" href="assets/css/fonts.css?v=20260611-fonts" />
+
+  <link rel="preload" as="image" href="assets/media/posters/01.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/posters/02.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/posters/03.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/posters/04.jpg" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/media/mosaic/hero-preview.jpg" fetchpriority="high" />
+
+  <!-- Tailwind: prebuilt static CSS (was runtime CDN JIT) -->
+  <link rel="stylesheet" href="assets/css/tailwind.css?v=20260611-tw" />
+
+  <link rel="stylesheet" href="assets/css/style.css?v=20260611-zh-title-v113" />
+</head>
+
+<body class="bg-ink-950 text-slate-200 antialiased font-sans selection:bg-accent/40 selection:text-white">
+
+  <!-- Background decor: orbs + grid mask -->
+  <div class="bg-decor" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-mask"></div>
+  </div>
+
+  <!-- ======================= Top navigation ======================= -->
+  <header class="nav fixed inset-x-0 top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between relative">
+      <a href="#top" class="brand-logo group" aria-label="LabVLA home">
+        <img class="logo-symbol" src="assets/images/logo/labvla-symbol.png?v=20260608-brand" alt="" aria-hidden="true" />
+        <span class="logo-wordmark-text" aria-label="LabVLA"><span class="lw-lab">Lab</span><span class="lw-vla">VLA</span></span>
+      </a>
+      <nav class="hidden xl:flex items-center gap-6 text-base text-slate-300" id="globalNav">
+        <a href="#approach" class="nav-link" data-i18n="nav.approach">Highlights</a>
+        <a href="#features" class="nav-link" data-i18n="nav.features">Data Engine</a>
+        <a href="#recipe" class="nav-link" data-i18n="nav.recipe">Method</a>
+        <a href="#benchmark" class="nav-link" data-i18n="nav.benchmark">Results</a>
+        <a href="#transfer" class="nav-link" data-i18n="nav.sim2real">Analysis</a>
+        <a href="#sim2real" class="nav-link" data-i18n="nav.real">Sim2Real</a>
+        <a href="#capability" class="nav-link" data-i18n="nav.capability">Capability</a>
+        <a href="#team" class="nav-link" data-i18n="nav.team">Institutions</a>
+      </nav>
+      <nav class="de-nav hidden xl:flex items-center gap-6 text-base text-slate-300" id="deNav" aria-label="Data Engine sections" aria-hidden="true">
+        <a href="#features" class="de-nav__home" data-i18n="de.nav.home">Data Engine</a>
+        <a href="#stats" class="nav-link" data-i18n="de.nav.skills">Atomic Skills</a>
+        <a href="#workflow" class="nav-link" data-i18n="de.nav.workflow">Workflows</a>
+        <a href="#method" class="nav-link" data-i18n="de.nav.random">Randomization</a>
+        <a href="#assets" class="nav-link" data-i18n="de.nav.assets">Assets</a>
+        <a href="#results" class="nav-link" data-i18n="de.nav.scenes">Scenes</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <button type="button" class="lang-toggle" id="langToggle" data-i18n="lang.toggle" data-i18n-aria="lang.aria">Chinese</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ======================= Hero (Mosaic) ======================= -->
+    <!--
+      Mosaic wall notes:
+      · Outer ring tiles are injected by JS; see HERO_SMALL_VIDEOS in assets/js/main.js
+      · Center 2×2 videos are filled via .big-tile elements; see HERO_BIG_VIDEOS
+      · Without media paths, animated color placeholders are shown; paths swap in <video>/<img>
+    -->
+    <section class="hero-mosaic">
+      <!-- Outer keyframe wall (JS injects .tile elements) -->
+      <div class="mosaic-bg" id="mosaicBg" aria-hidden="true"></div>
+
+      <div class="mosaic-center" id="mosaicCenter">
+        <div class="big-tile" data-big="0"></div>
+        <div class="big-tile" data-big="1"></div>
+        <div class="big-tile" data-big="2"></div>
+        <div class="big-tile" data-big="3"></div>
+      </div>
+
+      <!-- Center 2×2 hero clips (4 looping MP4s) -->
+      <!-- Vignette overlay -->
+      <div class="hero-overlay" aria-hidden="true"></div>
+
+      <!-- Center copy (stacked above the 2×2 clips) -->
+      <div class="hero-content">
+        <h1 class="hero-logo-wordmark font-display font-bold tracking-tight text-5xl md:text-7xl leading-[1.05] drop-shadow-2xl" aria-label="LabVLA">
+          <img class="hero-logo-symbol" src="assets/images/logo/labvla-symbol.png?v=20260608-brand" alt="" aria-hidden="true" />
+          <span class="hero-logo-text"><span class="lw-lab">Lab</span><span class="lw-vla">VLA</span></span>
+        </h1>
+
+        <p class="hero-tagline mt-5 mx-auto text-2xl md:text-4xl text-slate-200 font-semibold" data-i18n="hero.tagline">Grounding Vision–Language–Action models in scientific laboratories</p>
+
+        <div class="hero-authors" aria-label="Authors and affiliations">
+          <p class="hero-authors__names">
+            <span>Baochang Ren<sup>1</sup>, Xinjie Liu<sup>1</sup>, Xi Chen<sup>1</sup>, Yanshuo Liu<sup>1</sup>, Chenxi Li<sup>2</sup>, Daqi Gao<sup>1</sup>, Zeqin Su<sup>1</sup></span>
+            <span>Jintao Xing<sup>1</sup>, Zirui Xue<sup>1</sup>, Rui Li<sup>2</sup>, Xiangyu Zhao<sup>1</sup>, Shuofei Qiao<sup>1&dagger;</sup>, Minting Pan<sup>2</sup></span>
+            <span>Wangmeng Zuo<sup>3</sup>, Lei Bai<sup>2</sup>, Dongzhan Zhou<sup>2&dagger;</sup>, Ningyu Zhang<sup>1&dagger;</sup>, Huajun Chen<sup>1</sup></span>
+          </p>
+          <p class="hero-authors__affiliations">
+            <span><sup>1</sup>Zhejiang University</span>
+            <span><sup>2</sup>Shanghai AI Laboratory</span>
+            <span><sup>3</sup>Harbin Institute of Technology</span>
+          </p>
+        </div>
+
+        <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <a href="https://huggingface.co/papers/2606.13578" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn--paper"><span class="cta-icon cta-icon--paper"><svg class="cta-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 2h8.2L20 7.8V22H6V2zm9 1.7V7h3.3L15 3.7zM8.8 13.9c1.1-1.5 1.9-3 2.3-4.2-.5-1.4-.6-2.3-.2-2.8.4-.6 1.3-.4 1.6.2.3.7.1 1.6-.3 2.8.4.9 1 1.9 1.6 2.7 1.1-.2 2-.2 2.5.2.6.4.4 1.2-.2 1.5-.6.3-1.5 0-2.5-.8-1.1.3-2.3.7-3.5 1.2-.8 1-1.6 1.8-2.3 1.9-.8.1-1.2-.6-.8-1.2.3-.5.9-.9 1.8-1.5zm2.7-2.7c-.3.7-.7 1.5-1.2 2.2.7-.3 1.5-.5 2.2-.7-.4-.5-.7-1-1-1.5z"/></svg></span> <span data-i18n="link.paper">Paper</span></a>
+          <a href="https://github.com/zjunlp/LabVLA" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn--code"><span class="cta-icon cta-icon--github"><svg class="cta-svg" viewBox="0 0 496 512" aria-hidden="true"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8z"/></svg></span> <span data-i18n="link.code">Code</span></a>
+          <a href="https://huggingface.co/zjunlp/LabVLA" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn--model"><span class="cta-icon"><img class="cta-img" src="assets/media/logos/hf-logo.png?v=1" alt="" aria-hidden="true" /></span> <span data-i18n="link.model">Model</span></a>
+          <a href="mailto:zhangningyu@zju.edu.cn" class="cta-btn cta-btn--contact"><span class="cta-icon cta-icon--contact"><svg class="cta-svg" viewBox="0 0 512 512" aria-hidden="true"><path fill="currentColor" d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"/></svg></span> <span data-i18n="link.contact">Contact</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Authors + link bar (hidden) =======================
+    <section class="px-6 pb-12">
+      <div class="max-w-5xl mx-auto text-center">
+        <div class="text-slate-300 text-sm md:text-base flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+          <a href="#" class="author">【作者一】<sup>1</sup></a>
+          <span>·</span>
+          <a href="#" class="author">【作者二】<sup>1,2</sup></a>
+          <span>·</span>
+          <a href="#" class="author">【作者三】<sup>2</sup></a>
+          <span>·</span>
+          <a href="#" class="author">【作者四】<sup>1</sup></a>
+        </div>
+        <div class="mt-3 text-slate-500 text-xs md:text-sm">
+          <sup>1</sup> 【单位一】&nbsp;·&nbsp; <sup>2</sup> 【单位二】
+        </div>
+
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128196;</span> 论文</a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128218;</span> arXiv</a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128187;</span> 代码</a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#128450;&#65039;</span> 数据集</a>
+          <a href="#" class="cta-btn"><span class="cta-icon">&#127916;</span> 演示视频</a>
+        </div>
+      </div>
+    </section>
+    -->
+
+    <!-- ======================= Highlights ======================= -->
+    <section id="approach" class="section section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="approach.kicker">Highlights</span>
+          <h2 class="section-title mt-4"><span data-i18n="approach.title1">What sets LabVLA apart —</span><span class="grad-text" data-i18n="approach.title2">data and policy</span></h2>
+          <p class="section-sub lead" data-i18n="approach.lead">Building on this corpus together with broad real-robot pre-training data, we present LabVLA, a VLA pipeline for connecting written laboratory protocols to embodied robot execution in simulated scientific workspaces. LabVLA pairs protocol-conditioned data synthesis with FAST action-token pre-training and flow-matching post-training under a shared cross-embodiment schema.</p>
+        </div>
+
+        <!-- one screen: system-overview figure + stretch accordion side by side -->
+        <div class="approach-split grid lg:grid-cols-2 gap-8 lg:gap-10 mt-8">
+          <figure class="fig fig--compact approach-split__fig" data-reveal>
+            <div class="fig__bar"><span class="fig__no">FIG. 01</span><span class="fig__title" data-i18n="approach.figttl">System overview</span><button type="button" class="fig__zoom" data-i18n="fig.zoom">Enlarge</button></div>
+            <div class="fig__plate"><img src="assets/media/paper/first.webp?v=20260611-fig2" alt="LabVLA at a glance: external corpora warm-start the VLM, RoboGenesis synthesizes LabEmbodied-Data, and the policy is evaluated on four task families" loading="lazy" /></div>
+          </figure>
+          <div class="accordion accordion--approach approach-split__acc" data-reveal>
+            <details class="acc-item acc-item--data" name="approach-pillar" open>
+              <summary class="acc-head"><span class="chip chip--violet" data-i18n="approach.p1.k">01 · Data</span><span class="acc-title" data-i18n="approach.p1.t">RoboGenesis: A Programmable Workflow and Data Engine</span><span class="acc-chevron" aria-hidden="true"></span></summary>
+              <div class="acc-panel"><p data-i18n="approach.p1.d">We introduce RoboGenesis, a simulation-based workflow and data engine that links environment construction, configured workflow generation, domain randomization, and success-filtered export to produce laboratory demonstrations that existing robot corpora rarely cover. We use this engine to synthesize LabEmbodied-Data, a corpus of multi-camera observations, language instructions, robot states, action trajectories, and structured annotations under a shared cross-embodiment schema.</p></div>
+            </details>
+            <details class="acc-item acc-item--policy" name="approach-pillar">
+              <summary class="acc-head"><span class="chip chip--lime" data-i18n="approach.p2.k">02 · Training</span><span class="acc-title" data-i18n="approach.p2.t">LabVLA Training Recipe</span><span class="acc-chevron" aria-hidden="true"></span></summary>
+              <div class="acc-panel"><p data-i18n="approach.p2.d">LabVLA adapts a Qwen3-VL backbone to map visual observations, robot state, and language instructions into continuous action chunks through a DiT action expert. The model is trained in two stages: FAST action tokens first align the visual-language prefix with action semantics during VLM pre-training, and flow matching then predicts continuous robot actions during post-training. A knowledge-insulation design reduces interference between language-grounded VLM representations and the continuous-action expert during post-training.</p></div>
+            </details>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-4 md:gap-6 mt-8 reveal-children">
+          <div class="kpi"><span class="kpi__num" data-count="10000" data-count-suffix="+">0</span><span class="kpi__label" data-i18n="approach.kpi1">Validated lab scenes</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="16">0</span><span class="kpi__label" data-i18n="approach.kpi2">Robot platforms</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="15">0</span><span class="kpi__label" data-i18n="approach.kpi3">Annotation streams</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="71.1" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="approach.kpi4">Best avg success (ID)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== Data Engine collapsible entry (portrait always visible) ===================== -->
+    <section id="data-engine" class="data-engine" aria-label="A Programmable Workflow and Data Engine">
+
+    <!-- ============== Multi-Arm Data Engine panel (portrait + collapse toggle) ============== -->
+    <section id="features" class="section section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="features.kicker">RoboGenesis</span>
+          <h2 class="section-title mt-4"><span data-i18n="features.t1">A Programmable Workflow and </span><span class="grad-text" data-i18n="features.t2">Data Engine</span></h2>
+          <p class="section-sub lead"><span data-i18n="features.subtitle">An end-to-end multi-arm data engine — spanning tasks, workflows, randomization, assets, and scene generation.</span></p>
+        </div>
+
+        <figure class="embodiment-portrait mt-12">
+          <img src="assets/media/robots/arm_group_portrait_real_material.webp?v=20260611-webp"
+               alt="RoboGenesis 16 robot embodiments — 13 single-arm and 3 dual-arm" loading="lazy" />
+          <button type="button" class="de-portrait-toggle" id="dataEngineToggle" aria-expanded="false" aria-controls="dataEngineBody">
+            <span class="de-portrait-toggle__label" data-i18n="de.expand">View Data Engine Details</span>
+            <svg class="de-portrait-toggle__chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </figure>
+
+        <div class="hidden">
+          <article class="feature-card">
+            <div class="feature-card__media">
+              <div class="placeholder">
+                <span class="placeholder-tag" data-i18n="placeholder.demo_square">Demo · 1:1</span>
+                <span class="placeholder-text" data-i18n="features.demo1">Highlight 1 demo video/image</span>
+              </div>
+            </div>
+            <h3 class="feature-card__title" data-i18n="features.card1.title">Highlight 1 Title</h3>
+            <p class="feature-card__desc" data-i18n="features.card1.desc">Add a one-sentence description of highlight 1.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-card__media">
+              <div class="placeholder">
+                <span class="placeholder-tag" data-i18n="placeholder.demo_square">Demo · 1:1</span>
+                <span class="placeholder-text" data-i18n="features.demo2">Highlight 2 demo video/image</span>
+              </div>
+            </div>
+            <h3 class="feature-card__title" data-i18n="features.card2.title">Highlight 2 Title</h3>
+            <p class="feature-card__desc" data-i18n="features.card2.desc">Add a one-sentence description of highlight 2.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-card__media">
+              <div class="placeholder">
+                <span class="placeholder-tag" data-i18n="placeholder.demo_square">Demo · 1:1</span>
+                <span class="placeholder-text" data-i18n="features.demo3">Highlight 3 demo video/image</span>
+              </div>
+            </div>
+            <h3 class="feature-card__title" data-i18n="features.card3.title">Highlight 3 Title</h3>
+            <p class="feature-card__desc" data-i18n="features.card3.desc">Add a one-sentence description of highlight 3.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+      <!-- Data Engine inner sections (#stats–#results, collapsible) -->
+      <div class="de-body" id="dataEngineBody">
+        <div class="de-body__inner">
+    <!-- ======================= Dataset Overview / Stats ======================= -->
+    <section id="stats" class="section section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="dataset.kicker">Atomic Skills</span>
+          <h2 class="section-title mt-4"><span data-i18n="dataset.t1">Multi-task</span><span class="grad-text" data-i18n="dataset.t2">capabilities</span></h2>
+          <p class="section-sub lead"><span data-i18n="dataset.subtitle">A suite of atomic manipulation tasks can be demonstrated independently or composed into complete lab workflows.</span></p>
+        </div>
+
+        <div class="task-grid mt-12" data-reveal>
+          <article class="task-card" data-task-slot="atomic-01"><div class="task-card__media"><video data-task-src="assets/media/tasks/open.mp4" poster="assets/media/tasks/open.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.01">Open Door</h3><span class="task-card__robot" data-i18n="tasks.robot.01">UR5e</span></article>
+          <article class="task-card" data-task-slot="atomic-02"><div class="task-card__media"><video data-task-src="assets/media/tasks/close.mp4" poster="assets/media/tasks/close.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.02">Close Door</h3><span class="task-card__robot" data-i18n="tasks.robot.02">UR16e</span></article>
+          <article class="task-card" data-task-slot="atomic-05"><div class="task-card__media"><video data-task-src="assets/media/tasks/pick.mp4" poster="assets/media/tasks/pick.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.05">Pick</h3><span class="task-card__robot" data-i18n="tasks.robot.05">Festo</span></article>
+          <article class="task-card" data-task-slot="atomic-07"><div class="task-card__media"><video data-task-src="assets/media/tasks/stir.mp4" poster="assets/media/tasks/stir.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.07">Stir</h3><span class="task-card__robot" data-i18n="tasks.robot.07">UR5e</span></article>
+          <article class="task-card" data-task-slot="atomic-03"><div class="task-card__media"><video data-task-src="assets/media/tasks/place.mp4" poster="assets/media/tasks/place.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.03">Place</h3><span class="task-card__robot" data-i18n="tasks.robot.03">Rizon 4</span></article>
+          <article class="task-card" data-task-slot="atomic-08"><div class="task-card__media"><video data-task-src="assets/media/tasks/heat.mp4" poster="assets/media/tasks/heat.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.08">Heat Liquid</h3><span class="task-card__robot" data-i18n="tasks.robot.08">FR3</span></article>
+          <article class="task-card" data-task-slot="atomic-06"><div class="task-card__media"><video data-task-src="assets/media/tasks/shake.mp4" poster="assets/media/tasks/shake.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.06">Shake</h3><span class="task-card__robot" data-i18n="tasks.robot.06">Franka</span></article>
+          <article class="task-card" data-task-slot="atomic-04"><div class="task-card__media"><video data-task-src="assets/media/tasks/pour.mp4" poster="assets/media/tasks/pour.jpg" muted autoplay loop playsinline preload="none"></video></div><h3 data-i18n="tasks.atomic.04">Pour</h3><span class="task-card__robot" data-i18n="tasks.robot.04">Franka</span></article>
+        </div>
+
+        <div class="hidden">
+          <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric1">Metric 1</div></div>
+          <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric2">Metric 2</div></div>
+          <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric3">Metric 3</div></div>
+          <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric4">Metric 4</div></div>
+          <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric5">Metric 5</div></div>
+          <div class="stat-card"><div class="stat-num" data-i18n="stat.number">Number</div><div class="stat-label" data-i18n="dataset.metric6">Metric 6</div></div>
+        </div>
+
+        <div class="hidden mt-12 panel">
+          <div class="placeholder aspect-[16/7]">
+            <span class="placeholder-tag" data-i18n="placeholder.figure_16_7">Figure · 16:7</span>
+            <span class="placeholder-text" data-i18n="dataset.chart">Dataset statistics figure (task/object/embodiment distributions)</span>
+          </div>
+          <p class="mt-4 text-sm text-slate-400 text-center" data-i18n="dataset.caption">Figure: add caption here.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Long Workflow Showcase ======================= -->
+    <section id="workflow" class="section workflow-section section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="workflow.kicker">Long-horizon</span>
+          <h2 class="section-title mt-4"><span data-i18n="workflow.t1">Workflows &amp;</span><span class="grad-text" data-i18n="workflow.t2">dual-arm showcase</span></h2>
+          <p class="section-sub lead" data-i18n="workflow.page_subtitle">Atomic skills compose into long-horizon lab procedures across dual-arm manipulation, mobile navigation, and multi-step liquid handling.</p>
+        </div>
+
+        <div class="workflow-showcase-grid mt-12">
+          <article id="dual-tasks" class="workflow-showcase-card">
+            <div class="workflow-showcase-card__media">
+              <video data-video-src="assets/media/dual-tasks/dual-arm-01.mp4" poster="assets/media/dual-tasks/dual-arm-01.jpg" muted loop playsinline preload="none"></video>
+            </div>
+            <h3 data-i18n="dual_tasks.card1">Lift2</h3>
+            <span class="task-card__robot" data-i18n="dual_tasks.robot1">Lift2</span>
+          </article>
+          <article class="workflow-showcase-card">
+            <div class="workflow-showcase-card__media">
+              <video data-video-src="assets/media/dual-tasks/dual-arm-02.mp4" poster="assets/media/dual-tasks/dual-arm-02.jpg" muted loop playsinline preload="none"></video>
+            </div>
+            <h3 data-i18n="dual_tasks.card2">Split Aloha</h3>
+            <span class="task-card__robot" data-i18n="dual_tasks.robot2">Split Aloha</span>
+          </article>
+          <article class="workflow-showcase-card">
+            <div class="workflow-showcase-card__media">
+              <video data-video-src="assets/media/workflow/workflow-franka-mobile-navigation.mp4" poster="assets/media/workflow/workflow-franka-mobile-navigation.jpg" muted loop playsinline preload="none"></video>
+            </div>
+            <h3 data-i18n="workflow.card1">Franka Mobile Navigation</h3>
+            <span class="task-card__robot" data-i18n="workflow.tag.mobile">Mobile</span>
+          </article>
+          <article class="workflow-showcase-card">
+            <div class="workflow-showcase-card__media">
+              <video data-video-src="assets/media/workflow/workflow-franka-16step-camera1-transparent-pourback-2160x1360.mp4?v=20260611-wf-v2" poster="assets/media/workflow/workflow-franka-A_R1_12a_00008-cam1.jpg?v=20260609-v21-b" muted loop playsinline preload="none"></video>
+            </div>
+            <h3 data-i18n="workflow.card2">Franka 16-step Workflow</h3>
+            <span class="task-card__robot" data-i18n="workflow.tag.long">16-step</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Method ======================= -->
+    <section id="method" class="section section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="method.kicker">Robustness</span>
+          <h2 class="section-title mt-4"><span data-i18n="method.t1">Domain</span><span class="grad-text" data-i18n="method.t2">randomization</span></h2>
+          <p class="section-sub lead" data-i18n="method.subtitle">We randomize scene layout, visual clutter, camera viewpoint, object appearance, lighting, and spatial placement to improve robustness.</p>
+        </div>
+
+        <div class="randomization-grid randomization-presets mt-12" data-random-presets>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/scene.jpg" data-random-label="Scene"><img src="assets/media/randomization/scene.jpg" alt="Scene randomization" loading="lazy" /><span data-i18n="random.scene">Scene</span><small data-i18n="random.click">Click to switch</small></button>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/obstacles.jpg" data-random-label="Visual clutter"><img src="assets/media/randomization/obstacles.jpg" alt="Visual clutter randomization" loading="lazy" /><span data-i18n="random.clutter">Visual clutter</span><small data-i18n="random.click">Click to switch</small></button>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/camera.jpg" data-random-label="Camera"><img src="assets/media/randomization/camera.jpg" alt="Camera randomization" loading="lazy" /><span data-i18n="random.camera">Camera</span><small data-i18n="random.click">Click to switch</small></button>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/objects.jpg" data-random-label="Object"><img src="assets/media/randomization/objects.jpg" alt="Object randomization" loading="lazy" /><span data-i18n="random.object">Object</span><small data-i18n="random.click">Click to switch</small></button>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/lighting.jpg" data-random-label="Lighting"><img src="assets/media/randomization/lighting.jpg" alt="Lighting randomization" loading="lazy" /><span data-i18n="random.lighting">Lighting</span><small data-i18n="random.click">Click to switch</small></button>
+          <button class="random-preset" type="button" data-base-src="assets/media/randomization/base.jpg" data-random-src="assets/media/randomization/position.jpg" data-random-label="Spatial"><img src="assets/media/randomization/position.jpg" alt="Spatial randomization" loading="lazy" /><span data-i18n="random.spatial">Spatial</span><small data-i18n="random.click">Click to switch</small></button>
+        </div>
+
+        <div class="hidden grid lg:grid-cols-5 gap-8 mt-12 items-center">
+          <div class="lg:col-span-3 panel">
+            <div class="placeholder aspect-[16/9]">
+              <span class="placeholder-tag" data-i18n="placeholder.figure_16_9">Figure · 16:9</span>
+              <span class="placeholder-text" data-i18n="method.figure">Method / pipeline architecture figure</span>
+            </div>
+          </div>
+          <div class="lg:col-span-2 space-y-5">
+            <h3 class="text-2xl font-display font-semibold text-white" data-i18n="method.subhead">Method Subheading</h3>
+            <p class="text-slate-300 leading-relaxed">
+              <span data-i18n="method.desc">Add a 3-5 line method description covering the core idea, inputs/outputs, and key innovations.</span>
+            </p>
+            <ul class="bullet-list">
+              <li data-i18n="method.point1">Key point 1</li>
+              <li data-i18n="method.point2">Key point 2</li>
+              <li data-i18n="method.point3">Key point 3</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Asset Generation ======================= -->
+    <section id="assets" class="section section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="assets.kicker">Reusable Assets</span>
+          <h2 class="section-title mt-4"><span data-i18n="assets.t1">Asset</span><span class="grad-text" data-i18n="assets.t2">generation</span></h2>
+          <p class="section-sub lead" data-i18n="assets.subtitle">Generate reusable objects, containers, tools, and scene props for composing lab environments.</p>
+        </div>
+
+        <div class="asset-generation-panel mt-12">
+          <div class="asset-generation-copy asset-generation-copy--stats">
+            <span class="workflow-kicker" data-i18n="assets.kicker">Reusable Assets</span>
+            <div class="asset-stats__summary asset-stats__summary--hero">
+              <div><span>2947</span><small data-i18n="assets.stat_total">Total assets</small></div>
+              <div><span>16</span><small data-i18n="assets.stat_categories">Categories</small></div>
+              <div><span>288</span><small data-i18n="assets.stat_fine">Fine classes</small></div>
+            </div>
+          </div>
+          <div class="asset-grid">
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-01.webp" alt="Generated fume hoods asset 01" loading="lazy" /><figcaption data-i18n="assets.caption1">Fume Hoods 01</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-02.webp" alt="Generated fume hoods asset 02" loading="lazy" /><figcaption data-i18n="assets.caption2">Fume Hoods 02</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-03.webp" alt="Generated fume hoods asset 03" loading="lazy" /><figcaption data-i18n="assets.caption3">Fume Hoods 03</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-04.webp" alt="Generated fume hoods asset 04" loading="lazy" /><figcaption data-i18n="assets.caption4">Fume Hoods 04</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-ball-mill-01.webp" alt="Generated ball mills asset 01" loading="lazy" /><figcaption data-i18n="assets.caption5">Ball Mills 01</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-ball-mill-02.webp" alt="Generated ball mills asset 02" loading="lazy" /><figcaption data-i18n="assets.caption6">Ball Mills 02</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-ball-mill-03.webp" alt="Generated ball mills asset 03" loading="lazy" /><figcaption data-i18n="assets.caption7">Ball Mills 03</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-ball-mill-04.webp" alt="Generated ball mills asset 04" loading="lazy" /><figcaption data-i18n="assets.caption8">Ball Mills 04</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-09.webp" alt="Generated critical point dryers asset 01" loading="lazy" /><figcaption data-i18n="assets.caption9">Critical Point Dryers 01</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-10.webp" alt="Generated critical point dryers asset 02" loading="lazy" /><figcaption data-i18n="assets.caption10">Critical Point Dryers 02</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-11.webp" alt="Generated critical point dryers asset 03" loading="lazy" /><figcaption data-i18n="assets.caption11">Critical Point Dryers 03</figcaption></figure>
+            <figure class="asset-card"><img src="assets/media/asset-generation/asset-12.webp" alt="Generated critical point dryers asset 04" loading="lazy" /><figcaption data-i18n="assets.caption12">Critical Point Dryers 04</figcaption></figure>
+          </div>
+          <div class="asset-stats__chart" aria-label="Asset category distribution">
+            <h3 data-i18n="assets.distribution">Asset category distribution</h3>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Analytical Instruments</span><em>476</em></div><div class="asset-bar__track"><i style="width:100%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Measuring</span><em>326</em></div><div class="asset-bar__track"><i style="width:68.49%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Wet Chemistry Glassware</span><em>319</em></div><div class="asset-bar__track"><i style="width:67.02%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Synthesis</span><em>251</em></div><div class="asset-bar__track"><i style="width:52.73%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Furniture</span><em>234</em></div><div class="asset-bar__track"><i style="width:49.16%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Biochemistry</span><em>219</em></div><div class="asset-bar__track"><i style="width:46.01%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Heating</span><em>202</em></div><div class="asset-bar__track"><i style="width:42.44%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Centrifugation</span><em>178</em></div><div class="asset-bar__track"><i style="width:37.39%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Plastics</span><em>166</em></div><div class="asset-bar__track"><i style="width:34.87%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Electrochemical</span><em>161</em></div><div class="asset-bar__track"><i style="width:33.82%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Safety</span><em>117</em></div><div class="asset-bar__track"><i style="width:24.58%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Metal Supports</span><em>109</em></div><div class="asset-bar__track"><i style="width:22.90%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Gas Vacuum</span><em>79</em></div><div class="asset-bar__track"><i style="width:16.60%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Ceramics</span><em>67</em></div><div class="asset-bar__track"><i style="width:14.08%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Lab Supplies</span><em>29</em></div><div class="asset-bar__track"><i style="width:6.09%"></i></div></div>
+            <div class="asset-bar"><div class="asset-bar__meta"><span>Tubing Connectors</span><em>14</em></div><div class="asset-bar__track"><i style="width:2.94%"></i></div></div>
+          </div>
+        </div>
+
+        <div class="asset-stats mt-8">
+          <div class="asset-stats__top">
+            <h3 data-i18n="assets.top_fine">Top fine-grained asset classes</h3>
+            <div class="asset-chip-row">
+              <span><strong>lab benches</strong><em>18</em></span>
+              <span><strong>corrosive cabinets</strong><em>18</em></span>
+              <span><strong>chemical cabinets</strong><em>18</em></span>
+              <span><strong>fume hoods</strong><em>18</em></span>
+              <span><strong>flammable cabinets</strong><em>18</em></span>
+              <span><strong>wall shelves</strong><em>17</em></span>
+              <span><strong>balance tables</strong><em>17</em></span>
+              <span><strong>ion chromatography</strong><em>17</em></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Scene Generation ======================= -->
+    <section id="results" class="section section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="results.kicker">Composable Scenes</span>
+          <h2 class="section-title mt-4"><span data-i18n="results.t1">Scene</span><span class="grad-text" data-i18n="results.t2">generation</span></h2>
+        </div>
+
+        <div class="scene-generation-hero mt-12">
+          <div class="scene-generation-preview">
+            <img data-scene-preview src="assets/media/scene-generation/progression-small620116-07-robot-task-objects.jpg" alt="Generated scene preview" loading="lazy" />
+            <button class="scene-nav scene-nav--prev" type="button" data-scene-step="-1" aria-label="Previous scene"></button>
+            <button class="scene-nav scene-nav--next" type="button" data-scene-step="1" aria-label="Next scene"></button>
+            <span class="scene-preview-label">
+              <span class="scene-preview-count" data-scene-count-label>Scene 01 / 04</span>
+              <span class="scene-preview-stage" data-scene-stage-label>Stage 07 / 07</span>
+            </span>
+            <div class="scene-progress" role="group" aria-label="Scene construction stage">
+              <button class="scene-progress__step" type="button" data-scene-stage="0" aria-label="Stage 01"><span>01</span></button>
+              <button class="scene-progress__step" type="button" data-scene-stage="1" aria-label="Stage 02"><span>02</span></button>
+              <button class="scene-progress__step" type="button" data-scene-stage="2" aria-label="Stage 03"><span>03</span></button>
+              <button class="scene-progress__step" type="button" data-scene-stage="3" aria-label="Stage 04"><span>04</span></button>
+              <button class="scene-progress__step" type="button" data-scene-stage="4" aria-label="Stage 05"><span>05</span></button>
+              <button class="scene-progress__step" type="button" data-scene-stage="5" aria-label="Stage 06"><span>06</span></button>
+              <button class="scene-progress__step is-active" type="button" data-scene-stage="6" aria-label="Stage 07"><span>07</span></button>
+            </div>
+          </div>
+          <div class="scene-generation-copy">
+            <h3 data-i18n="scene.title">From an empty room to a complete lab</h3>
+            <p data-i18n="scene.desc">The same viewpoint shows how room structure, furniture, equipment, assets, materials, safety cues, and task execution elements are added step by step.</p>
+            <ol class="scene-stage-list" aria-label="Scene construction stages">
+              <li data-scene-stage-item="0"><button type="button" data-scene-stage="0"><span data-i18n="scene.stage1">Empty room</span></button></li>
+              <li data-scene-stage-item="1"><button type="button" data-scene-stage="1"><span data-i18n="scene.stage2">Tables, cabinets, and benches</span></button></li>
+              <li data-scene-stage-item="2"><button type="button" data-scene-stage="2"><span data-i18n="scene.stage3">Large lab equipment</span></button></li>
+              <li data-scene-stage-item="3"><button type="button" data-scene-stage="3"><span data-i18n="scene.stage4">Desktop tools and small assets</span></button></li>
+              <li data-scene-stage-item="4"><button type="button" data-scene-stage="4"><span data-i18n="scene.stage5">Materials and textures</span></button></li>
+              <li data-scene-stage-item="5"><button type="button" data-scene-stage="5"><span data-i18n="scene.stage6">Wall fixtures, signs, and safety cues</span></button></li>
+              <li class="is-active" data-scene-stage-item="6"><button type="button" data-scene-stage="6"><span data-i18n="scene.stage7">Robot arm and task-related objects</span></button></li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="hidden grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag" data-i18n="placeholder.video">Video</span><span class="placeholder-text" data-i18n="results.video1">Task video 1</span></div>
+            <figcaption><span class="tag" data-i18n="label.task">Task</span><span data-i18n="results.task1">Task name 1</span></figcaption>
+          </figure>
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag" data-i18n="placeholder.video">Video</span><span class="placeholder-text" data-i18n="results.video2">Task video 2</span></div>
+            <figcaption><span class="tag" data-i18n="label.task">Task</span><span data-i18n="results.task2">Task name 2</span></figcaption>
+          </figure>
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag" data-i18n="placeholder.video">Video</span><span class="placeholder-text" data-i18n="results.video3">Task video 3</span></div>
+            <figcaption><span class="tag" data-i18n="label.task">Task</span><span data-i18n="results.task3">Task name 3</span></figcaption>
+          </figure>
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag" data-i18n="placeholder.video">Video</span><span class="placeholder-text" data-i18n="results.video4">Task video 4</span></div>
+            <figcaption><span class="tag" data-i18n="label.task">Task</span><span data-i18n="results.task4">Task name 4</span></figcaption>
+          </figure>
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag" data-i18n="placeholder.video">Video</span><span class="placeholder-text" data-i18n="results.video5">Task video 5</span></div>
+            <figcaption><span class="tag" data-i18n="label.task">Task</span><span data-i18n="results.task5">Task name 5</span></figcaption>
+          </figure>
+          <figure class="result-tile">
+            <div class="placeholder aspect-video"><span class="placeholder-tag" data-i18n="placeholder.video">Video</span><span class="placeholder-text" data-i18n="results.video6">Task video 6</span></div>
+            <figcaption><span class="tag" data-i18n="label.task">Task</span><span data-i18n="results.task6">Task name 6</span></figcaption>
+          </figure>
+        </div>
+
+        <div class="hidden mt-16">
+          <h3 class="text-2xl font-display font-semibold text-white text-center" data-i18n="results.quant">Quantitative Comparison</h3>
+          <div class="panel mt-6 overflow-x-auto">
+            <table class="result-table">
+              <thead>
+                <tr>
+                  <th data-i18n="table.method">Method</th>
+                  <th data-i18n="table.metric1">Metric 1</th>
+                  <th data-i18n="table.metric2">Metric 2</th>
+                  <th data-i18n="table.metric3">Metric 3</th>
+                  <th data-i18n="table.avg">Average</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td data-i18n="table.baseline1">Baseline 1</td><td data-i18n="table.value">Value</td><td data-i18n="table.value">Value</td><td data-i18n="table.value">Value</td><td data-i18n="table.value">Value</td></tr>
+                <tr><td data-i18n="table.baseline2">Baseline 2</td><td data-i18n="table.value">Value</td><td data-i18n="table.value">Value</td><td data-i18n="table.value">Value</td><td data-i18n="table.value">Value</td></tr>
+                <tr class="ours"><td data-i18n="table.ours">Ours</td><td class="best" data-i18n="table.value">Value</td><td class="best" data-i18n="table.value">Value</td><td class="best" data-i18n="table.value">Value</td><td class="best" data-i18n="table.value">Value</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+        </div><!-- /.de-body__inner -->
+      </div><!-- /.de-body -->
+    </section>
+    <!-- /#data-engine collapsible content -->
+
+    <!-- ======================= LabVLA Training Recipe (Method) ======================= -->
+    <section id="recipe" class="section section--band section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="recipe.kicker">Training Recipe</span>
+          <h2 class="section-title mt-4"><span data-i18n="recipe.title1">Two stages,</span><span class="grad-text" data-i18n="recipe.title2">one cross-embodiment policy</span></h2>
+          <p class="section-sub lead" data-i18n="recipe.lead">LabVLA adapts a Qwen3-VL backbone with FAST action-token pre-training, then a flow-matching DiT action expert — coupled by a stop-gradient that keeps language grounding intact.</p>
+        </div>
+
+        <!-- one screen: framework figure + concept accordion side by side -->
+        <div class="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center mt-8">
+          <figure class="fig fig--compact" data-reveal>
+            <div class="fig__bar"><span class="fig__no">FIG. 02</span><span class="fig__title" data-i18n="recipe.figttl">Training recipe</span><button type="button" class="fig__zoom" data-i18n="fig.zoom">Enlarge</button></div>
+            <div class="fig__plate"><img src="assets/media/paper/framework.webp?v=20260611-fig2" alt="LabVLA training recipe: grounded data pre-training with Qwen3-VL-4B-Instruct (VQA, language subtasks, FAST action tokens) and post-training with DiT action expert and knowledge insulation on LabEmbodied-Data" loading="lazy" /></div>
+          </figure>
+          <div class="accordion accordion--recipe" data-reveal>
+          <details class="acc-item acc-item--step1" name="recipe-concept" open>
+            <summary class="acc-head"><span class="chip chip--violet" data-i18n="recipe.k1.k">01</span><span class="acc-title" data-i18n="recipe.k1.t">VLM Pretraining</span><span class="acc-chevron" aria-hidden="true"></span></summary>
+            <div class="acc-panel"><p data-i18n="recipe.k1.d">We first tokenize continuous actions with FAST and train the VLM under next token supervision, so the prefix learns to predict action tokens before the DiT is attached. In this stage we do not instantiate the DiT.</p></div>
+          </details>
+          <details class="acc-item acc-item--step2" name="recipe-concept">
+            <summary class="acc-head"><span class="chip chip--cyan" data-i18n="recipe.k2.k">02</span><span class="acc-title" data-i18n="recipe.k2.t">Flow Matching Posttraining</span><span class="acc-chevron" aria-hidden="true"></span></summary>
+            <div class="acc-panel"><p data-i18n="recipe.k2.d">The second stage loads the VLM pretrained checkpoint, attaches the DiT action expert, and trains it with a flow matching objective that maps Gaussian noise to a clean action chunk through a deterministic vector field. At sampling time the deterministic vector field reaches a usable trajectory in only N=10 Euler steps, well below the hundreds needed by diffusion policies and fast enough for closed loop laboratory control.</p></div>
+          </details>
+          <details class="acc-item acc-item--step3" name="recipe-concept">
+            <summary class="acc-head"><span class="chip chip--lime" data-i18n="recipe.k3.k">03</span><span class="acc-title" data-i18n="recipe.k3.t">Knowledge Insulation</span><span class="acc-chevron" aria-hidden="true"></span></summary>
+            <div class="acc-panel"><p data-i18n="recipe.k3.d">We insulate the VLM from the flow loss while keeping the FAST and annotation token losses active, so the prefix can still learn from cross-entropy supervision without receiving velocity space gradients from the action expert. Knowledge insulation is a training time mechanism that blocks flow matching gradients from reaching the VLM prefix while FAST and annotation losses remain active.</p></div>
+          </details>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================= Experiments / Results ======================= -->
+    <section id="benchmark" class="section section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="res.kicker">Results</span>
+          <h2 class="section-title mt-4"><span data-i18n="res.title1">State-of-the-art on</span><span class="grad-text" data-i18n="res.title2">the LabUtopia benchmark</span></h2>
+          <p class="section-sub lead" data-i18n="res.lead">Six laboratory operations under in-distribution (ID) and out-of-distribution (OOD) settings, compared against representative VLA baselines on LabUtopia.</p>
+        </div>
+
+        <figure class="fig fig--clean paper-table paper-table--full mt-10" data-reveal>
+          <div class="fig__bar">
+            <span class="fig__no">TABLE 2</span>
+            <span class="fig__title" data-i18n="res.tbl.ttl">LabUtopia benchmark</span>
+            <div class="table-switch" role="tablist" aria-label="Select benchmark split" data-i18n-aria="tbl.switch.aria">
+              <button class="table-switch__btn is-active" type="button" role="tab" aria-selected="true" aria-pressed="true" data-result-split="id">ID</button>
+              <button class="table-switch__btn" type="button" role="tab" aria-selected="false" aria-pressed="false" data-result-split="ood">OOD</button>
+            </div>
+          </div>
+          <div class="fig__plate fig__plate--table">
+            <div class="results-wrap">
+              <table class="results-table results-table--main">
+                <thead>
+                  <tr>
+                    <th data-i18n="tbl.method">Method</th>
+                    <th data-i18n="tbl.size">Size</th>
+                    <th>Pick Up</th>
+                    <th>Press Button</th>
+                    <th>Open Door</th>
+                    <th>Pour Liquid</th>
+                    <th>Heat Beaker</th>
+                    <th>Transport Beaker</th>
+                    <th class="col-avg" data-i18n="tbl.avg">Avg.</th>
+                  </tr>
+                </thead>
+                <tbody data-result-group="id">
+                  <tr class="grp"><td colspan="9" data-i18n="tbl.id">In-Distribution</td></tr>
+                  <tr><td>SmolVLA</td><td>&lt;1B</td><td>15.8</td><td>97.5</td><td>16.7</td><td>0.8</td><td>96.7</td><td>85.8</td><td class="col-avg">52.2</td></tr>
+                  <tr><td>X-VLA</td><td>&lt;1B</td><td>27.5</td><td>98.3</td><td class="best">65.0</td><td class="best">45.0</td><td>25.8</td><td>83.3</td><td class="col-avg">57.5</td></tr>
+                  <tr><td>GR00T N1.5</td><td>3B</td><td>40.8</td><td>99.2</td><td>6.7</td><td>0</td><td class="best">99.2</td><td>69.2</td><td class="col-avg">52.5</td></tr>
+                  <tr><td>&pi;0</td><td>3B</td><td>21.7</td><td>92.5</td><td>51.6</td><td>37.5</td><td>90.0</td><td>86.7</td><td class="col-avg">63.3</td></tr>
+                  <tr><td>&pi;0.5</td><td>3B</td><td>38.3</td><td>60.0</td><td>55.8</td><td>29.2</td><td>40.8</td><td class="best">90.0</td><td class="col-avg">52.4</td></tr>
+                  <tr><td>&pi;0-FAST</td><td>3B</td><td>16.7</td><td>37.5</td><td>17.5</td><td>5.8</td><td>3.3</td><td>20.8</td><td class="col-avg">16.9</td></tr>
+                  <tr><td>InternVLA-A1</td><td>3B</td><td>25.8</td><td>93.3</td><td>38.3</td><td>2.5</td><td>82.5</td><td>67.5</td><td class="col-avg">51.7</td></tr>
+                  <tr><td>Wall-oss-flow</td><td>4B</td><td>11.7</td><td>54.2</td><td>0.83</td><td>0</td><td>0</td><td>29.2</td><td class="col-avg">16.0</td></tr>
+                  <tr class="is-ours"><td>LabVLA</td><td>4B</td><td class="best">49.2</td><td class="best">100</td><td class="best">65.0</td><td>43.3</td><td>83.3</td><td>85.8</td><td class="col-avg best">71.1</td></tr>
+                </tbody>
+                <tbody data-result-group="ood" hidden>
+                  <tr class="grp"><td colspan="9" data-i18n="tbl.ood">Out-of-Distribution</td></tr>
+                  <tr><td>SmolVLA</td><td>&lt;1B</td><td>11.7</td><td class="best">99.2</td><td>18.3</td><td>1.67</td><td>98.3</td><td class="best">89.2</td><td class="col-avg">53.1</td></tr>
+                  <tr><td>X-VLA</td><td>&lt;1B</td><td>27.5</td><td class="best">99.2</td><td>59.2</td><td>25.0</td><td>39.2</td><td>67.5</td><td class="col-avg">52.9</td></tr>
+                  <tr><td>GR00T N1.5</td><td>3B</td><td>33.3</td><td>92.5</td><td>8.3</td><td>0</td><td class="best">99.2</td><td>66.7</td><td class="col-avg">50.0</td></tr>
+                  <tr><td>&pi;0</td><td>3B</td><td>19.2</td><td>89.1</td><td>53.3</td><td class="best">38.3</td><td>90.8</td><td>88.3</td><td class="col-avg">63.2</td></tr>
+                  <tr><td>&pi;0.5</td><td>3B</td><td>30.0</td><td>68.3</td><td>59.2</td><td>29.2</td><td>40.0</td><td>85.8</td><td class="col-avg">52.1</td></tr>
+                  <tr><td>&pi;0-FAST</td><td>3B</td><td>14.2</td><td>45.0</td><td>15.8</td><td>7.5</td><td>11.7</td><td>24.2</td><td class="col-avg">19.7</td></tr>
+                  <tr><td>InternVLA-A1</td><td>3B</td><td>19.2</td><td>95.8</td><td>63.3</td><td>0.83</td><td>84.2</td><td>57.5</td><td class="col-avg">53.5</td></tr>
+                  <tr><td>Wall-oss-flow</td><td>4B</td><td>7.5</td><td>61.7</td><td>0</td><td>0</td><td>0</td><td>26.7</td><td class="col-avg">16.0</td></tr>
+                  <tr class="is-ours"><td>LabVLA</td><td>4B</td><td class="best">48.3</td><td>98.3</td><td class="best">65.8</td><td>34.2</td><td>87.5</td><td>85.8</td><td class="col-avg best">70.0</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </figure>
+
+        <div class="benchmark-kpis-row reveal-children mt-8">
+          <div class="kpi"><span class="kpi__num" data-count="71.1" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="res.kpi1">Average success · ID</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="70.0" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="res.kpi2">Average success · OOD</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="7.8" data-count-prefix="+" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="res.kpi3">over π0 (ID)</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="6.8" data-count-prefix="+" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="res.kpi4">over π0 (OOD)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Analysis · Data transferability (paper §5.1) ======================= -->
+    <section id="transfer" class="section section--band section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="sim.kicker">Analysis</span>
+          <h2 class="section-title mt-4"><span data-i18n="sim.title1">The data transfers,</span><span class="grad-text" data-i18n="sim.title2">lifting external policies too</span></h2>
+          <p class="section-sub lead" data-i18n="sim.lead">A study beyond LabUtopia: an external X-VLA baseline also benefits from fine-tuning on LabEmbodied-Data — the supervision is not tied to the LabVLA architecture.</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-10 reveal-children">
+          <div class="kpi"><span class="kpi__num" data-count="15.0" data-count-prefix="+" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="sim.b.kpi1">5-task avg gain · ID</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="19.3" data-count-prefix="+" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="sim.b.kpi2">5-task avg gain · OOD</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="42.5" data-count-prefix="+" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="sim.b.kpi3">Heat Beaker · ID</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="40.0" data-count-prefix="+" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="sim.b.kpi4">Pour Liquid · OOD</span></div>
+        </div>
+
+        <figure class="fig fig--clean mt-10 paper-table paper-table--full" data-reveal>
+          <div class="fig__bar"><span class="fig__no">TABLE 3</span><span class="fig__title" data-i18n="sim.b.tblttl">LabEmbodied-Data transferability</span></div>
+          <div class="fig__plate fig__plate--table">
+            <div class="results-wrap">
+              <table class="results-table results-table--transfer">
+                <thead>
+                  <tr>
+                    <th data-i18n="tbl.method">Method</th>
+                    <th data-i18n="tbl.size">Size</th>
+                    <th>Pick Up</th>
+                    <th>Open Door</th>
+                    <th>Pour Liquid</th>
+                    <th>Heat Beaker</th>
+                    <th>Transport Beaker</th>
+                    <th class="col-avg" data-i18n="tbl.avg">Avg.</th>
+                    <th class="col-delta">&Delta;</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="grp"><td colspan="9" data-i18n="tbl.id">In-Distribution</td></tr>
+                  <tr><td>X-VLA</td><td>&lt;1B</td><td>27.5</td><td>65.0</td><td>45.0</td><td>25.8</td><td>83.3</td><td class="col-avg">49.3</td><td class="col-delta">&mdash;</td></tr>
+                  <tr class="is-ours"><td>X-VLA + LabEmbodied</td><td>&lt;1B</td><td>26.7</td><td>69.2</td><td>59.2</td><td>68.3</td><td>98.3</td><td class="col-avg">64.3</td><td class="col-delta gain">+15.0</td></tr>
+                  <tr class="grp"><td colspan="9" data-i18n="tbl.ood">Out-of-Distribution</td></tr>
+                  <tr><td>X-VLA</td><td>&lt;1B</td><td>27.5</td><td>59.2</td><td>25.0</td><td>39.2</td><td>67.5</td><td class="col-avg">43.7</td><td class="col-delta">&mdash;</td></tr>
+                  <tr class="is-ours"><td>X-VLA + LabEmbodied</td><td>&lt;1B</td><td>31.7</td><td>63.3</td><td>65.0</td><td>65.0</td><td>90.0</td><td class="col-avg">63.0</td><td class="col-delta gain">+19.3</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </figure>
+        <p class="figure-cap" data-i18n="sim.note.transfer">Five non-saturated LabUtopia tasks (Press Button excluded as near-saturated for all baselines). Δ is the change in five-task average from adding LabEmbodied-Data.</p>
+      </div>
+    </section>
+
+    <!-- ======================= Analysis · Real-world sim-to-real (paper §5.2) ======================= -->
+    <section id="sim2real" class="section section--band section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="sim.a.kicker">Real-World Validation</span>
+          <h2 class="section-title mt-4"><span data-i18n="sim.a.t1">Simulation-trained,</span><span class="grad-text" data-i18n="sim.a.t2">deployed on a real Franka</span></h2>
+        </div>
+
+        <div class="sim2real-kpis grid grid-cols-2 md:grid-cols-4 gap-6 mt-6 reveal-children">
+          <div class="kpi"><span class="kpi__num" data-count="86.5" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="sim.a.kpi1">Avg success · clean, in-domain</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="80.0" data-count-suffix="%">0</span><span class="kpi__label" data-i18n="sim.a.kpi2">Avg success · clean, OOD (best)</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="4">0</span><span class="kpi__label" data-i18n="sim.a.kpi3">Real-robot tasks</span></div>
+          <div class="kpi"><span class="kpi__num" data-count="50">0</span><span class="kpi__label" data-i18n="sim.a.kpi4">Rollouts per condition</span></div>
+        </div>
+
+        <div class="grid lg:grid-cols-5 gap-6 mt-5 items-stretch sim2real-split">
+          <figure class="fig fig--clean fig--side lg:col-span-2" data-reveal>
+              <div class="fig__bar"><span class="fig__no">FIG. 03</span><span class="fig__title" data-i18n="sim.a.figttl">Real-world setup</span><button type="button" class="fig__zoom" data-i18n="fig.zoom">Enlarge</button></div>
+              <div class="fig__plate"><img src="assets/media/paper/real_world.webp?v=20260613" alt="Real-world Franka laboratory setup with beakers, flasks, a magnetic stirrer and a heating plate" loading="lazy" /></div>
+            </figure>
+
+          <figure class="fig fig--clean paper-table paper-table--side lg:col-span-3" data-reveal>
+            <div class="fig__bar"><span class="fig__no">TABLE 4</span><span class="fig__title" data-i18n="sim.a.tblttl">Real-robot evaluation · Franka</span></div>
+            <div class="table-switch table-switch--real" role="tablist" aria-label="Select real-robot task" data-i18n-aria="real.switch.aria">
+              <button class="table-switch__btn is-active" type="button" role="tab" aria-selected="true" aria-pressed="true" data-real-task="avg" data-i18n="sim.task.avg">Average</button>
+              <button class="table-switch__btn" type="button" role="tab" aria-selected="false" aria-pressed="false" data-real-task="shake" data-i18n="sim.task.btn.shake">Shake Liquid</button>
+              <button class="table-switch__btn" type="button" role="tab" aria-selected="false" aria-pressed="false" data-real-task="pour" data-i18n="sim.task.btn.pour">Pour Liquid</button>
+              <button class="table-switch__btn" type="button" role="tab" aria-selected="false" aria-pressed="false" data-real-task="stir" data-i18n="sim.task.btn.stir">Magnetic Stir</button>
+              <button class="table-switch__btn" type="button" role="tab" aria-selected="false" aria-pressed="false" data-real-task="stopper" data-i18n="sim.task.btn.stopper">Funnel Plug/Unplug</button>
+            </div>
+            <div class="fig__plate fig__plate--table">
+              <div class="results-wrap">
+                <table class="results-table results-table--real" data-real-view="avg">
+                  <thead>
+                    <tr>
+                      <th data-i18n="tbl.task">Task</th>
+                      <th data-i18n="sim.th.setcol">Setting</th>
+                      <th class="ours-col" data-i18n="sim.col.ours">LabVLA (Ours)</th>
+                      <th>DreamZero</th>
+                      <th data-i18n="sim.col.pi">π0.5</th>
+                    </tr>
+                  </thead>
+                  <tbody data-real-task="shake">
+                    <tr><td rowspan="4" class="rt-task" data-i18n="sim.task.btn.shake">Shake Liquid</td><td data-i18n="sim.set.id_clean">In-domain · Clean</td><td class="ours-col best">92</td><td>90</td><td class="best">92</td></tr>
+                    <tr><td data-i18n="sim.set.id_clut">In-domain · Cluttered</td><td class="ours-col best">86</td><td>84</td><td>80</td></tr>
+                    <tr><td data-i18n="sim.set.ood_clean">Out-of-domain · Clean</td><td class="ours-col best">84</td><td class="best">84</td><td>82</td></tr>
+                    <tr><td data-i18n="sim.set.ood_clut">Out-of-domain · Cluttered</td><td class="ours-col best">80</td><td class="best">80</td><td>78</td></tr>
+                  </tbody>
+                  <tbody data-real-task="pour">
+                    <tr><td rowspan="4" class="rt-task" data-i18n="sim.task.btn.pour">Pour Liquid</td><td data-i18n="sim.set.id_clean">In-domain · Clean</td><td class="ours-col">86</td><td class="best">88</td><td>82</td></tr>
+                    <tr><td data-i18n="sim.set.id_clut">In-domain · Cluttered</td><td class="ours-col">78</td><td class="best">80</td><td>74</td></tr>
+                    <tr><td data-i18n="sim.set.ood_clean">Out-of-domain · Clean</td><td class="ours-col best">76</td><td>72</td><td>74</td></tr>
+                    <tr><td data-i18n="sim.set.ood_clut">Out-of-domain · Cluttered</td><td class="ours-col best">72</td><td>70</td><td>68</td></tr>
+                  </tbody>
+                  <tbody data-real-task="stir">
+                    <tr><td rowspan="4" class="rt-task" data-i18n="sim.task.btn.stir">Magnetic Stir</td><td data-i18n="sim.set.id_clean">In-domain · Clean</td><td class="ours-col best">88</td><td>86</td><td class="best">88</td></tr>
+                    <tr><td data-i18n="sim.set.id_clut">In-domain · Cluttered</td><td class="ours-col">80</td><td class="best">84</td><td>80</td></tr>
+                    <tr><td data-i18n="sim.set.ood_clean">Out-of-domain · Clean</td><td class="ours-col">80</td><td>78</td><td class="best">82</td></tr>
+                    <tr><td data-i18n="sim.set.ood_clut">Out-of-domain · Cluttered</td><td class="ours-col">74</td><td class="best">80</td><td>76</td></tr>
+                  </tbody>
+                  <tbody data-real-task="stopper">
+                    <tr><td rowspan="4" class="rt-task" data-i18n="sim.task.name.stopper">Funnel Plug/&#10;Unplug</td><td data-i18n="sim.set.id_clean">In-domain · Clean</td><td class="ours-col">80</td><td class="best">84</td><td>78</td></tr>
+                    <tr><td data-i18n="sim.set.id_clut">In-domain · Cluttered</td><td class="ours-col best">76</td><td class="best">76</td><td>72</td></tr>
+                    <tr><td data-i18n="sim.set.ood_clean">Out-of-domain · Clean</td><td class="ours-col best">80</td><td>78</td><td>70</td></tr>
+                    <tr><td data-i18n="sim.set.ood_clut">Out-of-domain · Cluttered</td><td class="ours-col">70</td><td class="best">72</td><td>64</td></tr>
+                  </tbody>
+                  <tbody data-real-task="avg">
+                    <tr class="rt-avg"><td rowspan="4" class="rt-task" data-i18n="sim.task.avg">Average</td><td data-i18n="sim.set.id_clean">In-domain · Clean</td><td class="ours-col">86.5</td><td class="best">87.0</td><td>85.0</td></tr>
+                    <tr class="rt-avg"><td data-i18n="sim.set.id_clut">In-domain · Cluttered</td><td class="ours-col">80.0</td><td class="best">81.0</td><td>76.5</td></tr>
+                    <tr class="rt-avg"><td data-i18n="sim.set.ood_clean">Out-of-domain · Clean</td><td class="ours-col best">80.0</td><td>78.0</td><td>77.0</td></tr>
+                    <tr class="rt-avg"><td data-i18n="sim.set.ood_clut">Out-of-domain · Cluttered</td><td class="ours-col">74.0</td><td class="best">75.5</td><td>71.5</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <figcaption class="fig__cap" data-i18n="sim.note.real">Success rate (%) over 50 rollouts per setting; bold = per-row best. LabVLA leads the clean out-of-domain average.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Capability Pyramid ======================= -->
+    <section id="capability" class="section section--screen">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="cap.kicker">Levels of embodied laboratory competence</span>
+          <h2 class="section-title mt-4"><span data-i18n="cap.title1">From apprentice</span><span class="grad-text" data-i18n="cap.title2">to scientist</span></h2>
+          <p class="section-sub lead" data-i18n="cap.lead">Rather than a single aggregate score, laboratory manipulation is better viewed through four levels of competence modeled on real laboratory roles. We position LabVLA at Level 2 (Technician), with RoboGenesis infrastructure that begins to support Level 3.</p>
+        </div>
+
+        <div class="pyramid-wrap mt-14" data-reveal>
+          <div class="pyramid" role="tablist" aria-label="Capability levels">
+            <span class="pyramid__axis" aria-hidden="true"><span data-i18n="cap.axis">Competence</span></span>
+
+            <button type="button" class="tier" data-level="4" role="tab" aria-controls="pdetail-4">
+              <span class="tier__lvl">L4</span>
+              <span class="tier__body">
+                <span class="tier__role" data-i18n="cap.l4.role">Scientist</span>
+                <span class="tier__d" data-i18n="cap.l4.d">Modifies the procedure in response to observations or measurements</span>
+              </span>
+            </button>
+
+            <button type="button" class="tier" data-level="3" role="tab" aria-controls="pdetail-3">
+              <span class="tier__lvl">L3</span>
+              <span class="tier__body">
+                <span class="tier__role" data-i18n="cap.l3.role">Specialist</span>
+                <span class="tier__d" data-i18n="cap.l3.d">Precision instruments · measurement logging · safety constraints</span>
+              </span>
+            </button>
+
+            <button type="button" class="tier" data-level="2" role="tab" aria-controls="pdetail-2">
+              <span class="tier__lvl">L2</span>
+              <span class="tier__body">
+                <span class="tier__role" data-i18n="cap.l2.role">Technician</span>
+                <span class="tier__d" data-i18n="cap.l2.d">Written multistep protocol · physical state changes</span>
+              </span>
+            </button>
+
+            <button type="button" class="tier" data-level="1" role="tab" aria-controls="pdetail-1">
+              <span class="tier__lvl">L1</span>
+              <span class="tier__body">
+                <span class="tier__role" data-i18n="cap.l1.role">Apprentice</span>
+                <span class="tier__d" data-i18n="cap.l1.d">Single step interactions with laboratory objects</span>
+              </span>
+            </button>
+          </div>
+
+          <!-- detail panel -->
+          <div class="pyramid-detail">
+            <div class="pdetail" id="pdetail-1" data-level="1" role="tabpanel">
+              <div class="pdetail__top"><span class="pdetail__lvl">L1</span><span class="pdetail__role" data-i18n="cap.l1.role">Apprentice</span></div>
+              <p class="pdetail__desc" data-i18n="cap.l1.desc">Level 1 (Apprentice) covers single step interactions with laboratory objects: grasping labware, pressing a button, opening a door, or placing a container.</p>
+            </div>
+
+            <div class="pdetail" id="pdetail-2" data-level="2" role="tabpanel">
+              <div class="pdetail__top">
+                <span class="pdetail__lvl">L2</span>
+                <span class="pdetail__role" data-i18n="cap.l2.role">Technician</span>
+              </div>
+              <p class="pdetail__desc" data-i18n="cap.l2.desc">Level 2 (Technician) requires following a written multistep protocol through physical state changes such as pouring, heating, stirring, shaking, or transporting a vessel, where a failed earlier step cascades through the rest of the procedure.</p>
+              <p class="pdetail__meta pdetail__meta--ours" data-i18n="cap.tag.ours">LabVLA at Level 2 (Technician)</p>
+            </div>
+
+            <div class="pdetail" id="pdetail-3" data-level="3" role="tabpanel">
+              <div class="pdetail__top">
+                <span class="pdetail__lvl">L3</span>
+                <span class="pdetail__role" data-i18n="cap.l3.role">Specialist</span>
+              </div>
+              <p class="pdetail__desc" data-i18n="cap.l3.desc">Level 3 (Specialist) adds operation of precision instruments (pipettes, centrifuges, thermal cyclers, microscopes) in longer workflows with measurement logging and safety constraints.</p>
+            </div>
+
+            <div class="pdetail" id="pdetail-4" data-level="4" role="tabpanel">
+              <div class="pdetail__top"><span class="pdetail__lvl">L4</span><span class="pdetail__role" data-i18n="cap.l4.role">Scientist</span></div>
+              <p class="pdetail__desc" data-i18n="cap.l4.desc">Level 4 (Scientist) modifies the procedure in response to observations or measurements: adjusting concentrations, branching to alternative protocols, or deciding when an experimental objective has been met.</p>
+              <p class="pdetail__meta pdetail__meta--limit" data-i18n="cap.l4.note">However, the policy does not yet demonstrate the instrument competence, measurement awareness, or scientific judgment that Level 3 and Level 4 require.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Institutions ======================= -->
+    <section id="team" class="section section--team">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="section-head" data-reveal>
+          <span class="kicker kicker--center" data-i18n="team.kicker">Affiliations</span>
+          <h2 class="section-title mt-4" data-i18n="team.title">Institutions</h2>
+          <p class="section-sub" data-i18n="team.subtitle">The institutions behind LabVLA.</p>
+        </div>
+
+        <div class="inst-board mt-10" data-reveal>
+          <p class="inst-board__note"><span data-i18n="team.note">This work is jointly conducted by the following institutions</span></p>
+          <div class="inst-board__row">
+            <figure class="inst-cell">
+              <img class="inst-logo inst-logo--zju" src="assets/media/logos/zju.png?v=2" alt="Zhejiang University" loading="lazy" />
+            </figure>
+            <span class="inst-sep" aria-hidden="true"></span>
+            <figure class="inst-cell">
+              <img class="inst-logo inst-logo--ailab" src="assets/media/logos/ailab.png?v=2" alt="Shanghai Artificial Intelligence Laboratory" loading="lazy" />
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button type="button" class="lightbox__close" aria-label="Close">&#10005;</button>
+    <img alt="" />
+  </div>
+
+  <script src="assets/js/main.js?v=20260611-rollout50"></script>
+</body>
+</html>
