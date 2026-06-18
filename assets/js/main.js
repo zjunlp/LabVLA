@@ -2159,15 +2159,18 @@ const HERO_SMALL_COUNT = 96;
     refreshLabels();
   })();
 
-  /* ---------- Site analytics: PV only (Vercount API) ---------- */
+  /* ---------- Site analytics: PV only (Vercount API + historical baseline) ---------- */
   const pvEl = $('#busuanzi_value_site_pv');
   if (pvEl) {
     const PV_KEY = 'labvla-site-pv';
     const VERCOUNT_API = 'https://events.vercount.one/api/v2/log';
+    /* Offset for pre-site-analytics traffic (Twitter launch post: ~2218 visits). */
+    const PV_HISTORICAL_BASE = 2218;
     pvEl.classList.add('is-loading');
 
-    const showCount = (n) => {
-      if (Number.isFinite(n)) pvEl.textContent = n.toLocaleString();
+    const showCount = (livePv) => {
+      if (!Number.isFinite(livePv)) return;
+      pvEl.textContent = (livePv + PV_HISTORICAL_BASE).toLocaleString();
     };
     const finish = () => pvEl.classList.remove('is-loading');
 
