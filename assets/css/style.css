@@ -3212,6 +3212,34 @@ html[lang="zh-CN"] .section-title > span + span{ margin-inline-start:0; }
 #sim2real .fig--side .fig__plate{
   flex:1; display:flex; align-items:center; justify-content:center;
   padding:clamp(.3rem,.7vw,.5rem); min-height:clamp(18rem,34vh,24rem);
+  position:relative;
+}
+#sim2real .fig--side .fig__plate--real img{ cursor:default; }
+.real-watch-btn{
+  position:absolute; left:50%; bottom:clamp(.65rem,1.6vw,1rem);
+  transform:translateX(-50%); z-index:2;
+  display:inline-flex; align-items:center; gap:.45rem;
+  padding:.45rem .95rem .45rem .75rem;
+  font-family:'Source Sans Pro','Lato',Verdana,Helvetica,sans-serif;
+  font-size:.78rem; font-weight:600; letter-spacing:.02em; white-space:nowrap;
+  color:#111827; cursor:pointer;
+  background:#fff; border:1px solid rgba(17,24,39,.18);
+  border-radius:var(--r-pill);
+  box-shadow:0 6px 20px -6px rgba(17,24,39,.22);
+  transition:color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out),
+    background var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-1) var(--ease-out);
+}
+.real-watch-btn__icon{
+  width:1.05rem; height:1.05rem; flex-shrink:0; color:#111827;
+}
+.real-watch-btn:hover{
+  color:#000; border-color:rgba(17,24,39,.32);
+  background:#f9fafb; transform:translateX(-50%) translateY(-1px);
+  box-shadow:0 10px 28px -8px rgba(17,24,39,.28);
+}
+.real-watch-btn:focus-visible{
+  outline:2px solid #111827; outline-offset:3px;
 }
 #sim2real .fig--side .fig__plate img{
   width:100%; height:100%; max-height:none;
@@ -3287,6 +3315,177 @@ html[lang="zh-CN"] .section-title > span + span{ margin-inline-start:0; }
   #sim2real .fig--side .fig__plate img{
     width:auto; height:auto; max-height:min(52vh,520px);
   }
+}
+
+/* ===== sim2real real-robot demo grid (4 field rollout clips) — kept hidden; modal replaces inline grid ===== */
+#sim2real .sim2real-demos{ display:none !important; }
+
+/* ===== real-robot video modal ===== */
+.real-modal{
+  position:fixed; inset:0; z-index:110;
+  display:none; align-items:center; justify-content:center;
+  padding:clamp(.75rem,2.5vw,1.5rem);
+}
+.real-modal.is-open{ display:flex; }
+.real-modal__backdrop{
+  position:absolute; inset:0; cursor:pointer;
+  background:rgba(255,255,255,.72);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+}
+.real-modal__panel{
+  position:relative; z-index:1; width:min(920px,96vw); max-height:92vh;
+  display:flex; flex-direction:column; overflow:hidden;
+  background:#fff;
+  border:1px solid rgba(17,24,39,.12); border-radius:14px;
+  box-shadow:0 24px 80px -20px rgba(17,24,39,.28);
+}
+.real-modal__close{
+  position:absolute; top:.85rem; right:.85rem; z-index:2;
+  width:2.2rem; height:2.2rem; border-radius:999px;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:1rem; line-height:1; color:#374151; cursor:pointer;
+  background:#fff; border:1px solid rgba(17,24,39,.14);
+  transition:border-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out),
+    background var(--dur-1) var(--ease-out);
+}
+.real-modal__close:hover{ border-color:rgba(17,24,39,.28); color:#111827; background:#f9fafb; }
+.real-modal__close:focus-visible{ outline:2px solid #111827; outline-offset:2px; }
+.real-modal__head{
+  padding:1.35rem 3rem 1rem 1.35rem;
+  border-bottom:1px solid rgba(17,24,39,.08);
+  background:#fff;
+}
+.real-modal__head h2{
+  font-family:'Source Sans Pro','Lato',Verdana,Helvetica,sans-serif;
+  font-size:clamp(1.05rem,2vw,1.25rem); font-weight:600; color:#111827;
+}
+.real-modal__lead{
+  margin-top:.45rem; font-size:.84rem; line-height:1.55; color:#4b5563;
+}
+.real-modal__grid{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(.65rem,1.4vw,.85rem);
+  padding:clamp(.85rem,1.6vw,1.1rem); overflow:auto;
+  background:#f9fafb;
+}
+.real-modal__cell{
+  margin:0; display:flex; flex-direction:column; gap:.45rem;
+  background:#fff; border:1px solid rgba(17,24,39,.1);
+  border-radius:10px; padding:.55rem;
+  box-shadow:0 1px 3px rgba(17,24,39,.06);
+}
+.real-modal__media{
+  position:relative; border-radius:7px; overflow:hidden; background:#e5e7eb;
+}
+.real-modal__cell video{
+  display:block; width:100%; aspect-ratio:16/9; border-radius:7px;
+  background:#e5e7eb; object-fit:cover;
+}
+/* Hide native volume / mute controls — videos are always silent */
+.real-modal__cell video::-webkit-media-controls-mute-button,
+.real-modal__cell video::-webkit-media-controls-volume-slider,
+.real-modal__cell video::-webkit-media-controls-volume-control-container{
+  display:none !important;
+}
+.real-modal__cell figcaption{
+  font-size:.74rem; font-weight:600; color:#111827;
+  text-align:center; letter-spacing:.02em;
+}
+@media (max-width:640px){
+  .real-modal__grid{ grid-template-columns:1fr; }
+  .real-modal__head{ padding-right:3.2rem; }
+}
+
+#sim2real .sim2real-demos__head{
+  display:flex; flex-direction:column; align-items:center; text-align:center; gap:.45rem;
+  max-width:42rem; margin:0 auto 1rem;
+}
+#sim2real .sim2real-demos__kicker{
+  display:inline-flex; align-items:center; gap:.45rem;
+  font-family:var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size:.68rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+  color:#0E7A8B;
+}
+#sim2real .sim2real-demos__kicker::before,
+#sim2real .sim2real-demos__kicker::after{
+  content:""; width:1.4rem; height:1px; background:linear-gradient(90deg, transparent, rgba(14,122,139,.55));
+}
+#sim2real .sim2real-demos__kicker::after{
+  background:linear-gradient(270deg, transparent, rgba(14,122,139,.55));
+}
+#sim2real .sim2real-demos__lead{
+  margin:0; font-size:clamp(.88rem, 1.05vw, .98rem); line-height:1.55; color:var(--text-2);
+}
+#sim2real .real-robot-grid{
+  display:grid; grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:.75rem;
+  height:clamp(340px, 46vh, 500px);
+}
+#sim2real .real-robot-card{
+  position:relative; display:flex; flex-direction:column; overflow:hidden;
+  border-radius:10px; border:1px solid rgba(255,255,255,.11);
+  background:#05080A; isolation:isolate; cursor:pointer;
+  box-shadow:0 16px 54px -44px rgba(34,211,238,.55);
+  transition:transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+#sim2real .real-robot-card::before{
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14); z-index:4;
+}
+#sim2real .real-robot-card:hover,
+#sim2real .real-robot-card.is-active{
+  transform:translateY(-2px);
+  border-color:rgba(34,211,238,.46);
+  box-shadow:0 22px 68px -36px rgba(34,211,238,.82);
+}
+#sim2real .real-robot-card__media{
+  position:relative; flex:1 1 auto; min-height:0; overflow:hidden; background:rgba(0,0,0,.32);
+}
+#sim2real .real-robot-card__media::after{
+  content:""; position:absolute; inset:38% 0 0; pointer-events:none; z-index:1;
+  background:linear-gradient(180deg, transparent, rgba(0,0,0,.78));
+}
+#sim2real .real-robot-card__media video{
+  width:100%; height:100%; display:block; object-fit:cover;
+  filter:saturate(1.06) contrast(1.03) brightness(1.05);
+}
+#sim2real .real-robot-card__live{
+  position:absolute; top:.62rem; left:.62rem; z-index:3;
+  display:inline-flex; align-items:center; gap:.32rem;
+  padding:.18rem .46rem .18rem .36rem; border-radius:999px;
+  font-family:var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size:.58rem; font-weight:700; letter-spacing:.08em;
+  color:#fecaca; background:rgba(40,8,8,.72); border:1px solid rgba(248,113,113,.42);
+  backdrop-filter:blur(8px);
+}
+#sim2real .real-robot-card__live i{
+  width:.42rem; height:.42rem; border-radius:50%; background:#ef4444;
+  box-shadow:0 0 0 0 rgba(239,68,68,.65);
+  animation:real-live-pulse 1.8s ease-out infinite;
+}
+@keyframes real-live-pulse{
+  0%{ box-shadow:0 0 0 0 rgba(239,68,68,.55); }
+  70%{ box-shadow:0 0 0 6px rgba(239,68,68,0); }
+  100%{ box-shadow:0 0 0 0 rgba(239,68,68,0); }
+}
+#sim2real .real-robot-card__foot{
+  position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:.65rem;
+  padding:.62rem .78rem .72rem;
+  background:linear-gradient(180deg, rgba(5,8,10,.15), rgba(5,8,10,.92));
+}
+#sim2real .real-robot-card__foot h3{
+  margin:0; font-size:clamp(.82rem, .95vw, .98rem); line-height:1.15; font-weight:600; color:#f8fafc;
+}
+#sim2real .real-robot-card__stat{
+  flex-shrink:0; padding:.16rem .48rem; border-radius:999px;
+  font-family:var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size:.58rem; font-weight:600; letter-spacing:.02em;
+  color:#cffafe; background:rgba(3,15,18,.72); border:1px solid rgba(34,211,238,.28);
+}
+@media (max-width: 900px){
+  #sim2real .real-robot-grid{
+    grid-template-columns:1fr; height:auto;
+  }
+  #sim2real .real-robot-card__media{ aspect-ratio:16/9; }
 }
 .kpi--sm .kpi__num{ font-size:clamp(1.5rem,2.6vw,2.1rem); }
 .kpi--sm .kpi__label{ font-size:.78rem; }

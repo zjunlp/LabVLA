@@ -997,6 +997,17 @@ const HERO_SMALL_COUNT = 96;
     'sim.set.ood_clean': 'Out-of-domain · Clean',
     'sim.set.ood_clut': 'Out-of-domain · Cluttered',
     'sim.note.real': 'Success rate (%) over 50 rollouts per setting; bold = per-row best. LabVLA leads the clean out-of-domain average.',
+    'sim.a.watch': 'Watch Videos',
+    'sim.a.modal.title': 'Real-robot rollouts',
+    'sim.a.modal.lead': 'Uncut Franka execution clips from the real laboratory — one per evaluation task.',
+    'sim.a.modal.hint': 'Click any video to play.',
+    'sim.a.modal.play': 'Click to play',
+    'sim.a.demo.kicker': 'Field Rollouts',
+    'sim.a.demo.lead': 'Uncut Franka execution clips from the real laboratory — one per evaluation task.',
+    'sim.a.demo.stat.shake': '92% · ID Clean',
+    'sim.a.demo.stat.pour': '86% · ID Clean',
+    'sim.a.demo.stat.stir': '88% · ID Clean',
+    'sim.a.demo.stat.stopper': '80% · ID Clean',
     'sim.b.k': '02 · Data transferability',
     'sim.b.title': 'LabEmbodied-Data lifts an external policy',
     'sim.b.desc': 'Fine-tuning X-VLA — a sub-1B baseline from the LabUtopia comparison — on LabEmbodied-Data raises its five-task average by +15.0% (ID) and +19.3% (OOD). The biggest gains land on instrument-specific contact tasks the original data never saw.',
@@ -1037,6 +1048,17 @@ const HERO_SMALL_COUNT = 96;
     'sim.set.ood_clean': '分布外 · 干净',
     'sim.set.ood_clut': '分布外 · 杂乱',
     'sim.note.real': '每种设定下 50 次 rollout 的成功率（%），加粗为该行最佳；LabVLA 在「干净·分布外」平均上领先。',
+    'sim.a.watch': '观看视频',
+    'sim.a.modal.title': '真机执行视频',
+    'sim.a.modal.lead': '真实实验室 Franka 未剪辑执行片段——每个评测任务一条。',
+    'sim.a.modal.hint': '点击任意视频即可播放。',
+    'sim.a.modal.play': '点击播放',
+    'sim.a.demo.kicker': '真机执行',
+    'sim.a.demo.lead': '真实实验室 Franka 未剪辑执行片段——每个评测任务一条。',
+    'sim.a.demo.stat.shake': '92% · 分布内·干净',
+    'sim.a.demo.stat.pour': '86% · 分布内·干净',
+    'sim.a.demo.stat.stir': '88% · 分布内·干净',
+    'sim.a.demo.stat.stopper': '80% · 分布内·干净',
     'sim.b.k': '02 · 数据可迁移性',
     'sim.b.title': 'LabEmbodied-Data 能提升外部策略',
     'sim.b.desc': '把 X-VLA（LabUtopia 对比中的 sub-1B 基线）在 LabEmbodied-Data 上微调后，五任务平均提升 +15.0%（ID）/ +19.3%（OOD）。最大增益集中在原始数据未覆盖、需要特定仪器接触模式的任务上。',
@@ -1249,6 +1271,7 @@ const HERO_SMALL_COUNT = 96;
   const realTaskSwitch = $('#sim2real .table-switch--real');
   if (realTaskSwitch) {
     const realTable = $('#sim2real .results-table--real');
+    const realDemoCards = $$('#sim2real [data-real-demo]');
     const taskButtons = $$('[data-real-task]', realTaskSwitch);
     const setRealTask = (task) => {
       taskButtons.forEach((btn) => {
@@ -1259,6 +1282,10 @@ const HERO_SMALL_COUNT = 96;
         btn.tabIndex = active ? 0 : -1;
       });
       if (realTable) realTable.dataset.realView = task;
+      realDemoCards.forEach((card) => {
+        const match = task !== 'avg' && card.dataset.realDemo === task;
+        card.classList.toggle('is-active', match);
+      });
     };
 
     taskButtons.forEach((btn) => {
@@ -1271,6 +1298,15 @@ const HERO_SMALL_COUNT = 96;
         const next = taskButtons[(currentIndex + dir + taskButtons.length) % taskButtons.length];
         next.focus();
         setRealTask(next.dataset.realTask);
+      });
+    });
+    realDemoCards.forEach((card) => {
+      card.addEventListener('click', () => {
+        const task = card.dataset.realDemo;
+        if (!task) return;
+        setRealTask(task);
+        const btn = $(`[data-real-task="${task}"]`, realTaskSwitch);
+        btn?.focus({ preventScroll: true });
       });
     });
     setRealTask('avg');
@@ -1527,6 +1563,61 @@ const HERO_SMALL_COUNT = 96;
       if (e.target === lightbox || e.target.classList.contains('lightbox__close')) closeLB();
     });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLB(); });
+  }
+
+  /* ---------- Real-robot video modal (FIG. 03 watch button) ---------- */
+  const realModal = $('#realRobotModal');
+  const realWatchBtn = $('#realWatchBtn');
+  if (realModal && realWatchBtn) {
+    let bodyOverflow = '';
+    const modalVideos = () => $$('video', realModal);
+
+    const startModalVideos = () => {
+      modalVideos().forEach((video) => {
+        video.muted = true;
+        video.defaultMuted = true;
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      });
+    };
+
+    const pauseModalVideos = () => {
+      modalVideos().forEach((video) => {
+        video.pause();
+        video.currentTime = 0;
+        video.muted = true;
+      });
+    };
+
+    const openRealModal = () => {
+      bodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      realModal.classList.add('is-open');
+      realModal.setAttribute('aria-hidden', 'false');
+      startModalVideos();
+    };
+
+    const closeRealModal = () => {
+      pauseModalVideos();
+      realModal.classList.remove('is-open');
+      realModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = bodyOverflow;
+    };
+
+    realWatchBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      openRealModal();
+    });
+    modalVideos().forEach((video) => {
+      video.muted = true;
+      video.addEventListener('volumechange', () => { video.muted = true; });
+    });
+    $$('[data-real-modal-close]', realModal).forEach((el) => {
+      el.addEventListener('click', closeRealModal);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && realModal.classList.contains('is-open')) closeRealModal();
+    });
   }
 
   /* ---------- Capability pyramid: level switch (highlight tier + detail panel) ---------- */

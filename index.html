@@ -25,7 +25,7 @@
   <!-- Tailwind: prebuilt static CSS (was runtime CDN JIT) -->
   <link rel="stylesheet" href="assets/css/tailwind.css?v=20260611-tw" />
 
-  <link rel="stylesheet" href="assets/css/style.css?v=20260617-viewport-03b" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260618-realwatch-autoplay" />
 </head>
 
 <body class="bg-ink-950 text-slate-200 antialiased font-sans selection:bg-accent/40 selection:text-white">
@@ -711,7 +711,13 @@
         <div class="grid lg:grid-cols-5 gap-6 mt-5 items-stretch sim2real-split">
           <figure class="fig fig--clean fig--side lg:col-span-2" data-reveal>
               <div class="fig__bar"><span class="fig__no">FIG. 03</span><span class="fig__title" data-i18n="sim.a.figttl">Real-world setup</span><button type="button" class="fig__zoom" data-i18n="fig.zoom">Enlarge</button></div>
-              <div class="fig__plate"><img src="assets/media/paper/real_world.webp?v=20260613" alt="Real-world Franka laboratory setup with beakers, flasks, a magnetic stirrer and a heating plate" loading="lazy" /></div>
+              <div class="fig__plate fig__plate--real">
+                <img src="assets/media/paper/real_world.webp?v=20260613" alt="Real-world Franka laboratory setup with beakers, flasks, a magnetic stirrer and a heating plate" loading="lazy" />
+                <button type="button" class="real-watch-btn" id="realWatchBtn" aria-haspopup="dialog" aria-controls="realRobotModal">
+                  <svg class="real-watch-btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+                  <span data-i18n="sim.a.watch">Watch Videos</span>
+                </button>
+              </div>
             </figure>
 
           <figure class="fig fig--clean paper-table paper-table--side lg:col-span-3" data-reveal>
@@ -770,6 +776,55 @@
             </div>
             <figcaption class="fig__cap" data-i18n="sim.note.real">Success rate (%) over 50 rollouts per setting; bold = per-row best. LabVLA leads the clean out-of-domain average.</figcaption>
           </figure>
+        </div>
+
+        <div class="sim2real-demos mt-10" data-reveal>
+          <div class="sim2real-demos__head">
+            <span class="sim2real-demos__kicker" data-i18n="sim.a.demo.kicker">Field Rollouts</span>
+            <p class="sim2real-demos__lead" data-i18n="sim.a.demo.lead">Uncut Franka execution clips from the real laboratory — one per evaluation task, sim-trained and deployed zero-shot.</p>
+          </div>
+          <div class="real-robot-grid">
+            <article class="real-robot-card" data-real-demo="shake" role="button" tabindex="0" aria-label="Shake Liquid demo">
+              <div class="real-robot-card__media">
+                <span class="real-robot-card__live" aria-hidden="true"><i></i>LIVE</span>
+                <video data-video-src="assets/media/real-robot/real-shake.mp4" poster="assets/media/real-robot/real-shake.jpg" muted loop playsinline preload="none"></video>
+              </div>
+              <div class="real-robot-card__foot">
+                <h3 data-i18n="sim.task.btn.shake">Shake Liquid</h3>
+                <span class="real-robot-card__stat" data-i18n="sim.a.demo.stat.shake">92% · ID Clean</span>
+              </div>
+            </article>
+            <article class="real-robot-card" data-real-demo="pour" role="button" tabindex="0" aria-label="Pour Liquid demo">
+              <div class="real-robot-card__media">
+                <span class="real-robot-card__live" aria-hidden="true"><i></i>LIVE</span>
+                <video data-video-src="assets/media/real-robot/real-pour.mp4" poster="assets/media/real-robot/real-pour.jpg" muted loop playsinline preload="none"></video>
+              </div>
+              <div class="real-robot-card__foot">
+                <h3 data-i18n="sim.task.btn.pour">Pour Liquid</h3>
+                <span class="real-robot-card__stat" data-i18n="sim.a.demo.stat.pour">86% · ID Clean</span>
+              </div>
+            </article>
+            <article class="real-robot-card" data-real-demo="stir" role="button" tabindex="0" aria-label="Magnetic Stir demo">
+              <div class="real-robot-card__media">
+                <span class="real-robot-card__live" aria-hidden="true"><i></i>LIVE</span>
+                <video data-video-src="assets/media/real-robot/real-stir.mp4" poster="assets/media/real-robot/real-stir.jpg" muted loop playsinline preload="none"></video>
+              </div>
+              <div class="real-robot-card__foot">
+                <h3 data-i18n="sim.task.btn.stir">Magnetic Stir</h3>
+                <span class="real-robot-card__stat" data-i18n="sim.a.demo.stat.stir">88% · ID Clean</span>
+              </div>
+            </article>
+            <article class="real-robot-card" data-real-demo="stopper" role="button" tabindex="0" aria-label="Funnel Plug/Unplug demo">
+              <div class="real-robot-card__media">
+                <span class="real-robot-card__live" aria-hidden="true"><i></i>LIVE</span>
+                <video data-video-src="assets/media/real-robot/real-stopper.mp4" poster="assets/media/real-robot/real-stopper.jpg" muted loop playsinline preload="none"></video>
+              </div>
+              <div class="real-robot-card__foot">
+                <h3 data-i18n="sim.task.btn.stopper">Funnel Plug/Unplug</h3>
+                <span class="real-robot-card__stat" data-i18n="sim.a.demo.stat.stopper">80% · ID Clean</span>
+              </div>
+            </article>
+          </div>
         </div>
       </div>
     </section>
@@ -886,6 +941,44 @@
     <img alt="" />
   </div>
 
-  <script src="assets/js/main.js?v=20260617-trim4"></script>
+  <!-- Real-robot video modal -->
+  <div class="real-modal" id="realRobotModal" role="dialog" aria-modal="true" aria-labelledby="realModalTitle" aria-hidden="true">
+    <div class="real-modal__backdrop" data-real-modal-close tabindex="-1"></div>
+    <div class="real-modal__panel">
+      <button type="button" class="real-modal__close" data-real-modal-close aria-label="Close">&#10005;</button>
+      <header class="real-modal__head">
+        <h2 id="realModalTitle" data-i18n="sim.a.modal.title">Real-robot rollouts</h2>
+        <p class="real-modal__lead" data-i18n="sim.a.modal.lead">Uncut Franka execution clips from the real laboratory — one per evaluation task.</p>
+      </header>
+      <div class="real-modal__grid">
+        <figure class="real-modal__cell">
+          <div class="real-modal__media">
+            <video src="assets/media/real-robot/real-shake.mp4?v=20260618-map" controls controlsList="nodownload noplaybackrate noremoteplayback" playsinline muted loop preload="auto" poster="assets/media/real-robot/real-shake.jpg?v=20260618-map"></video>
+          </div>
+          <figcaption data-i18n="sim.task.btn.shake">Shake Liquid</figcaption>
+        </figure>
+        <figure class="real-modal__cell">
+          <div class="real-modal__media">
+            <video src="assets/media/real-robot/real-pour.mp4?v=20260618-map" controls controlsList="nodownload noplaybackrate noremoteplayback" playsinline muted loop preload="auto" poster="assets/media/real-robot/real-pour.jpg?v=20260618-map"></video>
+          </div>
+          <figcaption data-i18n="sim.task.btn.pour">Pour Liquid</figcaption>
+        </figure>
+        <figure class="real-modal__cell">
+          <div class="real-modal__media">
+            <video src="assets/media/real-robot/real-stir.mp4?v=20260618-trim8" controls controlsList="nodownload noplaybackrate noremoteplayback" playsinline muted loop preload="auto" poster="assets/media/real-robot/real-stir.jpg?v=20260618-trim8"></video>
+          </div>
+          <figcaption data-i18n="sim.task.btn.stir">Magnetic Stir</figcaption>
+        </figure>
+        <figure class="real-modal__cell">
+          <div class="real-modal__media">
+            <video src="assets/media/real-robot/real-stopper.mp4?v=20260618-map" controls controlsList="nodownload noplaybackrate noremoteplayback" playsinline muted loop preload="auto" poster="assets/media/real-robot/real-stopper.jpg?v=20260618-map"></video>
+          </div>
+          <figcaption data-i18n="sim.task.btn.stopper">Funnel Plug/Unplug</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/main.js?v=20260618-map"></script>
 </body>
 </html>
