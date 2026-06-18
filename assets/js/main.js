@@ -287,7 +287,6 @@ const HERO_SMALL_COUNT = 96;
       'footer.rights': 'LabVLA. All rights reserved.',
       'footer.note': 'Replace placeholders before release.',
       'footer.views': 'Page views',
-      'footer.visitors': 'Visitors',
     },
     zh: {
       'meta.description': 'LabVLA 视觉-语言-动作研究项目页面。',
@@ -415,7 +414,6 @@ const HERO_SMALL_COUNT = 96;
       'footer.rights': 'LabVLA. 保留所有权利。',
       'footer.note': '替换占位即可上线。',
       'footer.views': '访问量',
-      'footer.visitors': '访客数',
     },
   };
 
@@ -1569,59 +1567,28 @@ const HERO_SMALL_COUNT = 96;
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLB(); });
   }
 
-  /* ---------- Real-robot video modal (FIG. 03 watch button) ---------- */
-  const realModal = $('#realRobotModal');
-  const realWatchBtn = $('#realWatchBtn');
-  if (realModal && realWatchBtn) {
-    let bodyOverflow = '';
-    const modalVideos = () => $$('video', realModal);
-
-    const startModalVideos = () => {
-      modalVideos().forEach((video) => {
-        video.muted = true;
-        video.defaultMuted = true;
-        video.currentTime = 0;
-        video.play().catch(() => {});
-      });
+  /* ---------- Real-robot inline player (FIG. 03 play buttons) ---------- */
+  const realPlayGrid = $('#sim2real .real-play-grid');
+  const realPlayViewer = $('#realPlayViewer');
+  const realPlayVideo = $('#realPlayVideo');
+  if (realPlayGrid && realPlayViewer && realPlayVideo) {
+    const playBtns = $$('.real-play-btn', realPlayGrid);
+    const playClip = (btn) => {
+      const src = btn.dataset.realSrc;
+      const poster = btn.dataset.realPoster;
+      if (!src) return;
+      playBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+      realPlayVideo.src = src;
+      if (poster) realPlayVideo.poster = poster;
+      realPlayViewer.classList.remove('is-empty');
+      realPlayVideo.currentTime = 0;
+      realPlayVideo.play().catch(() => {});
     };
-
-    const pauseModalVideos = () => {
-      modalVideos().forEach((video) => {
-        video.pause();
-        video.currentTime = 0;
-        video.muted = true;
-      });
-    };
-
-    const openRealModal = () => {
-      bodyOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      realModal.classList.add('is-open');
-      realModal.setAttribute('aria-hidden', 'false');
-      startModalVideos();
-    };
-
-    const closeRealModal = () => {
-      pauseModalVideos();
-      realModal.classList.remove('is-open');
-      realModal.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = bodyOverflow;
-    };
-
-    realWatchBtn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      openRealModal();
+    playBtns.forEach((btn) => {
+      btn.addEventListener('click', () => playClip(btn));
     });
-    modalVideos().forEach((video) => {
-      video.muted = true;
-      video.addEventListener('volumechange', () => { video.muted = true; });
-    });
-    $$('[data-real-modal-close]', realModal).forEach((el) => {
-      el.addEventListener('click', closeRealModal);
-    });
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && realModal.classList.contains('is-open')) closeRealModal();
-    });
+    realPlayVideo.addEventListener('volumechange', () => { realPlayVideo.muted = true; });
+    if (playBtns[0]) playClip(playBtns[0]);
   }
 
   /* ---------- Capability pyramid: level switch (highlight tier + detail panel) ---------- */
@@ -2192,47 +2159,23 @@ const HERO_SMALL_COUNT = 96;
     refreshLabels();
   })();
 
-  /* ---------- Site analytics: PV + UV (Vercount API direct) ---------- */
+  /* ---------- Site analytics: PV only (Vercount API) ---------- */
   const pvEl = $('#busuanzi_value_site_pv');
-  const uvEl = $('#busuanzi_value_site_uv');
-  if (pvEl || uvEl) {
+  if (pvEl) {
     const PV_KEY = 'labvla-site-pv';
-    const UV_KEY = 'labvla-site-uv';
-    const VISITOR_KEY = 'labvla-visitor-id';
     const VERCOUNT_API = 'https://events.vercount.one/api/v2/log';
-    [pvEl, uvEl].filter(Boolean).forEach((el) => el.classList.add('is-loading'));
+    pvEl.classList.add('is-loading');
 
-    const showCount = (el, n) => {
-      if (el && Number.isFinite(n)) el.textContent = n.toLocaleString();
+    const showCount = (n) => {
+      if (Number.isFinite(n)) pvEl.textContent = n.toLocaleString();
     };
-    const finish = (el) => el?.classList.remove('is-loading');
+    const finish = () => pvEl.classList.remove('is-loading');
 
     const bumpLocal = () => {
       const pv = (parseInt(localStorage.getItem(PV_KEY) || '0', 10) || 0) + 1;
       localStorage.setItem(PV_KEY, String(pv));
-      showCount(pvEl, pv);
-      finish(pvEl);
-
-      let uv = parseInt(localStorage.getItem(UV_KEY) || '0', 10) || 0;
-      if (!localStorage.getItem(VISITOR_KEY)) {
-        const id = (typeof crypto !== 'undefined' && crypto.randomUUID)
-          ? crypto.randomUUID()
-          : `v-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-        localStorage.setItem(VISITOR_KEY, id);
-        uv += 1;
-        localStorage.setItem(UV_KEY, String(uv));
-      }
-      showCount(uvEl, uv);
-      finish(uvEl);
-    };
-
-    const markNewUv = () => {
-      const key = `vercount_uv_${location.host.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
-      const seen = document.cookie.split('; ').some((c) => c.startsWith(`${key}=`));
-      if (!seen) {
-        document.cookie = `${key}=1; path=/; max-age=31536000; samesite=lax`;
-      }
-      return !seen;
+      showCount(pv);
+      finish();
     };
 
     const track = () => {
@@ -2246,19 +2189,15 @@ const HERO_SMALL_COUNT = 96;
       fetch(VERCOUNT_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: location.href, isNewUv: markNewUv() }),
+        body: JSON.stringify({ url: location.href, isNewUv: false }),
         signal: ctrl.signal,
       })
         .then((res) => (res.ok ? res.json() : Promise.reject()))
         .then((json) => {
-          const d = json?.data ?? json;
-          const pv = Number(d?.site_pv);
-          const uv = Number(d?.site_uv);
-          if (!Number.isFinite(pv) && !Number.isFinite(uv)) throw new Error('no data');
-          if (Number.isFinite(pv)) showCount(pvEl, pv);
-          if (Number.isFinite(uv)) showCount(uvEl, uv);
-          finish(pvEl);
-          finish(uvEl);
+          const pv = Number(json?.data?.site_pv ?? json?.site_pv);
+          if (!Number.isFinite(pv)) throw new Error('no data');
+          showCount(pv);
+          finish();
         })
         .catch(bumpLocal)
         .finally(() => clearTimeout(timer));

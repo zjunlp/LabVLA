@@ -3191,23 +3191,7 @@ html[lang="zh-CN"] .section-title > span + span{ margin-inline-start:0; }
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: clamp(1rem, 3vw, 2rem);
-}
-.inst-board__metric{
-  display: inline-flex;
-  align-items: center;
   gap: .85rem;
-}
-.inst-board__metrics-divider{
-  flex: none;
-  width: 1px;
-  height: 1.35rem;
-  background: rgba(17,24,39,.12);
-}
-@media (max-width:520px){
-  .inst-board__metrics-divider{ display:none; }
-  .inst-board__metrics{ flex-direction: column; gap: .85rem; }
 }
 .inst-board__metrics-label{
   font-size: .74rem;
@@ -3271,47 +3255,79 @@ html[lang="zh-CN"] .section-title > span + span{ margin-inline-start:0; }
 .sim2real-kpis .kpi__num{ font-size:clamp(1.8rem,4.2vw,3rem); }
 .sim2real-kpis .kpi__label{ font-size:.82rem; }
 
-/* Sim2real split: equal-height columns; enlarge left figure, stretch right table; lock table height on task switch */
+/* Sim2real split: equal-height columns; video 2 / table 3 */
 #sim2real .sim2real-split{ align-items:stretch; }
 #sim2real .sim2real-split > .fig--side,
 #sim2real .sim2real-split > .paper-table--side{
-  display:flex; flex-direction:column; height:100%;
+  display:flex; flex-direction:column; height:100%; min-height:0;
 }
+#sim2real .fig--side .fig__bar{ flex-shrink:0; }
 #sim2real .fig--side .fig__plate{
   flex:1; display:flex; align-items:center; justify-content:center;
   padding:clamp(.3rem,.7vw,.5rem); min-height:clamp(18rem,34vh,24rem);
   position:relative;
 }
-#sim2real .fig--side .fig__plate--real img{ cursor:default; }
-.real-watch-btn{
-  position:absolute; left:50%; bottom:clamp(.65rem,1.6vw,1rem);
-  transform:translateX(-50%); z-index:2;
-  display:inline-flex; align-items:center; gap:.45rem;
-  padding:.45rem .95rem .45rem .75rem;
+#sim2real .fig--side .fig__plate--real{
+  flex:1 1 0; display:flex; flex-direction:column; align-items:stretch;
+  justify-content:flex-start; padding:0; min-height:0; gap:0; overflow:hidden;
+}
+.real-play-grid{
+  flex-shrink:0;
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:clamp(.4rem,.75vw,.55rem);
+  width:100%; padding:clamp(.75rem,1.5vw,1rem);
+  box-sizing:border-box;
+}
+.real-play-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.32rem;
+  padding:.5rem .4rem; min-height:2.35rem; min-width:0;
   font-family:'Source Sans Pro','Lato',Verdana,Helvetica,sans-serif;
-  font-size:.78rem; font-weight:600; letter-spacing:.02em; white-space:nowrap;
+  font-size:clamp(.62rem,1.05vw,.72rem); font-weight:600; letter-spacing:.01em;
+  line-height:1.25; text-align:center;
   color:#111827; cursor:pointer;
   background:#fff; border:1px solid rgba(17,24,39,.18);
   border-radius:var(--r-pill);
-  box-shadow:0 6px 20px -6px rgba(17,24,39,.22);
+  box-shadow:0 4px 14px -6px rgba(17,24,39,.18);
   transition:color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out),
     background var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out),
     box-shadow var(--dur-1) var(--ease-out);
 }
-.real-watch-btn__icon{
-  width:1.05rem; height:1.05rem; flex-shrink:0; color:#111827;
+.real-play-btn__icon{
+  width:.9rem; height:.9rem; flex-shrink:0; color:currentColor;
 }
-.real-watch-btn:hover{
+.real-play-btn span{
+  min-width:0; overflow:hidden; text-overflow:ellipsis;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+}
+.real-play-btn:hover{
   color:#000; border-color:rgba(17,24,39,.32);
-  background:#f9fafb; transform:translateX(-50%) translateY(-1px);
-  box-shadow:0 10px 28px -8px rgba(17,24,39,.28);
+  background:#f9fafb; transform:translateY(-1px);
+  box-shadow:0 8px 22px -8px rgba(17,24,39,.24);
 }
-.real-watch-btn:focus-visible{
-  outline:2px solid #111827; outline-offset:3px;
+.real-play-btn.is-active{
+  color:#2B57A0; border-color:rgba(43,87,160,.45);
+  background:rgba(43,87,160,.06);
+  box-shadow:0 6px 18px -8px rgba(43,87,160,.28);
 }
-#sim2real .fig--side .fig__plate img{
-  width:100%; height:100%; max-height:none;
-  margin-inline:auto; object-fit:contain;
+.real-play-btn:focus-visible{ outline:2px solid #111827; outline-offset:2px; }
+.real-play-viewer{
+  flex:1 1 0; min-height:0; position:relative;
+  overflow:hidden; background:#f3f4f6;
+}
+.real-play-viewer.is-empty video{ display:none; }
+.real-play-viewer video{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  border:0; border-radius:0;
+  background:#fff; object-fit:cover;
+}
+.real-play-viewer video::-webkit-media-controls-mute-button,
+.real-play-viewer video::-webkit-media-controls-volume-slider,
+.real-play-viewer video::-webkit-media-controls-volume-control-container{
+  display:none !important;
+}
+@media (max-width:520px){
+  .real-play-grid{ gap:.35rem; padding:.65rem .55rem; }
+  .real-play-btn{ padding:.45rem .28rem; font-size:.62rem; }
 }
 #sim2real .paper-table--side{
   min-height:clamp(20rem,36vh,26rem);
@@ -3341,19 +3357,20 @@ html[lang="zh-CN"] .section-title > span + span{ margin-inline-start:0; }
   height:2.5rem; padding:.55rem 1rem; box-sizing:border-box;
   line-height:1.25; vertical-align:middle;
 }
-/* Setting column: first row col 2, or col 1 on continuation rows (after rowspan shift) */
 #sim2real .paper-table--side .results-table--real tbody tr:first-child td:nth-child(2),
 #sim2real .paper-table--side .results-table--real tbody tr:not(:first-child) td:first-child{
   text-align:left; padding-left:1.35rem; padding-right:1.1rem;
   white-space:normal;
 }
-/* Numeric columns: force center + symmetric padding (override global last-child right padding) */
 #sim2real .paper-table--side .results-table--real thead th:nth-child(3),
 #sim2real .paper-table--side .results-table--real thead th:nth-child(4),
 #sim2real .paper-table--side .results-table--real thead th:nth-child(5),
 #sim2real .paper-table--side .results-table--real tbody tr:first-child td:nth-child(n+3),
 #sim2real .paper-table--side .results-table--real tbody tr:not(:first-child) td:nth-child(n+2){
   text-align:center; padding-left:1rem; padding-right:1rem;
+}
+#sim2real .paper-table--side .results-table--real .rt-task{
+  vertical-align:middle; line-height:1.35; white-space:pre-line;
 }
 #sim2real .paper-table--side .results-table--real tbody{
   height:calc(100% - 2.5rem);
@@ -3364,9 +3381,6 @@ html[lang="zh-CN"] .section-title > span + span{ margin-inline-start:0; }
 #sim2real .paper-table--side .results-table--real tbody td{
   padding:.45rem 1rem; box-sizing:border-box;
   vertical-align:middle; line-height:1.3;
-}
-#sim2real .paper-table--side .results-table--real .rt-task{
-  vertical-align:middle; line-height:1.35; white-space:pre-line;
 }
 #sim2real .paper-table--side .fig__cap{
   flex-shrink:0; margin-top:auto;
@@ -3886,11 +3900,11 @@ body.is-editing .edit-bar{ display:inline-flex; }
   background:#2B57A0; border-color:#2B57A0; color:#fff;
   box-shadow:0 8px 18px rgba(43,87,160,.16);
 }
-.table-switch--real{
+#sim2real .table-switch--real{
   flex-wrap:wrap; justify-content:flex-start; gap:.4rem .35rem;
   margin-left:0; padding:.65rem 1rem; border-bottom:1px solid rgba(17,24,39,.08); background:#fff;
 }
-.table-switch--real .table-switch__btn{
+#sim2real .table-switch--real .table-switch__btn{
   min-width:0; font-size:.68rem; letter-spacing:.05em; text-transform:none;
   padding:.48rem .72rem;
 }
@@ -3904,7 +3918,6 @@ body.is-editing .edit-bar{ display:inline-flex; }
 }
 .results-table--main{ min-width:860px; }
 .results-table--transfer{ min-width:720px; }
-.results-table--real{ min-width:560px; }
 
 #transfer .paper-table{ max-width:100% !important; }
 #transfer .fig__plate--table .results-wrap{ width:100%; }
@@ -3987,15 +4000,14 @@ body.is-editing .edit-bar{ display:inline-flex; }
 .results-table th.ours-col{ color:#2B57A0; }
 .results-table td.ours-col{ background:rgba(43,87,160,.06); color:var(--text-0); font-weight:600; }
 
-/* Real-robot table: switch tbody by task; default view is Average only */
+/* Real-robot table: switch tbody by task; task label column + Average block */
+.results-table--real{ min-width:560px; }
 .results-table--real[data-real-view] tbody{ display:none; }
 .results-table--real[data-real-view="avg"] tbody[data-real-task="avg"],
 .results-table--real[data-real-view="shake"] tbody[data-real-task="shake"],
 .results-table--real[data-real-view="pour"] tbody[data-real-task="pour"],
 .results-table--real[data-real-view="stir"] tbody[data-real-task="stir"],
 .results-table--real[data-real-view="stopper"] tbody[data-real-task="stopper"]{ display:table-row-group; }
-
-/* Real-robot table: task label column + group dividers + Average block */
 .results-table--real .rt-task{
   text-align:left; vertical-align:middle; font-weight:700; color:var(--text-0);
   padding-left:1.5rem; border-right:1px solid rgba(17,24,39,.08);
@@ -4003,7 +4015,6 @@ body.is-editing .edit-bar{ display:inline-flex; }
 }
 .results-table--real tbody tr:has(.rt-task) td{ border-top:1px solid rgba(17,24,39,.12); }
 .results-table--real tbody tr:first-child td{ border-top:0; }
-/* Setting column: consistent dark style regardless of rowspan shift (fix pale first rows) */
 .results-table--real tbody tr:has(.rt-task) td:nth-child(2){ color:var(--text-0); font-weight:500; }
 .results-table--real[data-real-view="avg"] tbody[data-real-task="avg"] tr.rt-avg:has(.rt-task) td{ border-top:0; }
 .results-table--real tr.rt-avg td{ background:rgba(17,24,39,.028); font-weight:700; color:var(--text-0); }

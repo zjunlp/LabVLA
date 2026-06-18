@@ -25,7 +25,7 @@
   <!-- Tailwind: prebuilt static CSS (was runtime CDN JIT) -->
   <link rel="stylesheet" href="assets/css/tailwind.css?v=20260611-tw" />
 
-  <link rel="stylesheet" href="assets/css/style.css?v=20260618-viewcount5" />
+  <link rel="stylesheet" href="assets/css/style.css?v=20260618-table5-col" />
 </head>
 
 <body class="bg-ink-950 text-slate-200 antialiased font-sans selection:bg-accent/40 selection:text-white">
@@ -710,13 +710,31 @@
 
         <div class="grid lg:grid-cols-5 gap-6 mt-5 items-stretch sim2real-split">
           <figure class="fig fig--clean fig--side lg:col-span-2" data-reveal>
-              <div class="fig__bar"><span class="fig__no">FIG. 03</span><span class="fig__title" data-i18n="sim.a.figttl">Real-world setup</span><button type="button" class="fig__zoom" data-i18n="fig.zoom">Enlarge</button></div>
+              <div class="fig__bar"><span class="fig__no">FIG. 03</span><span class="fig__title" data-i18n="sim.a.figttl">Real-world setup</span></div>
               <div class="fig__plate fig__plate--real">
-                <img src="assets/media/paper/real_world.webp?v=20260613" alt="Real-world Franka laboratory setup with beakers, flasks, a magnetic stirrer and a heating plate" loading="lazy" />
-                <button type="button" class="real-watch-btn" id="realWatchBtn" aria-haspopup="dialog" aria-controls="realRobotModal">
-                  <svg class="real-watch-btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
-                  <span data-i18n="sim.a.watch">Watch Videos</span>
-                </button>
+                <div class="real-play-grid">
+                  <button type="button" class="real-play-btn is-active" data-real-src="assets/media/real-robot/real-shake.mp4?v=20260618-map" data-real-poster="assets/media/real-robot/real-shake.jpg?v=20260618-map">
+                    <svg class="real-play-btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+                    <span data-i18n="sim.task.btn.shake">Shake Liquid</span>
+                  </button>
+                  <button type="button" class="real-play-btn" data-real-src="assets/media/real-robot/real-pour.mp4?v=20260618-map" data-real-poster="assets/media/real-robot/real-pour.jpg?v=20260618-map">
+                    <svg class="real-play-btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+                    <span data-i18n="sim.task.btn.pour">Pour Liquid</span>
+                  </button>
+                  <button type="button" class="real-play-btn" data-real-src="assets/media/real-robot/real-stir.mp4?v=20260618-trim8" data-real-poster="assets/media/real-robot/real-stir.jpg?v=20260618-trim8">
+                    <svg class="real-play-btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+                    <span data-i18n="sim.task.btn.stir">Magnetic Stir</span>
+                  </button>
+                  <button type="button" class="real-play-btn" data-real-src="assets/media/real-robot/real-stopper.mp4?v=20260618-map" data-real-poster="assets/media/real-robot/real-stopper.jpg?v=20260618-map">
+                    <svg class="real-play-btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+                    <span data-i18n="sim.task.btn.stopper">Funnel Plug/Unplug</span>
+                  </button>
+                </div>
+                <div class="real-play-viewer" id="realPlayViewer">
+                  <video id="realPlayVideo" controls controlsList="nodownload noplaybackrate noremoteplayback" playsinline muted loop preload="auto"
+                    src="assets/media/real-robot/real-shake.mp4?v=20260618-map"
+                    poster="assets/media/real-robot/real-shake.jpg?v=20260618-map"></video>
+                </div>
               </div>
             </figure>
 
@@ -930,21 +948,11 @@
             </figure>
           </div>
           <div class="inst-board__metrics" role="status">
-            <div class="inst-board__metric">
-              <span class="inst-board__metrics-label" data-i18n="footer.views">Page views</span>
-              <span class="inst-board__metrics-sep" aria-hidden="true"></span>
-              <strong class="inst-board__metrics-count">
-                <span id="busuanzi_value_site_pv" class="inst-board__metrics-num" aria-live="polite">…</span>
-              </strong>
-            </div>
-            <span class="inst-board__metrics-divider" aria-hidden="true"></span>
-            <div class="inst-board__metric">
-              <span class="inst-board__metrics-label" data-i18n="footer.visitors">Visitors</span>
-              <span class="inst-board__metrics-sep" aria-hidden="true"></span>
-              <strong class="inst-board__metrics-count">
-                <span id="busuanzi_value_site_uv" class="inst-board__metrics-num" aria-live="polite">…</span>
-              </strong>
-            </div>
+            <span class="inst-board__metrics-label" data-i18n="footer.views">Page views</span>
+            <span class="inst-board__metrics-sep" aria-hidden="true"></span>
+            <strong class="inst-board__metrics-count">
+              <span id="busuanzi_value_site_pv" class="inst-board__metrics-num" aria-live="polite">…</span>
+            </strong>
           </div>
         </div>
       </div>
@@ -958,44 +966,6 @@
     <img alt="" />
   </div>
 
-  <!-- Real-robot video modal -->
-  <div class="real-modal" id="realRobotModal" role="dialog" aria-modal="true" aria-labelledby="realModalTitle" aria-hidden="true">
-    <div class="real-modal__backdrop" data-real-modal-close tabindex="-1"></div>
-    <div class="real-modal__panel">
-      <button type="button" class="real-modal__close" data-real-modal-close aria-label="Close">&#10005;</button>
-      <header class="real-modal__head">
-        <h2 id="realModalTitle" data-i18n="sim.a.modal.title">Real-robot rollouts</h2>
-        <p class="real-modal__lead" data-i18n="sim.a.modal.lead">Uncut Franka execution clips from the real laboratory — one per evaluation task.</p>
-      </header>
-      <div class="real-modal__grid">
-        <figure class="real-modal__cell">
-          <div class="real-modal__media">
-            <video src="assets/media/real-robot/real-shake.mp4?v=20260618-map" controls controlsList="nodownload noplaybackrate noremoteplayback" playsinline muted loop preload="auto" poster="assets/media/real-robot/real-shake.jpg?v=20260618-map"></video>
-          </div>
-          <figcaption data-i18n="sim.task.btn.shake">Shake Liquid</figcaption>
-        </figure>
-        <figure class="real-modal__cell">
-          <div class="real-modal__media">
-            <video src="assets/media/real-robot/real-pour.mp4?v=20260618-map" controls controlsList="nodownload noplaybackrate noremoteplayback" playsinline muted loop preload="auto" poster="assets/media/real-robot/real-pour.jpg?v=20260618-map"></video>
-          </div>
-          <figcaption data-i18n="sim.task.btn.pour">Pour Liquid</figcaption>
-        </figure>
-        <figure class="real-modal__cell">
-          <div class="real-modal__media">
-            <video src="assets/media/real-robot/real-stir.mp4?v=20260618-trim8" controls controlsList="nodownload noplaybackrate noremoteplayback" playsinline muted loop preload="auto" poster="assets/media/real-robot/real-stir.jpg?v=20260618-trim8"></video>
-          </div>
-          <figcaption data-i18n="sim.task.btn.stir">Magnetic Stir</figcaption>
-        </figure>
-        <figure class="real-modal__cell">
-          <div class="real-modal__media">
-            <video src="assets/media/real-robot/real-stopper.mp4?v=20260618-map" controls controlsList="nodownload noplaybackrate noremoteplayback" playsinline muted loop preload="auto" poster="assets/media/real-robot/real-stopper.jpg?v=20260618-map"></video>
-          </div>
-          <figcaption data-i18n="sim.task.btn.stopper">Funnel Plug/Unplug</figcaption>
-        </figure>
-      </div>
-    </div>
-  </div>
-
-  <script src="assets/js/main.js?v=20260618-viewcount6"></script>
+  <script src="assets/js/main.js?v=20260618-real-play-init"></script>
 </body>
 </html>
