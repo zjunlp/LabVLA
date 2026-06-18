@@ -3155,7 +3155,7 @@ html[lang="zh-CN"] .section-title > span + span{ margin-inline-start:0; }
 @media (max-width:1024px){ .section--screen{ min-height:auto; } }
 @media (max-height:760px){ .section--screen{ min-height:auto; } }
 /* team + acknowledgements: compact tail (no full-viewport centering gap) */
-.section--team{ padding-bottom: clamp(1.25rem, 2.5vw, 2rem); }
+.section--team{ padding-bottom: clamp(2.5rem, 5vw, 3.5rem); }
 .section--ack{ padding-top: clamp(1.25rem, 2.5vw, 2rem); padding-bottom: clamp(2rem, 4vw, 3rem); }
 
 /* institutions: formal administrative plaque */
@@ -3182,6 +3182,74 @@ html[lang="zh-CN"] .section-title > span + span{ margin-inline-start:0; }
   gap:clamp(2rem,5vw,4.5rem); flex-wrap:wrap;
 }
 .inst-cell{ margin:0; display:flex; align-items:center; justify-content:center; }
+
+/* institutions · page-view counter (inside white plaque) */
+.inst-board__metrics{
+  margin-top: clamp(1.75rem, 3.5vw, 2.35rem);
+  padding-top: clamp(1.25rem, 2.5vw, 1.65rem);
+  border-top: 1px solid rgba(17,24,39,.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: clamp(1rem, 3vw, 2rem);
+}
+.inst-board__metric{
+  display: inline-flex;
+  align-items: center;
+  gap: .85rem;
+}
+.inst-board__metrics-divider{
+  flex: none;
+  width: 1px;
+  height: 1.35rem;
+  background: rgba(17,24,39,.12);
+}
+@media (max-width:520px){
+  .inst-board__metrics-divider{ display:none; }
+  .inst-board__metrics{ flex-direction: column; gap: .85rem; }
+}
+.inst-board__metrics-label{
+  font-size: .74rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(17,24,39,.46);
+}
+.inst-board__metrics-sep{
+  flex: none;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #2B57A0;
+  opacity: .55;
+}
+.inst-board__metrics-count{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  line-height: 1;
+}
+.inst-board__metrics-pv,
+.inst-board__metrics-num{
+  font-family: inherit;
+  font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+  color: #2B57A0;
+  text-align: center;
+}
+.inst-board__metrics-pv.is-loading,
+.inst-board__metrics-num.is-loading{
+  color: rgba(43,87,160,.38);
+  animation: viewCountPulse 1.2s ease-in-out infinite;
+}
+@keyframes viewCountPulse{
+  0%, 100%{ opacity: .45; }
+  50%{ opacity: 1; }
+}
 .inst-logo{ width:auto; height:auto; object-fit:contain; display:block; }
 .inst-logo--zju{ max-height:62px; max-width:min(40vw,330px); }
 .inst-logo--ailab{ max-height:44px; max-width:min(44vw,380px); }

@@ -286,6 +286,8 @@ const HERO_SMALL_COUNT = 96;
       'footer.social': 'Twitter / Weibo',
       'footer.rights': 'LabVLA. All rights reserved.',
       'footer.note': 'Replace placeholders before release.',
+      'footer.views': 'Page views',
+      'footer.visitors': 'Visitors',
     },
     zh: {
       'meta.description': 'LabVLA 视觉-语言-动作研究项目页面。',
@@ -412,6 +414,8 @@ const HERO_SMALL_COUNT = 96;
       'footer.social': 'Twitter / 微博',
       'footer.rights': 'LabVLA. 保留所有权利。',
       'footer.note': '替换占位即可上线。',
+      'footer.views': '访问量',
+      'footer.visitors': '访客数',
     },
   };
 
@@ -2187,5 +2191,80 @@ const HERO_SMALL_COUNT = 96;
 
     refreshLabels();
   })();
+
+  /* ---------- Site analytics: PV + UV (Vercount API direct) ---------- */
+  const pvEl = $('#busuanzi_value_site_pv');
+  const uvEl = $('#busuanzi_value_site_uv');
+  if (pvEl || uvEl) {
+    const PV_KEY = 'labvla-site-pv';
+    const UV_KEY = 'labvla-site-uv';
+    const VISITOR_KEY = 'labvla-visitor-id';
+    const VERCOUNT_API = 'https://events.vercount.one/api/v2/log';
+    [pvEl, uvEl].filter(Boolean).forEach((el) => el.classList.add('is-loading'));
+
+    const showCount = (el, n) => {
+      if (el && Number.isFinite(n)) el.textContent = n.toLocaleString();
+    };
+    const finish = (el) => el?.classList.remove('is-loading');
+
+    const bumpLocal = () => {
+      const pv = (parseInt(localStorage.getItem(PV_KEY) || '0', 10) || 0) + 1;
+      localStorage.setItem(PV_KEY, String(pv));
+      showCount(pvEl, pv);
+      finish(pvEl);
+
+      let uv = parseInt(localStorage.getItem(UV_KEY) || '0', 10) || 0;
+      if (!localStorage.getItem(VISITOR_KEY)) {
+        const id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : `v-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+        localStorage.setItem(VISITOR_KEY, id);
+        uv += 1;
+        localStorage.setItem(UV_KEY, String(uv));
+      }
+      showCount(uvEl, uv);
+      finish(uvEl);
+    };
+
+    const markNewUv = () => {
+      const key = `vercount_uv_${location.host.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+      const seen = document.cookie.split('; ').some((c) => c.startsWith(`${key}=`));
+      if (!seen) {
+        document.cookie = `${key}=1; path=/; max-age=31536000; samesite=lax`;
+      }
+      return !seen;
+    };
+
+    const track = () => {
+      if (location.protocol !== 'http:' && location.protocol !== 'https:') {
+        bumpLocal();
+        return;
+      }
+
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
+      fetch(VERCOUNT_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: location.href, isNewUv: markNewUv() }),
+        signal: ctrl.signal,
+      })
+        .then((res) => (res.ok ? res.json() : Promise.reject()))
+        .then((json) => {
+          const d = json?.data ?? json;
+          const pv = Number(d?.site_pv);
+          const uv = Number(d?.site_uv);
+          if (!Number.isFinite(pv) && !Number.isFinite(uv)) throw new Error('no data');
+          if (Number.isFinite(pv)) showCount(pvEl, pv);
+          if (Number.isFinite(uv)) showCount(uvEl, uv);
+          finish(pvEl);
+          finish(uvEl);
+        })
+        .catch(bumpLocal)
+        .finally(() => clearTimeout(timer));
+    };
+
+    track();
+  }
 
 })();
