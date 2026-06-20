@@ -977,7 +977,7 @@ const HERO_SMALL_COUNT = 96;
     'sim.title2': 'lifting external policies too',
     'sim.lead': 'A study beyond LabUtopia: an external X-VLA baseline also benefits from fine-tuning on LabEmbodied-Data — the supervision is not tied to the LabVLA architecture.',
     'sim.a.k': '01 · Real-world transfer',
-    'sim.a.title': 'Simulation-trained, deployed on a real Franka',
+    'sim.a.title': 'Real Franka experiments',
     'sim.a.figttl': 'Real-world setup',
     'sim.a.figcap.b': 'Franka lab cell.',
     'sim.a.figcap.t': 'Beakers, flasks, a magnetic stirrer and a heating plate, shared across the four real-robot tasks.',
@@ -1028,7 +1028,7 @@ const HERO_SMALL_COUNT = 96;
     'sim.title2': '亦能赋能外部策略',
     'sim.lead': 'LabUtopia 之外的一项研究：把外部基线 X-VLA 在 LabEmbodied-Data 上微调，同样能稳定受益——这份监督信号并不依赖 LabVLA 架构。',
     'sim.a.k': '01 · 真机迁移',
-    'sim.a.title': '仿真训练，直接部署到真实 Franka',
+    'sim.a.title': '直接部署到真实 Franka',
     'sim.a.figttl': '真机实验布置',
     'sim.a.figcap.b': 'Franka 实验台。',
     'sim.a.figcap.t': '烧杯、烧瓶、磁力搅拌器与加热板，四个真机任务共用同一套布置。',
@@ -1093,12 +1093,12 @@ const HERO_SMALL_COUNT = 96;
   // ===== Nav restructure: top-level sections (Highlights/Data Engine/Method/Results/Capability/Analysis/Outlook/Citation/Team) =====
   Object.assign(I18N.en, {
     'nav.approach':'Highlights','nav.features':'Data Engine','nav.recipe':'Method',
-    'nav.benchmark':'Results','nav.capability':'Capability',
+    'nav.benchmark':'Results','nav.capability':'RoadMap',
     'de.navCollapsed':'Data Engine',
   });
   Object.assign(I18N.zh, {
     'nav.approach':'亮点','nav.features':'数据引擎','nav.recipe':'方法',
-    'nav.benchmark':'结果','nav.capability':'能力',
+    'nav.benchmark':'结果','nav.capability':'路线图',
     'de.navCollapsed':'数据引擎',
   });
 
@@ -1155,8 +1155,8 @@ const HERO_SMALL_COUNT = 96;
   // Analysis order: transferability (§5.1) before sim2real; standalone real-robot headings; engine comparison (Table 1)
   Object.assign(I18N.en, {
     'sim.a.kicker': 'Real-World Validation',
-    'sim.a.t1': 'Simulation-trained,',
-    'sim.a.t2': 'deployed on a real Franka',
+    'sim.a.t1': 'Real Franka ',
+    'sim.a.t2': 'experiments',
     'cmp.kicker': 'Engine Comparison',
     'cmp.title1': 'One engine,',
     'cmp.title2': 'every box checked',
@@ -1168,8 +1168,8 @@ const HERO_SMALL_COUNT = 96;
   });
   Object.assign(I18N.zh, {
     'sim.a.kicker': '真机验证',
-    'sim.a.t1': '纯仿真训练，',
-    'sim.a.t2': '直接部署到真实 Franka',
+    'sim.a.t1': '直接部署到真实 ',
+    'sim.a.t2': 'Franka',
     'cmp.kicker': '引擎对比',
     'cmp.title1': '同类引擎对比，',
     'cmp.title2': '全项能力覆盖',
