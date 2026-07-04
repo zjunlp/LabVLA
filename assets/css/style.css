@@ -3757,6 +3757,7 @@ body.is-editing .edit-bar{ display:inline-flex; }
 .hero-content .cta-btn--paper{ background:#DC2626; color:#FFFFFF; }
 .hero-content .cta-btn--code{ background:#212529; color:#FFFFFF; }
 .hero-content .cta-btn--model{ background:#FFAA33; color:#0E1116; }
+.hero-content .cta-btn--demo{ background:#14B8A6; color:#FFFFFF; }
 .hero-content .cta-btn--contact{ background:#3B82F6; color:#FFFFFF; }
 .hero-content .cta-btn--pending{
   opacity:.78;
@@ -3802,6 +3803,10 @@ body.is-editing .edit-bar{ display:inline-flex; }
 .hero-content .cta-icon--paper .cta-svg{
   width: 1.28rem;
   height: 1.28rem;
+}
+.hero-content .cta-icon--demo .cta-svg{
+  width: 1.32rem;
+  height: 1.32rem;
 }
 .hero-content .cta-img{
   width: 1.18rem;
