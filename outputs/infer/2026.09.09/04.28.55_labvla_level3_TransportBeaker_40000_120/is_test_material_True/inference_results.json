@@ -1,0 +1,489 @@
+{
+  "task_name": "labvla_level3_TransportBeaker_40000_120",
+  "total_episodes": 120,
+  "success_episodes": 117,
+  "final_accuracy": 0.975,
+  "final_accuracy_percent": "97.50%",
+  "episode_details": [
+    {
+      "episode": 0,
+      "success": true
+    },
+    {
+      "episode": 1,
+      "success": true
+    },
+    {
+      "episode": 2,
+      "success": true
+    },
+    {
+      "episode": 3,
+      "success": true
+    },
+    {
+      "episode": 4,
+      "success": true
+    },
+    {
+      "episode": 5,
+      "success": true
+    },
+    {
+      "episode": 6,
+      "success": true
+    },
+    {
+      "episode": 7,
+      "success": true
+    },
+    {
+      "episode": 8,
+      "success": true
+    },
+    {
+      "episode": 9,
+      "success": true
+    },
+    {
+      "episode": 10,
+      "success": true
+    },
+    {
+      "episode": 11,
+      "success": true
+    },
+    {
+      "episode": 12,
+      "success": true
+    },
+    {
+      "episode": 13,
+      "success": true
+    },
+    {
+      "episode": 14,
+      "success": true
+    },
+    {
+      "episode": 15,
+      "success": true
+    },
+    {
+      "episode": 16,
+      "success": true
+    },
+    {
+      "episode": 17,
+      "success": true
+    },
+    {
+      "episode": 18,
+      "success": true
+    },
+    {
+      "episode": 19,
+      "success": true
+    },
+    {
+      "episode": 20,
+      "success": false
+    },
+    {
+      "episode": 21,
+      "success": true
+    },
+    {
+      "episode": 22,
+      "success": true
+    },
+    {
+      "episode": 23,
+      "success": true
+    },
+    {
+      "episode": 24,
+      "success": true
+    },
+    {
+      "episode": 25,
+      "success": true
+    },
+    {
+      "episode": 26,
+      "success": true
+    },
+    {
+      "episode": 27,
+      "success": true
+    },
+    {
+      "episode": 28,
+      "success": true
+    },
+    {
+      "episode": 29,
+      "success": true
+    },
+    {
+      "episode": 30,
+      "success": true
+    },
+    {
+      "episode": 31,
+      "success": true
+    },
+    {
+      "episode": 32,
+      "success": true
+    },
+    {
+      "episode": 33,
+      "success": true
+    },
+    {
+      "episode": 34,
+      "success": true
+    },
+    {
+      "episode": 35,
+      "success": true
+    },
+    {
+      "episode": 36,
+      "success": true
+    },
+    {
+      "episode": 37,
+      "success": true
+    },
+    {
+      "episode": 38,
+      "success": true
+    },
+    {
+      "episode": 39,
+      "success": true
+    },
+    {
+      "episode": 40,
+      "success": true
+    },
+    {
+      "episode": 41,
+      "success": true
+    },
+    {
+      "episode": 42,
+      "success": true
+    },
+    {
+      "episode": 43,
+      "success": true
+    },
+    {
+      "episode": 44,
+      "success": true
+    },
+    {
+      "episode": 45,
+      "success": true
+    },
+    {
+      "episode": 46,
+      "success": true
+    },
+    {
+      "episode": 47,
+      "success": true
+    },
+    {
+      "episode": 48,
+      "success": true
+    },
+    {
+      "episode": 49,
+      "success": true
+    },
+    {
+      "episode": 50,
+      "success": true
+    },
+    {
+      "episode": 51,
+      "success": true
+    },
+    {
+      "episode": 52,
+      "success": true
+    },
+    {
+      "episode": 53,
+      "success": true
+    },
+    {
+      "episode": 54,
+      "success": true
+    },
+    {
+      "episode": 55,
+      "success": true
+    },
+    {
+      "episode": 56,
+      "success": true
+    },
+    {
+      "episode": 57,
+      "success": true
+    },
+    {
+      "episode": 58,
+      "success": true
+    },
+    {
+      "episode": 59,
+      "success": true
+    },
+    {
+      "episode": 60,
+      "success": true
+    },
+    {
+      "episode": 61,
+      "success": true
+    },
+    {
+      "episode": 62,
+      "success": true
+    },
+    {
+      "episode": 63,
+      "success": true
+    },
+    {
+      "episode": 64,
+      "success": true
+    },
+    {
+      "episode": 65,
+      "success": true
+    },
+    {
+      "episode": 66,
+      "success": true
+    },
+    {
+      "episode": 67,
+      "success": true
+    },
+    {
+      "episode": 68,
+      "success": true
+    },
+    {
+      "episode": 69,
+      "success": true
+    },
+    {
+      "episode": 70,
+      "success": true
+    },
+    {
+      "episode": 71,
+      "success": true
+    },
+    {
+      "episode": 72,
+      "success": true
+    },
+    {
+      "episode": 73,
+      "success": true
+    },
+    {
+      "episode": 74,
+      "success": true
+    },
+    {
+      "episode": 75,
+      "success": true
+    },
+    {
+      "episode": 76,
+      "success": true
+    },
+    {
+      "episode": 77,
+      "success": true
+    },
+    {
+      "episode": 78,
+      "success": false
+    },
+    {
+      "episode": 79,
+      "success": true
+    },
+    {
+      "episode": 80,
+      "success": true
+    },
+    {
+      "episode": 81,
+      "success": true
+    },
+    {
+      "episode": 82,
+      "success": true
+    },
+    {
+      "episode": 83,
+      "success": true
+    },
+    {
+      "episode": 84,
+      "success": true
+    },
+    {
+      "episode": 85,
+      "success": true
+    },
+    {
+      "episode": 86,
+      "success": true
+    },
+    {
+      "episode": 87,
+      "success": true
+    },
+    {
+      "episode": 88,
+      "success": true
+    },
+    {
+      "episode": 89,
+      "success": true
+    },
+    {
+      "episode": 90,
+      "success": true
+    },
+    {
+      "episode": 91,
+      "success": true
+    },
+    {
+      "episode": 92,
+      "success": false
+    },
+    {
+      "episode": 93,
+      "success": true
+    },
+    {
+      "episode": 94,
+      "success": true
+    },
+    {
+      "episode": 95,
+      "success": true
+    },
+    {
+      "episode": 96,
+      "success": true
+    },
+    {
+      "episode": 97,
+      "success": true
+    },
+    {
+      "episode": 98,
+      "success": true
+    },
+    {
+      "episode": 99,
+      "success": true
+    },
+    {
+      "episode": 100,
+      "success": true
+    },
+    {
+      "episode": 101,
+      "success": true
+    },
+    {
+      "episode": 102,
+      "success": true
+    },
+    {
+      "episode": 103,
+      "success": true
+    },
+    {
+      "episode": 104,
+      "success": true
+    },
+    {
+      "episode": 105,
+      "success": true
+    },
+    {
+      "episode": 106,
+      "success": true
+    },
+    {
+      "episode": 107,
+      "success": true
+    },
+    {
+      "episode": 108,
+      "success": true
+    },
+    {
+      "episode": 109,
+      "success": true
+    },
+    {
+      "episode": 110,
+      "success": true
+    },
+    {
+      "episode": 111,
+      "success": true
+    },
+    {
+      "episode": 112,
+      "success": true
+    },
+    {
+      "episode": 113,
+      "success": true
+    },
+    {
+      "episode": 114,
+      "success": true
+    },
+    {
+      "episode": 115,
+      "success": true
+    },
+    {
+      "episode": 116,
+      "success": true
+    },
+    {
+      "episode": 117,
+      "success": true
+    },
+    {
+      "episode": 118,
+      "success": true
+    },
+    {
+      "episode": 119,
+      "success": true
+    }
+  ]
+}
