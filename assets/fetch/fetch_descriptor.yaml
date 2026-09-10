@@ -1,0 +1,70 @@
+# Copyright (c) 2019-2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+# The robot descriptor defines the generalized coordinates and how to map those
+# to the underlying URDF dofs.
+
+api_version: 1.0
+
+# Defines the generalized coordinates. Each generalized coordinate is assumed
+# to have an entry in the URDF, except when otherwise specified below under
+# cspace_urdf_bridge
+cspace:
+    - torso_lift_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - upperarm_roll_joint
+    - elbow_flex_joint
+    - forearm_roll_joint
+    - wrist_flex_joint
+    - wrist_roll_joint
+
+root_link: base_link
+subtree_root_link: base_link
+
+default_q: [
+    # Original version
+    # 0.00, 0.00, 0.00, -1.57, 0.00, 1.50, 0.75
+
+    # New config
+    0.385, -0.94121, -0.64134, 1.55186, 1.65672, -0.93218, 1.53416, 2.14474
+]
+
+# Most dimensions of the cspace have a direct corresponding element
+# in the URDF. This list of rules defines how unspecified coordinates
+# should be extracted.
+cspace_to_urdf_rules: []
+
+active_task_spaces:
+    - base_link
+    - estop_link
+    - l_wheel_link
+    - laser_link
+    - r_wheel_link
+    - torso_fixed_link
+    - torso_lift_link
+    - head_pan_link
+    - head_tilt_link
+    - head_camera_link
+    - eyes
+    - head_camera_depth_frame
+    - head_camera_depth_optical_frame
+    - head_camera_rgb_frame
+    - head_camera_rgb_optical_frame
+    - shoulder_pan_link
+    - shoulder_lift_link
+    - upperarm_roll_link
+    - elbow_flex_link
+    - forearm_roll_link
+    - wrist_flex_link
+    - wrist_roll_link
+    - gripper_link
+    - l_gripper_finger_link
+    - r_gripper_finger_link
+
+composite_task_spaces: []

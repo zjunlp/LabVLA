@@ -1,0 +1,82 @@
+name: pi05_level4_cleanbeaker_20000_120
+
+task_type: "cleanbeaker"
+controller_type: "cleanbeaker"
+
+mode: "infer"
+
+usd_path: "assets/chemistry_lab/hard_task/Scene1_hard.usd"
+target_beaker: "/World/target_plat"
+beaker_1: "/World/beaker_hard_1"
+beaker_2: "/World/beaker_hard_2"
+plat_1: "/World/target_plat_1"
+plat_2: "/World/target_plat_2"
+
+table1_surface_1: "/World/table_hard/table_hard/table1/Group_2/table_surface/surface_1"
+table1_surface_2: "/World/table_hard/table_hard/table1/Group_2/table_surface/surface_2"
+
+table2_surface_1: "/World/table_hard/table_hard/table2/Group_2/table_surface/surface_1"
+table2_surface_2: "/World/table_hard/table_hard/table2/Group_2/table_surface/surface_2"
+
+per_episode: 20 
+material_types: 5
+
+infer:
+  type: "remote"
+  obs_names: {"camera_1_rgb": 'camera_1_rgb', "camera_2_rgb": 'camera_2_rgb', "camera_3_rgb": 'camera_3_rgb'}
+  policy_model_path: ""
+  policy_config_path: ""
+  normalizer_path: ""
+  host: "117.148.167.87"
+  port: 9000
+  n_obs_steps: 1
+  timeout: 30
+  max_retries: 3
+
+table_material_paths:
+ - /World/Looks/Material_1_plastic_dark_blue
+ - /World/Looks/table_material5
+ - /World/Looks/Material_3_plastic_dark_green
+ - /World/Looks/Material_4_plastic_light_white
+ - /World/Looks/Material_5_black
+ - /World/Looks/Material_6_plastic_light_blue
+ - /World/Looks/Material_7_stainless
+
+max_episodes: 120
+
+cameras:
+  - prim_path: "/World/Camera1"
+    name: "camera_1"
+    translation: [2, 0, 2]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.61237, 0.35355, 0.35355, 0.61237]
+    image_type: "rgb"
+
+  - prim_path: "/World/Camera2"
+    name: "camera_2"
+    translation: [0.1, 0, 2.5]
+    resolution: [256, 256]
+    focal_length: 4
+    orientation: [0.70711, 0, 0, -0.70711]
+    image_type: "rgb"
+
+  - prim_path: "/World/Franka/panda_hand/arm_camera"
+    name: "camera_3"
+    resolution: [256, 256]
+    image_type: "rgb"
+    
+robot:
+  type: "franka"
+  position: [-0.4, -0, 0.71]
+
+collector:
+  type: "default"
+  compression: gzip 
+
+hydra:
+  run:
+    dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+
+multi_run:
+  run_dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}

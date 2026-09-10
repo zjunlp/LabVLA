@@ -1,0 +1,78 @@
+name: Level1_place
+
+task_type: "place"
+controller_type: "place"
+
+mode: "collect"
+
+usd_path: "assets/chemistry_lab/lab_001/lab_001.usd"
+target_path: "/World/target_plat"
+
+
+max_episodes: 11
+
+infer:
+  type: "local"
+  obs_names: {"camera_1_rgb": 'camera_1_rgb', "camera_2_rgb": 'camera_2_rgb'}
+  
+  policy_model_path: ""
+  policy_config_path: ""
+  normalizer_path: ""
+  
+  host: "127.0.0.1"
+  port: 8000
+  n_obs_steps: 1
+  timeout: 30
+  max_retries: 3
+
+task:
+  max_steps: 2000
+  obj_paths:
+    - path: "/World/beaker2"
+      position_range:
+        x: [0.19, 0.34]
+        y: [0.10, 0.25]
+        z: [0.84, 0.84]
+
+    - path: "/World/target_plat"
+      position_range:
+        x: [0.18, 0.33]
+        y: [-0.32, -0.17]
+        z: [0.776, 0.776]
+
+cameras:
+  - prim_path: "/World/Camera1"
+    name: "camera_1"
+    translation: [2, 0, 2]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.61237, 0.35355, 0.35355, 0.61237]
+    image_type: "rgb"
+
+  - prim_path: "/World/Camera2"
+    name: "camera_2"
+    translation: [0.1, 0, 2.5]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.70711, 0, 0, -0.70711]
+    image_type: "rgb"
+
+  - prim_path: "/World/Franka/panda_hand/arm_camera"
+    name: "camera_3"
+    resolution: [256, 256]
+    image_type: "rgb"
+
+robot:
+  type: "franka"
+  position: [-0.4, -0, 0.71]
+
+collector:
+  type: "default"
+  compression: gzip
+
+hydra:
+  run:
+    dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+
+multi_run:
+  run_dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}

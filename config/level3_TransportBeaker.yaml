@@ -1,0 +1,112 @@
+# Name components using the following fields.
+vla_model_type: "labvla"                      # VLA model type.
+task_name: "level3_TransportBeaker"          # Task name.
+train_steps: 40000                           # Training step count.
+name: ${vla_model_type}_${task_name}_${train_steps}_${max_episodes}  # Compose the run name.
+
+task_type: "pickplace"
+controller_type: "pickplace"
+
+mode: "infer"
+
+usd_path: "assets/chemistry_lab/lab_001/lab_001.usd"
+table_path: "/World/table/surface/mesh"
+target_sub_path: "/World/target_plat/mesh"
+per_episode: 20
+material_types: 5
+button_types: 3
+
+max_episodes: 120
+
+infer:
+  type: "remote"
+  obs_names: {"camera_1_rgb": 'camera_1_rgb', "camera_2_rgb": 'camera_2_rgb', "camera_3_rgb": 'camera_3_rgb'}  
+  policy_model_path: ""
+  policy_config_path: ""
+  normalizer_path: ""
+  host: "127.0.0.1"
+  port: 31002
+  n_obs_steps: 1
+  timeout: 50
+  max_retries: 3
+  is_test_material: True
+
+task:
+  max_steps: 2000
+  obj_paths:
+    - path: "/World/beaker2"
+      position_range:
+        x: [0.19, 0.34]
+        y: [0.10, 0.25]
+        z: [0.84, 0.84]
+
+    - path: "/World/target_plat"
+      position_range:
+        x: [0.18, 0.3]
+        y: [-0.33, -0.18]
+        z: [0.776, 0.776]
+  material_paths:
+    - path: /World/table/surface/mesh
+      materials:
+        - "/World/Looks/Material1_plastic_dark_blue"
+        - "/World/Looks/Material2_wood"
+        - "/World/Looks/Material3_plastic_dark_green"
+        - "/World/Looks/Material5_black"
+        - "/World/Looks/Material6_plastic_light_blue"
+      test_materials:
+        - "/World/Looks/Material4_plastic_light_white"
+        - "/World/Looks/Material7_stainless"
+
+button_material_paths:
+ - /World/Looks/OmniPBR_Button_Red
+ - /World/Looks/OmniPBR_Button_Blue
+ - /World/Looks/OmniPBR_Button_Green
+ - /World/Looks/OmniPBR_Button_Yellow
+ - /World/Looks/OmniPBR_Button_Gray
+ - /World/Looks/OmniPBR_Button_DeepGray
+
+table_material_paths:
+ - /World/Looks/Material1_plastic_dark_blue
+ - /World/Looks/Material2_wood
+ - /World/Looks/Material3_plastic_dark_green
+ - /World/Looks/Material4_plastic_light_white
+ - /World/Looks/Material5_black
+ - /World/Looks/Material6_plastic_light_blue
+ - /World/Looks/Material7_stainless
+
+cameras:
+  - prim_path: "/World/Camera1"
+    name: "camera_1"
+    translation: [2, 0, 2]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.61237, 0.35355, 0.35355, 0.61237]
+    image_type: "rgb" 
+
+  - prim_path: "/World/Camera2"
+    name: "camera_2"
+    translation: [0.1, 0, 2.5]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.70711, 0, 0, -0.70711]
+    image_type: "rgb"
+
+  - prim_path: "/World/Franka/panda_hand/arm_camera"
+    name: "camera_3"
+    resolution: [256, 256]
+    image_type: "rgb"
+    
+robot:
+  type: "franka"
+  position: [-0.4, -0, 0.71]
+
+collector:
+  type: "default"
+  compression: gzip 
+
+hydra:
+  run:
+    dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+
+multi_run:
+  run_dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}

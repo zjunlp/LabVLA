@@ -1,0 +1,740 @@
+// Copyright 2023 NVIDIA Corporation. All rights reserved.
+//
+// NVIDIA CORPORATION and its licensors retain all intellectual property
+// and proprietary rights in and to this software, related documentation
+// and any modifications thereto.  Any use, reproduction, disclosure or
+// distribution of this software and related documentation without an express
+// license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+mdl 1.6;
+
+import ::anno::*;
+import ::base::*;
+import ::df::*;
+import ::math::*;
+import ::state::*;
+
+// 3dsmax Architectutal Material
+export material ad_3dsmax_architectural(
+    float3 bumpMap = state::normal(),
+    float cutoutMap = 1.,
+    color Diffuse = color(.5),
+    float displacementMap = 0.,
+    uniform float ior = 1.5,
+    float luminance = 0.,
+    float shininess = 1., // In the range [0..100], inverse of the roughness
+    float translucency = 0.,
+    float transparency = 0.
+)
+ = let
+{
+    bsdf diffuseLayer = df::diffuse_reflection_bsdf
+    (
+        tint: Diffuse
+    );
+
+    bsdf reflectionLayer = df::simple_glossy_bsdf
+    (
+        tint: color(1),
+        roughness_u: 1 - (shininess/100),
+        mode: df::scatter_reflect
+    );
+
+    bsdf translucentLayer = df::diffuse_transmission_bsdf
+    (
+        tint: Diffuse
+    );
+
+    bsdf transparentLayer = df::simple_glossy_bsdf
+    (
+        tint: color(1),
+        roughness_u: 0,
+        mode: df::scatter_transmit
+    );
+
+    bsdf transparentTranslucentMixer = df::weighted_layer
+    (
+        weight: (translucency/100),
+        layer: translucentLayer,
+        base: transparentLayer
+    );
+
+    bsdf transparentDiffuseMixer = df::weighted_layer
+    (
+        weight: (transparency/100),
+        layer: transparentTranslucentMixer,
+        base: diffuseLayer
+    );
+
+    bsdf glossyMixer = df::fresnel_layer
+    (
+    ior: ior,
+        layer: reflectionLayer,
+        base: transparentDiffuseMixer
+    );
+
+    bsdf surface_bsdf = glossyMixer;
+}
+in material
+(
+    ior: color(ior),
+    surface: material_surface
+    (
+        scattering: surface_bsdf,
+        emission: material_emission
+        (
+            emission: df::diffuse_edf(),
+            intensity: color(luminance),
+            mode: intensity_power
+        )
+    ),
+    geometry: material_geometry
+    (
+        cutout_opacity: cutoutMap,
+        normal: bumpMap,
+        displacement: displacementMap * state::normal() * state::scene_units_per_meter()
+    )
+);
+
+// 3dsmax Blend Material
+export material ad_3dsmax_blend
+(
+    material material1 = material()
+    [[
+        anno::in_group("Blend parameters"),
+        anno::display_name("Material 1")
+    ]],
+    material material2 = material()
+    [[
+        anno::in_group("Blend parameters"),
+        anno::display_name("Material 2")
+    ]],
+    float mixAmount = 0.f
+    [[
+        anno::in_group("Blend parameters"),
+        anno::display_name("Mix amount"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform bool useCurve = false
+    [[
+        anno::in_group("Blend parameters"),
+        anno::display_name("Use curve")
+    ]],        
+    uniform float lower = 0.3f
+    [[
+        anno::in_group("Blend parameters"),
+        anno::display_name("Lower"),
+        anno::hard_range(0.f, 1.f)
+    ]],        
+    uniform float upper = .7f
+    [[
+        anno::in_group("Blend parameters"),
+        anno::display_name("Upper"),
+        anno::hard_range(0.f, 1.f)
+    ]]        
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+= let
+{
+    float t = useCurve ? math::smoothstep(lower, upper, mixAmount) : math::smoothstep(0.f, 1.f, mixAmount);
+    float3 normal_mix = math::normalize(material1.geometry.normal*t + material2.geometry.normal*(1.f - t));
+    
+    bsdf bsdf_mix = 
+        df::normalized_mix
+        (
+            components: df::bsdf_component[]
+            ( 
+                df::bsdf_component
+                ( 
+                    weight: 1.f - t,
+                    component: material1.surface.scattering
+                ),
+                df::bsdf_component
+                ( 
+                    weight: t,
+                    component: material2.surface.scattering
+                )
+            )
+        );    
+}
+in material
+(
+    ior         : material1.ior,
+    surface     : material_surface(scattering: bsdf_mix),
+    geometry    : material_geometry
+    (
+        normal  : normal_mix
+    )
+);
+
+
+// 3dsmax Double Sided Material
+export material ad_3dsmax_double_sided(
+    material material1 = material(),
+    material material2 = material1
+)= material(
+    ior: material1.ior,
+    thin_walled: true,
+    geometry: material1.geometry,
+    volume: material1.volume,
+    surface: material1.surface,
+    backface: material2.surface
+);
+
+// 3dsmax Physical Material
+export material ad_3dsmax_physical_material
+(
+    //======================================================================
+    // Base Color
+    //
+    color base_color = color(.5)
+    [[
+        anno::display_name("Color"),
+        anno::in_group("Base Color")
+    ]],
+    float base_weight = 1.
+    [[
+        anno::display_name("Weight"),
+        anno::hard_range(0,1),
+        anno::in_group("Base Color")
+    ]],
+    float diff_roughness = 0.
+    [[
+        anno::display_name("Roughness"),
+        anno::hard_range(0,1),
+        anno::in_group("Base Color")
+    ]],
+    //
+    //======================================================================
+
+    //======================================================================
+    // Reflections
+    //
+    float reflectivity = 1.
+    [[
+        anno::display_name("Reflectivity"),
+        anno::hard_range(0,1),
+        anno::in_group("Reflections")
+    ]],
+    color refl_color = color(1.)
+    [[
+        anno::display_name("Color"),
+        anno::in_group("Reflections")
+    ]],
+    float roughness = 0.
+    [[
+        anno::display_name("Roughness"),
+        anno::hard_range(0,1),
+        anno::in_group("Reflections")
+    ]],
+    uniform bool roughness_inv = false
+    [[
+        anno::display_name("Inverse Roughness"),
+        anno::in_group("Reflections")
+    ]],
+    float metalness = 0.
+    [[
+        anno::display_name("Metalness"),
+        anno::hard_range(0,1),
+        anno::in_group("Reflections")
+    ]],
+    uniform float trans_ior = 1.52
+    [[
+        anno::display_name("IOR"),
+        anno::hard_range(0.1,50),
+        anno::in_group("Reflections")
+    ]],
+    //
+    //======================================================================
+
+    //======================================================================
+    // Transparency
+    //
+    float transparency = 0.
+    [[
+        anno::display_name("Transparency"),
+        anno::hard_range(0,1),
+        anno::in_group("Transparency")
+    ]],
+    color trans_color = color(1.)
+    [[
+        anno::display_name("Color"),
+        anno::in_group("Transparency")
+    ]],
+    float trans_depth = 1.
+    [[
+        anno::display_name("Depth"),
+        anno::unused(),
+        anno::hidden(),
+        anno::in_group("Transparency")
+    ]],
+    float trans_roughness = 0.
+    [[
+        anno::display_name("Roughness"),
+        anno::hard_range(0,1),
+        anno::in_group("Transparency")
+    ]],
+    uniform bool thin_walled = false
+    [[
+        anno::display_name("Thin-walled"),
+        anno::in_group("Transparency")
+    ]],
+    uniform bool trans_roughness_inv = false
+    [[
+        anno::display_name("Inverse Roughness"),
+        anno::in_group("Transparency")
+    ]],
+    uniform bool trans_roughness_lock = true
+    [[
+        anno::display_name("Lock Roughness"),
+        anno::unused(),
+        anno::hidden(),
+        anno::in_group("Transparency")
+    ]],
+    //
+    //======================================================================
+
+    //======================================================================
+    // Sub-surface scattering
+    //
+    uniform float scattering = 0.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency")
+    ]],
+    uniform color sss_color = color(1.)
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency")
+    ]],
+    uniform float sss_depth = 1.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency")
+    ]],
+    uniform float sss_scale = 1.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform color sss_scatter_color = color(1.)
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    // 
+    //======================================================================
+
+    float anisotropy = 0.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float anisoangle = 0.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float brdf_curve = 5.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float brdf_high = 1.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float brdf_low = 0.04
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool brdf_mode = false
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float3 bump_map = state::normal()
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::hidden()
+    ]],
+    uniform float coat_affect_color = 0.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float coat_affect_roughness = 0.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float3 coat_bump_map = state::normal()
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    color coat_color = color(1.)
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float coat_ior = 1.5
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float coat_roughness = 0.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool coat_roughness_inv = false
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float coating = 1.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float cutout_map = 1.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float displacement = 0.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float emission = 0.
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    color emit_color = color(0.)
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform int material_mode = 0
+    [[
+        anno::display_name(""),
+        anno::in_group("Transparency"),
+        anno::unused(),
+        anno::hidden()
+    ]]
+)
+ = let
+{
+    //======================================================================
+    // Base color
+    //
+    bsdf baseColor = df::diffuse_reflection_bsdf
+    (
+        tint: base_color,
+        roughness: diff_roughness
+    );
+
+    bsdf diffuseLayer = df::weighted_layer
+    (
+        weight: base_weight,
+        layer: baseColor,
+        base: df::diffuse_reflection_bsdf(tint:color(0))
+    );
+    //
+    //======================================================================
+
+    //======================================================================
+    // Transparency
+    //
+    float transparencyRoughnessVal = trans_roughness_inv ? 1 - trans_roughness : trans_roughness;
+
+    bsdf transparentLayer = df::simple_glossy_bsdf
+    (
+        tint: trans_color,
+        roughness_u: transparencyRoughnessVal,
+        mode: df::scatter_transmit
+    );
+
+    bsdf transparentDiffuseMixer = df::weighted_layer
+    (
+        weight: transparency,
+        layer: transparentLayer,
+        base: diffuseLayer
+    );
+    //
+    //======================================================================
+
+    //======================================================================
+    // Reflections Non Metal and Metal
+    //
+    float roughnessVal = roughness_inv ? 1 - roughness : roughness;
+
+    bsdf reflections = df::simple_glossy_bsdf
+    (
+        tint: refl_color,
+        roughness_u: roughnessVal,
+        mode: df::scatter_reflect
+    );
+
+    // Not reflective when roughness is 0
+    //  float reflectivityVal = (roughness == 0) ? 0 : reflectivity;
+    float reflectivityVal = reflectivity;
+
+    bsdf reflectivity_layer = df::weighted_layer // Non-metal
+    (
+        weight: reflectivityVal,
+        layer: reflections,
+        base: df::diffuse_reflection_bsdf(tint:color(1))
+    );
+
+    bsdf reflectionLayerNonMetal = df::fresnel_layer
+    (
+        ior: trans_ior,
+        layer: reflectivity_layer,
+        base: transparentDiffuseMixer
+    );
+
+    bsdf reflectionLayerMetal = df::fresnel_layer
+    (
+        ior: trans_ior,
+        layer: reflectivity_layer,
+        base: diffuseLayer
+    );
+
+    // Metalness value.
+    // It mixes two shading modes.
+    // At 0, a non-metal diffuse model is used where the Base Color is taken as the diffuse color, with reflections added on top, with sub-surface scattering and transparency.
+    // At 1, a solely reflective metallic surface is rendered, reflecting the Base Color for facing angles, and the Reflection color (typically white) at the edges.
+    bsdf reflectionLayer = df::weighted_layer
+    (
+        weight: metalness,
+        layer: reflectionLayerMetal,
+        base: reflectionLayerNonMetal
+    );
+    //
+    //======================================================================
+
+    //======================================================================
+    // Sub-surface scattering
+    //
+    float sss_scattering = scattering * (1 - transparency); // Ensure sss_scattering + transparency <= 1
+
+    material_volume materialVolume = material_volume(
+        scattering_coefficient: (sss_depth <= 0) ? color(0) : - math::log(color(1 - sss_scattering)) / sss_depth,
+        absorption_coefficient: (sss_depth <= 0) ? color(0) : - math::log(sss_color) / sss_depth
+    );
+    //
+    //======================================================================
+
+    bsdf surface_bsdf = reflectionLayer;
+}
+in material
+(
+    ior: color(trans_ior),
+    thin_walled: thin_walled,
+    surface: material_surface
+    (
+        scattering: surface_bsdf
+    ),
+    volume: materialVolume,
+    geometry: material_geometry
+    (
+        normal: bump_map
+    )
+);
+
+// 3dsmax Standard Material
+export material ad_3dsmax_std_material(
+   color Diffuse = color(.9),
+   uniform bool dsLock = false
+    [[
+        anno::unused()
+    ]],
+   color FilterColor = color(1.0)
+    [[
+        anno::unused()
+    ]],   
+   float glossiness = .9
+    [[
+        anno::unused()
+    ]],   
+   uniform float ior = 1.5,
+   uniform float opacity = 1.0
+    [[
+        anno::unused()
+    ]],   
+   uniform float opacityFallOff = 0.
+    [[
+        anno::unused()
+    ]],   
+   uniform int opacityFallOffType = 0
+    [[
+        anno::unused()
+    ]],   
+   uniform int opacityType = 0
+    [[
+        anno::unused()
+    ]],   
+   color selfIllumColor = color(0.)
+    [[
+        anno::unused()
+    ]],   
+   uniform float selfIllumAmount = 1.
+    [[
+        anno::unused()
+    ]],   
+   uniform int shaderType = 0
+    [[
+        anno::unused()
+    ]],   
+   color Specular = color(1.)
+    [[
+        anno::unused()
+    ]],   
+   uniform float specularLevel = 1.
+    [[
+        anno::unused()
+    ]],   
+   float3 bump = state::normal()
+) = material(
+    ior: color(ior),
+    surface: material_surface(
+        scattering: df::diffuse_reflection_bsdf(tint: Diffuse)
+    ),
+    geometry: material_geometry(
+        normal: bump
+    )
+);
+
+// 3dsmax Top/Bottom Material
+export material ad_3dsmax_top_bottom
+(
+    material top_material = material()
+    [[
+        anno::in_group("Top/Bottom Parameters"),
+        anno::display_name("Top material")
+    ]],
+    material bottom_material = top_material
+    [[
+        anno::in_group("Top/Bottom Parameters"),
+        anno::display_name("Bottom material")
+    ]],
+    uniform bool use_top_material = true
+    [[
+        anno::in_group("Top/Bottom Parameters"),
+        anno::display_name("Use top material")
+    ]],
+    uniform bool use_bottom_material = true
+    [[
+        anno::in_group("Top/Bottom Parameters"),
+        anno::display_name("Use bottom material")
+    ]],
+    uniform float blend = 0.f
+    [[
+        anno::in_group("Top/Bottom Parameters"),
+        anno::display_name("Blend"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float position = 50.f
+    [[
+        anno::in_group("Top/Bottom Parameters"),
+        anno::display_name("Position"),
+        anno::hard_range(0.f, 100.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform int coordinates = 0
+    [[
+        anno::in_group("Top/Bottom Parameters"),
+        anno::display_name("Coordinates"),
+        anno::hard_range(0, 1),
+        anno::unused(),
+        anno::hidden()
+    ]]
+)
+= let
+{
+    float t = blend*0.01f;
+    
+    float3 normal_mix = math::normalize
+    (
+        (use_top_material ? top_material.geometry.normal : state::normal())*t
+        + (use_bottom_material ? bottom_material.geometry.normal : state::normal())*(1.f - t)
+    );
+    
+    bsdf bsdf_mix = 
+        df::normalized_mix
+        (
+            components: df::bsdf_component[]
+            ( 
+                df::bsdf_component
+                ( 
+                    weight: 1.f - t,
+                    component: use_top_material ? top_material.surface.scattering : bsdf() 
+                ),
+                df::bsdf_component
+                ( 
+                    weight: t,
+                    component: use_bottom_material ? bottom_material.surface.scattering : bsdf() 
+                )
+            )
+        );    
+}
+in material
+(
+    ior         : use_top_material ? top_material.ior : color(1.f),
+    surface     : material_surface(scattering: bsdf_mix),
+    geometry    : material_geometry
+    (
+        normal  : normal_mix
+    )
+);
+

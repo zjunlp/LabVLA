@@ -1,0 +1,25 @@
+name: nav_act_state
+
+dataset_path: outputs/nav/nav_dataset_20250523_011359/data.hdf5
+obs_keys: &obs_keys ['robot_position', 'joint_position']
+
+shape_meta: &shape_meta
+  obs:
+    robot_position:
+      shape: [3]  # x, y, theta
+      type: low_dim
+    joint_positions:
+      shape: [12]  # 7 joints
+      type: low_dim
+  action:
+    shape: [12] # 7 joints + 2 gripper
+
+dataset:
+  _target_: policy.dataset.act_nav_dataset.ACTNavDataset
+  shape_meta: *shape_meta
+  dataset_path: ${task.dataset_path}
+  seed: 42
+  val_ratio: 0.1
+  max_train_episodes: null
+  horizon: ${horizon}
+  n_obs_steps: ${dataset_obs_steps}

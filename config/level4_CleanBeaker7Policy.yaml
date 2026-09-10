@@ -1,0 +1,95 @@
+name: Level4_CleanBeaker7Policy
+
+mode: "collect"
+
+task_type: "cleanbeaker"
+controller_type: "cleanbeaker7policy"
+
+usd_path: "assets/chemistry_lab/hard_task/Scene1_hard.usd"
+target_beaker: "/World/target_beaker"
+target_sub_beaker: "/World/target_beaker/mesh"
+beaker_1: "/World/beaker_hard_1"
+beaker_sub_1: "/World/beaker_hard_1/mesh"
+beaker_2: "/World/beaker_hard_2"
+beaker_sub_2: "/World/beaker_hard_2/mesh"
+plat_1: "/World/target_plat_1"
+plat_2: "/World/target_plat_2"
+
+table1_surface_1: "/World/table_hard/table_hard/table1/Group_2/table_surface/surface_1"
+table1_surface_2: "/World/table_hard/table_hard/table1/Group_2/table_surface/surface_2"
+
+table2_surface_1: "/World/table_hard/table_hard/table2/Group_2/table_surface/surface_1"
+table2_surface_2: "/World/table_hard/table_hard/table2/Group_2/table_surface/surface_2"
+
+per_episode: 20 
+material_types: 5
+
+table_material_paths:
+ - /World/Looks/Material_1_plastic_dark_blue
+ - /World/Looks/table_material5
+ - /World/Looks/Material_3_plastic_dark_green
+ - /World/Looks/Material_4_plastic_light_white
+ - /World/Looks/Material_5_black
+ - /World/Looks/Material_6_plastic_light_blue
+ - /World/Looks/Material_7_stainless
+
+max_episodes: 100
+
+config_paths:
+ - data/outputs/7pollicy_DP/1_PickBeaker2/config.yaml
+ - data/outputs/7pollicy_DP/2_PourBeaker2ToBeaker1/config.yaml
+ - data/outputs/7pollicy_DP/3_PlaceBeaker2/config.yaml
+ - data/outputs/7pollicy_DP/4_PickBeaker1/config.yaml
+ - data/outputs/7pollicy_DP/5_ShakeBeaker1/config.yaml
+ - data/outputs/7pollicy_DP/6_PourBeaker1/config.yaml
+ - data/outputs/7pollicy_DP/7_PlaceBeaker1/config.yaml
+
+model_paths: 
+ - "data/outputs/7pollicy_DP/1_PickBeaker2/epoch=0200-train_loss=0.000.ckpt"
+ - "data/outputs/7pollicy_DP/2_PourBeaker2ToBeaker1/epoch=0200-train_loss=0.000.ckpt"
+ - "data/outputs/7pollicy_DP/3_PlaceBeaker2/epoch=0200-train_loss=0.000.ckpt"
+ - "data/outputs/7pollicy_DP/4_PickBeaker1/epoch=0200-train_loss=0.000.ckpt"
+ - "data/outputs/7pollicy_DP/5_ShakeBeaker1/epoch=0200-train_loss=0.003.ckpt"
+ - "data/outputs/7pollicy_DP/6_PourBeaker1/epoch=0200-train_loss=0.001.ckpt"
+ - "data/outputs/7pollicy_DP/7_PlaceBeaker1/epoch=0200-train_loss=0.000.ckpt"
+
+normalizer_paths:
+ - "data/outputs/7pollicy_DP/1_PickBeaker2/normalize.ckpt"
+ - "data/outputs/7pollicy_DP/2_PourBeaker2ToBeaker1/normalize.ckpt"
+ - "data/outputs/7pollicy_DP/3_PlaceBeaker2/normalize.ckpt"
+ - "data/outputs/7pollicy_DP/4_PickBeaker1/normalize.ckpt"
+ - "data/outputs/7pollicy_DP/5_ShakeBeaker1/normalize.ckpt"
+ - "data/outputs/7pollicy_DP/6_PourBeaker1/normalize.ckpt"
+ - "data/outputs/7pollicy_DP/7_PlaceBeaker1/normalize.ckpt"
+
+cameras:
+  - prim_path: "/World/Camera1"
+    name: "camera_1"
+    translation: [2, 0, 2]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.61237, 0.35355, 0.35355, 0.61237]
+    image_type: "rgb"
+
+  - prim_path: "/World/Camera2"
+    name: "camera_2"
+    translation: [0.1, 0, 2.5]
+    resolution: [256, 256]
+    focal_length: 4
+    orientation: [0.70711, 0, 0, -0.70711]
+    image_type: "rgb"
+
+robot:
+  type: "franka"
+  position: [-0.4, -0, 0.71]
+
+collector:
+  type: "default"
+  compression: gzip 
+
+hydra:
+  run:
+    dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+
+multi_run:
+  run_dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}

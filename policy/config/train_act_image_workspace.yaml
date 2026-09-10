@@ -1,0 +1,140 @@
+defaults:
+  - _self_
+  - task: act
+
+name: train_act_image_pick
+_target_: policy.workspace.train_act_image_workspace.TrainACTImageWorkspace
+
+task_name: ${task.name}
+shape_meta: ${task.shape_meta}
+exp_name: "default"
+
+horizon: 60
+n_obs_steps: 1
+n_action_steps: ${horizon}
+n_latency_steps: 0
+dataset_obs_steps: ${n_obs_steps}
+past_action_visible: False
+keypoint_visible_rate: 1.0
+obs_as_global_cond: True
+
+policy:
+  _target_: policy.policy.act_image_policy.ACTImagePolicy
+
+  shape_meta: ${shape_meta}
+  
+  kl_weight: 0.1 
+  num_queries: ${horizon}
+  hidden_dim: 256
+  num_heads: 8
+  num_layers: 6
+  dropout: 0.1
+  dim_feedforward: 2048
+  enc_layers: 4
+  dec_layers: 6
+  nheads: 8
+  pre_norm: False
+  position_embedding: "sine"
+  lr_backbone: 1e-5
+  masks: False
+  backbone: "resnet18"
+  dilation: False
+  camera_names: [camera_0, camera_1]
+  horizon: ${horizon}
+  n_action_steps: ${eval:'${n_action_steps}+${n_latency_steps}'}
+  n_obs_steps: ${n_obs_steps}
+  num_inference_steps: 100
+  obs_as_global_cond: ${obs_as_global_cond}
+  diffusion_step_embed_dim: 128
+  down_dims: [512, 1024, 2048]
+  kernel_size: 5
+  n_groups: 8
+  cond_predict_scale: True
+  robot_state_dim: 8
+  action_dim: 8
+
+ema:
+  _target_: policy.model.diffusion.ema_model.EMAModel
+  update_after_step: 0
+  inv_gamma: 1.0
+  power: 0.75
+  min_value: 0.0
+  max_value: 0.9999
+
+dataloader:
+  batch_size: 128
+  num_workers: 8
+  shuffle: True
+  pin_memory: True
+  persistent_workers: False
+
+val_dataloader:
+  batch_size: 64
+  num_workers: 8
+  shuffle: False
+  pin_memory: True
+  persistent_workers: False
+
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 1.0e-4
+  betas: [0.95, 0.999]
+  eps: 1.0e-8
+  weight_decay: 1.0e-6
+
+training:
+  device: "cuda:0"
+  seed: 42
+  debug: False
+  resume: True
+  # optimization
+  lr_scheduler: cosine
+  lr_warmup_steps: 500
+  num_epochs: 500
+  batch_size: 64
+  lr: 1e-4
+  gradient_accumulate_every: 1
+  # EMA destroys performance when used with BatchNorm
+  # replace BatchNorm with GroupNorm.
+  use_ema: True
+  freeze_encoder: False
+  # training loop control
+  # in epochs
+  checkpoint_every: 30
+  val_every: 15
+  sample_every: 15
+  # steps per epoch
+  max_train_steps: null
+  max_val_steps: null
+  # misc
+  tqdm_interval_sec: 1.0
+
+logging:
+  project: act_policy_debug
+  resume: True
+  mode: online
+  name: ${now:%Y.%m.%d-%H.%M.%S}_${name}_${task_name}
+  tags: ["${name}", "${task_name}", "${exp_name}"]
+  id: null
+  group: null
+
+checkpoint:
+  monitor_key: val_loss
+  mode: min
+  k: 5
+  format_str: '{epoch:04d}-{val_loss:.4f}.ckpt'
+  save_last_ckpt: True
+  every_n_epochs: 30
+
+multi_run:
+  run_dir: outputs/train/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}_${task_name}
+  wandb_name_base: ${now:%Y.%m.%d-%H.%M.%S}_${name}_${task_name}
+
+hydra:
+  job:
+    override_dirname: ${name}
+  run:
+    dir: outputs/train/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}_${task_name}
+  sweep:
+    dir: outputs/train/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}_${task_name}
+    subdir: ${hydra.job.num}

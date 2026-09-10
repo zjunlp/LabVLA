@@ -1,0 +1,101 @@
+name: Level2_HeatLiquid
+
+task_type: "placepress"
+controller_type: "placepress"
+
+mode: "collect"
+
+usd_path: "assets/chemistry_lab/lab_003/lab_003.usd"
+target_path: "/World/beaker1"
+
+max_episodes: 100
+
+infer:
+  type: "local"
+  obs_names: {"camera_1_rgb": 'camera_1_rgb', "camera_2_rgb": 'camera_2_rgb'}
+  policy_model_path: ""
+  policy_config_path: ""
+  normalizer_path: ""
+  host: "127.0.0.1"
+  port: 8000
+  n_obs_steps: 1
+  timeout: 30
+  max_retries: 3
+
+task:
+  max_steps: 2500
+  obj_paths:
+    - path: "/World/beaker_2"
+      position_range:
+        x: [0.13, 0.28]
+        y: [0.05, 0.2]
+        z: [0.77, 0.775]
+
+    - path: "/World/heat_device"
+      sub_path: "/World/heat_device/heat_device/heat_device/plat"
+      position_range:
+        x: [0.13, 0.28]
+        y: [-0.3, -0.15]
+        z: [0.762, 0.762]
+
+    - path: "/World/heat_device/button"
+
+table_path: "/World/Table1/Desk1/surface/Cube"
+
+per_episode: 100 
+material_types: 1
+button_types: 1
+
+button_material_paths:
+ - /World/Looks/OmniPBR_Button_Red
+ - /World/Looks/OmniPBR_Button_Blue
+ - /World/Looks/OmniPBR_Button_Green
+ - /World/Looks/OmniPBR_Button_Yellow
+ - /World/Looks/OmniPBR_Button_Gray
+ - /World/Looks/OmniPBR_Button_DeepGray
+
+table_material_paths:
+ - /World/Looks/Material_1_plastic_dark_blue
+ - /World/Looks/Material_2_wood
+ - /World/Looks/Material_3_plastic_dark_green
+ - /World/Looks/Material_4_plastic_light_white
+ - /World/Looks/Material_5_black
+ - /World/Looks/Material_6_plastic_light_blue
+ - /World/Looks/Material_7_stainless
+
+cameras:
+  - prim_path: "/World/Camera1"
+    name: "camera_1"
+    translation: [2, 0, 2]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.61237, 0.35355, 0.35355, 0.61237]
+    image_type: "rgb" 
+
+  - prim_path: "/World/Camera2"
+    name: "camera_2"
+    translation: [0.1, 0, 2.5]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.70711, 0, 0, -0.70711]
+    image_type: "rgb"
+    
+  - prim_path: "/World/Franka/panda_hand/arm_camera"
+    name: "camera_3"
+    resolution: [256, 256]
+    image_type: "rgb"
+    
+robot:
+  type: "franka"
+  position: [-0.4, -0, 0.71]
+
+collector:
+  type: "default"
+  compression: gzip  
+
+hydra:
+  run:
+    dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+
+multi_run:
+  run_dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}

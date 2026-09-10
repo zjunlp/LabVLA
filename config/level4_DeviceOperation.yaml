@@ -1,0 +1,78 @@
+name: Level4_DeviceOperation
+
+task_type: "device_operate"
+controller_type: "device_operate"
+
+usd_path: "assets/chemistry_lab/lab_001/lab_001.usd"
+
+mode: "collect"
+
+task:
+  type: "device_operate"
+  device_path: "/World/DryingBox_01"
+  beaker_path: "/World/beaker2"
+  beaker3_path: "/World/beaker3"
+  button_path: "/World/DryingBox_01/button"
+
+  device_interior_position: [0.52, 0.04, 1.11]
+  beaker3_target_position: [0.42, 0.1, 1.12]
+  button_position: [0.45, 0.2, 0.77]
+  max_steps: 4000
+
+  obj_paths:
+    - path: "/World/beaker2"
+      position_range:
+        x: [0.15, 0.2]
+        y: [0.23, 0.28]
+        z: [0.84, 0.84]
+    - path: "/World/beaker3"
+      position_range:
+        x: [0.15, 0.2]
+        y: [0.35, 0.40]
+        z: [0.84, 0.84]
+    - path: "/World/DryingBox_01"
+      position_range:
+        x: [0.55, 0.60]
+        y: [0.13, 0.18]
+        z: [0.976, 0.976]
+
+max_episodes: 150
+
+cameras_names: ["camera_1", "camera_2", "camera_3"]
+
+cameras:
+  - prim_path: "/World/Camera1"
+    name: "camera_1"
+    translation: [-0.7, 1.4, 1.4]
+    resolution: [256, 256]
+    focal_length: 2
+    orientation: [-0.2297, -0.18336, 0.59631, 0.74701]
+    image_type: "rgb"
+
+  - prim_path: "/World/Camera2"
+    name: "camera_2"
+    translation: [-1, -0.1, 3.6]
+    resolution: [256, 256]
+    focal_length: 4
+    orientation: [0.69035, 0.15304, -0.15304, -0.69035]
+    image_type: "rgb"
+
+  - prim_path: "/World/Franka/panda_hand/arm_camera"
+    name: "camera_3"
+    resolution: [256, 256]
+    image_type: "rgb"
+    
+robot:
+  type: "franka"
+  position: [-0.4, -0, 0.71]
+
+collector:
+  type: "default"
+  compression: gzip
+
+hydra:
+  run:
+    dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+
+multi_run:
+  run_dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}

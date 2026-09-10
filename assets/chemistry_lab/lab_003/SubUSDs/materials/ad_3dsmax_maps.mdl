@@ -1,0 +1,4128 @@
+// Copyright 2023 NVIDIA Corporation. All rights reserved.
+//
+// NVIDIA CORPORATION and its licensors retain all intellectual property
+// and proprietary rights in and to this software, related documentation
+// and any modifications thereto.  Any use, reproduction, disclosure or
+// distribution of this software and related documentation without an express
+// license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+mdl 1.6;
+
+import ::anno::*;
+import ::base::*;
+import ::limits::*;
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+
+export using ::base import color_layer_mode;
+export using ::base import texture_return;
+
+// Helper functions
+// Returns the normal n in tangent space, given n is in internal space.
+float3 transform_internal_to_tangent(float3 n)
+{
+    return
+        n.x * float3(state::texture_tangent_u(0).x, state::texture_tangent_v(0).x, state::normal().x) +
+        n.y * float3(state::texture_tangent_u(0).y, state::texture_tangent_v(0).y, state::normal().y) +
+        n.z * float3(state::texture_tangent_u(0).z, state::texture_tangent_v(0).z, state::normal().z);
+}
+
+// Returns the normal n in internal space, given n is in tangent space.
+float3 transform_tangent_to_internal(float3 n)
+{
+    return  state::texture_tangent_u(0) * n.x +
+            state::texture_tangent_v(0) * n.y +
+            state::normal() * n.z ;
+}
+
+// Returns a normal as a weighted combination of two normals.
+export float3 combine_normals(
+    float w1 = 1.f, float3 n1 = state::normal(),
+    float w2 = 1.f, float3 n2 = state::normal())
+{
+    // http://blog.selfshadow.com/publications/blending-in-detail/
+    float3 n1_t =   transform_internal_to_tangent(n1);
+    float3 n2_t =   transform_internal_to_tangent(n2);
+
+    n1_t = math::lerp(float3(0.f, 0.f, 1.f), n1_t, w1);
+    n2_t = math::lerp(float3(0.f, 0.f, 1.f), n2_t, w2);
+
+    n1_t = n1_t + float3(0.f, 0.f, 1.f);
+    n2_t = n2_t * float3(-1.f, -1.f, 1.f);
+
+    float3 n = n1_t*math::dot(n1_t, n2_t)/n1_t.z - n2_t;
+
+    // alternative way of combining the 2 normals
+    // float3 n = float3(n1_t.x + n2_t.x,n1_t.y + n2_t.y, n1_t.z*n2_t.z);
+
+    return math::normalize(transform_tangent_to_internal(n));
+}
+
+// 3dsmax Bitmap Transformation Matrix
+uniform float4x4 max_rotation_translation_scale
+(
+    uniform float3 rotation = float3(0.)
+        [[ anno::description("Rotation applied to every UVW coordinate") ]],
+    uniform float3 translation = float3(0.)
+        [[ anno::description("Offset applied to every UVW coordinate") ]],
+    uniform float3 scaling = float3(1.)
+        [[ anno::description("Scale applied to every UVW coordinate") ]],
+    uniform bool u_mirror = false
+        [[ anno::description("Mirror repeat has twice the number of textures in the same space") ]],
+    uniform bool v_mirror = false
+        [[ anno::description("Mirror repeat has twice the number of textures in the same space") ]]
+)
+[[
+        anno::description("Construct transformation matrix from Euler rotation, translation and scale")
+]]
+{
+    float4x4 scale =
+        float4x4(u_mirror?scaling.x*2.:scaling.x         , 0.         , 0. , 0.,
+                 0.                , v_mirror?scaling.y*2.:scaling.y  , 0. , 0.,
+                 0.                , 0.                , scaling.z         , 0.,
+                 u_mirror?1.:.5    , v_mirror?1.:.5    , .5                , 1.);
+
+    float4x4 translate =
+        float4x4(1.                , 0.                , 0.                , 0.,
+                 0.                , 1.                , 0.                , 0.,
+                 0.                , 0.                , 1.                , 0.,
+                 -0.5-translation.x, -0.5-translation.y, -0.5-translation.z, 1.);
+
+
+    // Euler rotation matrix  xyz order
+    float3 s = math::sin(rotation);
+    float3 c = math::cos(rotation);
+    float4x4 rotate =
+        float4x4(  c.y*c.z               , c.y*s.z               ,  -s.y   , 0.0,
+                   -c.x*s.z + s.x*s.y*c.z, c.x*c.z + s.x*s.y*s.z , s.x*c.y , 0.0,
+                   s.x*s.z + c.x*s.y*c.z , -s.x*c.z + c.x*s.y*s.z, c.x*c.y , 0.0,
+                   0.                    , 0.                    , 0.      , 1.);
+    return    scale *rotate*translate;
+}
+
+// 3dsmax Mono Output
+export enum ad_3dsmax_mono_output
+[[
+    anno::hidden()
+]]
+{
+    mono_output_rgb_intensity,
+    mono_output_alpha
+};
+
+// 3dsmax RGB Output
+export enum ad_3dsmax_rgb_output
+[[
+    anno::hidden()
+]]
+{
+    rgb_output_rgb,
+    rgb_output_alpha
+};
+
+// 3dsmax Alpha Source
+export enum ad_3dsmax_alpha_source
+[[
+    anno::hidden()
+]]
+{
+    alpha_source_alpha,
+    alpha_source_rgb_intensity,
+    alpha_source_none
+};
+
+// 3dsmax Bitmap map
+export texture_return ad_3dsmax_bitmap
+(
+    uniform int mapChannel=1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map channel")
+    ]],
+    uniform float U_Offset = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Offset")
+    ]],
+    uniform float V_Offset = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Offset")
+    ]],
+    uniform float U_Tiling = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tiling")
+    ]],
+    uniform float V_Tiling = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tiling")
+    ]],
+    uniform bool U_Tile=true //it is actually an error if both mirror and tile are true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tile")
+    ]],
+    uniform bool U_Mirror=false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Mirror")
+    ]],
+    uniform bool V_Tile=true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tile")
+    ]],
+    uniform bool V_Mirror=false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Mirror")
+    ]],
+    uniform float U_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Angle")
+    ]],
+    uniform float V_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Angle")
+    ]],
+    uniform float W_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("W Angle")
+    ]],
+    uniform int UVW_Type = 0 //enum?
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("UVW Type"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform texture_2d filename = texture_2d()
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("Bitmap")
+    ]],
+    uniform float clipu = 0.f //u+w and v+h are always <=1.0
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("U Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float clipw = 1.0
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("W Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float clipv = 0.0
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("V Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float cliph = 1.0
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("H Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform ad_3dsmax_mono_output mono_output = mono_output_rgb_intensity
+    [[
+        anno::in_group("Mono Output"),
+        anno::display_name("Mono Output")
+    ]],
+    uniform ad_3dsmax_rgb_output rgb_output = rgb_output_rgb
+    [[
+        anno::in_group("RGB Output"),
+        anno::display_name("RGB Output")
+    ]],
+    uniform ad_3dsmax_alpha_source alpha_source = alpha_source_none
+    [[
+        anno::in_group("Alpha Source"),
+        anno::display_name("Alpha Source")
+    ]],
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Bump amount"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool clamp = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Clamp"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool invert = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Invert")
+    ]],
+    uniform bool alphaFromRGB = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Alpha from RGB intensity"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float output_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Output amount")
+    ]],
+    uniform float rgb_level = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB level")
+    ]],
+    uniform float rgb_offset = 0.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB Offset")
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    texture_return result = base::file_texture
+    (
+        texture: filename,
+        mono_source: (alpha_source == alpha_source_alpha) ? base::mono_alpha : base::mono_average,
+        crop_u: float2(clipu, clipw+clipu),
+        crop_v: float2(1.-clipv-cliph, 1.-clipv),
+        uvw: base::transform_coordinate(
+            transform: max_rotation_translation_scale(
+                scaling: float3(U_Tiling,V_Tiling,1.0),
+                rotation: float3(U_angle,V_angle,W_angle)/180.*math::PI,
+                translation: float3(U_Offset,V_Offset,0.0),u_mirror: U_Mirror,v_mirror: V_Mirror
+            ),
+            coordinate: base::coordinate_source(texture_space: mapChannel-1)
+        ),
+        wrap_u: U_Tile?tex::wrap_repeat:U_Mirror?tex::wrap_mirrored_repeat:tex::wrap_clip,
+        wrap_v: V_Tile?tex::wrap_repeat:V_Mirror?tex::wrap_mirrored_repeat:tex::wrap_clip
+    );
+
+    result.tint = invert ? result.tint * (-rgb_level * output_amount ) + (1.f - rgb_offset) : result.tint * (rgb_level * output_amount ) + rgb_offset;
+
+    float alpha = (alpha_source != alpha_source_none) ? result.mono : 1.f;
+    result.tint = result.tint*alpha;
+
+    // determinate mono output
+    if(mono_output == mono_output_alpha)
+        result.mono = alpha;
+    else
+        result.mono = math::average(result.tint);
+
+    // determinate rgb output
+    if(rgb_output == rgb_output_alpha)
+        result.tint = color(alpha);
+
+    return result;
+}
+// 3dsmax Bitmap Map for Bump
+export float3 ad_3dsmax_bitmap_bump
+(
+    uniform int mapChannel=1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map channel")
+    ]],
+    uniform bool U_Tile=true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tile")
+    ]],
+    uniform bool U_Mirror=false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Mirror")
+    ]],
+    uniform bool V_Tile=true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tile")
+    ]],
+    uniform bool V_Mirror=false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Mirror")
+    ]],
+    uniform float U_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Angle")
+    ]],
+    uniform float V_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Angle")
+    ]],
+    uniform float W_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("W Angle")
+    ]],
+    uniform float U_Offset = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Offset")
+    ]],
+    uniform float V_Offset = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Offset")
+    ]],
+    uniform float U_Tiling = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tiling")
+    ]],
+    uniform float V_Tiling = 1.
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tiling")
+    ]],
+    uniform int UVW_Type = 0 //enum?
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("UVW Type"),
+        anno::unused()
+    ]],
+    uniform texture_2d filename = texture_2d()
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("Bitmap")
+    ]],
+    uniform float clipu = 0.f
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("U Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float clipw = 1.f
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("W Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float clipv = 0.f
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("V Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float cliph = 1.f
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("H Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float factor = 1.f
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("Bump amount")
+    ]],
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Bump output")
+    ]],
+    uniform bool clamp = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Clamp"),
+        anno::unused()
+    ]],
+    uniform bool invert = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Invert")
+    ]],
+    uniform bool alphaFromRGB = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Alpha from RGB intensity"),
+        anno::unused()
+    ]],
+    uniform float output_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Output amount"),
+        anno::unused()
+    ]],
+    uniform float rgb_level = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB level"),
+        anno::unused()
+    ]],
+    uniform float rgb_offset = 0.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB Offset"),
+        anno::unused()
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    return base::file_bump_texture
+    (
+        texture : filename,
+        crop_u  : float2(clipu, clipw + clipu),
+        crop_v  : float2(1.f - clipv - cliph, 1.f - clipv),
+        uvw     : base::transform_coordinate
+        (
+            transform: max_rotation_translation_scale
+            (
+                scaling     : float3(U_Tiling, V_Tiling, 1.f),
+                rotation    : float3(U_angle, V_angle, W_angle)/(180.f*math::PI),
+                translation : float3(U_Offset, V_Offset, 0.f),
+                u_mirror    : U_Mirror,
+                v_mirror    : V_Mirror
+            ),
+            coordinate: base::coordinate_source(texture_space: mapChannel - 1)
+        ),
+        wrap_u  : U_Tile ? tex::wrap_repeat : U_Mirror ? tex::wrap_mirrored_repeat : tex::wrap_clip,
+        wrap_v  : V_Tile ? tex::wrap_repeat : V_Mirror ? tex::wrap_mirrored_repeat : tex::wrap_clip,
+        factor  : invert ? -10.f*factor*bump_amount : 10.f*factor*bump_amount
+    );
+}
+
+// 3dsmax Bitmap Normal Map
+export float3 ad_3dsmax_bitmap_normalmap
+(
+    uniform int mapChannel=1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map channel")
+    ]],
+    uniform bool U_Tile=true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tile")
+    ]],
+    uniform bool U_Mirror=false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Mirror")
+    ]],
+    uniform bool V_Tile=true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tile")
+    ]],
+    uniform bool V_Mirror=false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Mirror")
+    ]],
+    uniform float U_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Angle")
+    ]],
+    uniform float V_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Angle")
+    ]],
+    uniform float W_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("W Angle")
+    ]],
+    uniform float U_Offset = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Offset")
+    ]],
+    uniform float V_Offset = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Offset")
+    ]],
+    uniform float U_Tiling = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tiling")
+    ]],
+    uniform float V_Tiling = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tiling")
+    ]],
+    uniform int UVW_Type = 0 //enum?
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("UVW type"),
+        anno::unused()
+    ]],
+    uniform texture_2d filename = texture_2d()
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("Bitmap")
+    ]],
+    uniform float clipu = 0.f
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("U Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float clipw = 1.f
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("W Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float clipv = 0.f
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("V Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float cliph = 1.f
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("H Clip"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float factor = 1.f
+    [[
+        anno::in_group("Bitmap parameters"),
+        anno::display_name("Strength")
+    ]],
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Bump Amount"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool clamp = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Clamp"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool invert = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Invert")
+    ]],
+    uniform bool alphaFromRGB = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Alpha from RGB intensity"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float output_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Output Amount")
+    ]],
+    uniform float rgb_level = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB level")
+    ]],
+    uniform float rgb_offset = 0.0
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB offset"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float mult_spin = 1.f
+    [[
+        anno::in_group("Parameters"),
+        anno::display_name("Normal map mult")
+    ]],
+    uniform bool swap_rg = false
+    [[
+        anno::in_group("Parameters"),
+        anno::display_name("Swap red & green"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool flipred = false
+    [[
+        anno::in_group("Parameters"),
+        anno::display_name("Flip red")
+    ]],
+    uniform bool flipgreen = false
+    [[
+        anno::in_group("Parameters"),
+        anno::display_name("Flip green")
+    ]],
+
+    uniform int method = 0
+    [[
+        anno::in_group("Parameters"),
+        anno::display_name("Method"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float3 bump_map = state::normal()
+    [[
+        anno::in_group("Parameters"),
+        anno::display_name("Bump map"),
+        anno::unused(),
+        anno::hidden()
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    return base::tangent_space_normal_texture(
+        texture: filename,
+        crop_u: float2(clipu, clipw + clipu),
+        crop_v: float2(1.f - clipv - cliph, 1.f - clipv),
+        factor: factor*mult_spin*rgb_level*output_amount,
+        flip_tangent_u: invert ? !flipred : flipred,
+        flip_tangent_v: invert ? flipgreen : !flipgreen,
+        uvw: base::transform_coordinate(
+            transform: max_rotation_translation_scale(
+                scaling: float3(U_Tiling, V_Tiling, 1.f),
+                rotation: float3(U_angle, V_angle, W_angle)/180.f*math::PI ,
+                translation: float3(U_Offset, V_Offset, 0.f),
+                u_mirror: U_Mirror,
+                v_mirror: V_Mirror
+            ),
+            coordinate: base::coordinate_source(texture_space: mapChannel - 1)
+        ),
+        wrap_u: U_Tile ? tex::wrap_repeat : U_Mirror ? tex::wrap_mirrored_repeat : tex::wrap_clip,
+        wrap_v: V_Tile ? tex::wrap_repeat : V_Mirror ? tex::wrap_mirrored_repeat : tex::wrap_clip
+    );
+}
+
+// 3dsmax Color Correction RGB Channels
+export enum ad_3dsmax_channel
+[[
+    anno::hidden()
+]]
+{
+    channel_red,
+    channel_green,
+    channel_blue,
+    channel_alpha,
+    channel_inverse_red,
+    channel_inverse_green,
+    channel_inverse_blue,
+    channel_inverse_alpha,
+    channel_mono,
+    channel_one,
+    channel_zero
+};
+
+// 3dsmax Color Correction Lightness Mode
+export enum ad_3dsmax_lightness_mode
+[[
+    anno::hidden()
+]]
+{
+    Standard,
+    Advanced
+};
+
+// 3dsmax Color Correction Map
+export texture_return ad_3dsmax_color_correction
+(
+    texture_return map = texture_return()
+    [[
+        anno::in_group("Basic parameters"),
+        anno::display_name("Color")
+    ]],
+    uniform ad_3dsmax_channel rewireR = channel_red
+    [[
+        anno::in_group("Channels"),
+        anno::display_name("Red")
+    ]],
+    uniform ad_3dsmax_channel rewireG = channel_green
+    [[
+        anno::in_group("Channels"),
+        anno::display_name("Green")
+    ]],
+    uniform ad_3dsmax_channel rewireB = channel_blue
+    [[
+        anno::in_group("Channels"),
+        anno::display_name("Blue")
+    ]],
+    uniform ad_3dsmax_channel rewireA = channel_alpha
+    [[
+        anno::in_group("Channels"),
+        anno::display_name("Alpha")
+    ]],
+    uniform float hue_shift = 0.f
+    [[
+        anno::in_group("Color"),
+        anno::display_name("Hue shift"),
+        anno::hard_range(-180.f, 180.f)
+    ]],
+    uniform float saturation = 0.f
+    [[
+        anno::in_group("Color"),
+        anno::display_name("Saturation"),
+        anno::hard_range(-100.f, 100.f)
+    ]],
+    uniform float hue_tint = 0.f
+    [[
+        anno::in_group("Color"),
+        anno::display_name("Hue tint"),
+        anno::hard_range(0.f, 360.f)
+    ]],
+    uniform float hue_tint_amnt = 0.f
+    [[
+        anno::in_group("Color"),
+        anno::display_name("Strength"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform ad_3dsmax_lightness_mode lightness_mode = Standard
+    [[
+        anno::in_group("Lightness"),
+        anno::display_name("Lightness mode")
+    ]],
+    uniform float brightness = 0.f
+    [[
+        anno::in_group("Lightness"),
+        anno::display_name("Brightness"),
+        anno::hard_range(-100.f, 100.f)
+    ]],
+    uniform float contrast = 0.f
+    [[
+        anno::in_group("Lightness"),
+        anno::display_name("Contrast"),
+        anno::hard_range(-100.f, 100.f)
+    ]],
+    uniform float rgb_gamma = 1.f
+    [[
+        anno::in_group("Lightness"),
+        anno::display_name("RGB gamma"),
+        anno::hard_range(0.01f, 10000.f)
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    // channel rewiring
+    float3 rgb = float3(map.tint);
+    texture_return result =  (rewireB == channel_blue) && (rewireG == channel_green) && (rewireR == channel_red) && (rewireA == channel_alpha) ?
+        texture_return(color(rgb), map.mono) :
+        texture_return(color(
+            rewireR == channel_red ? rgb.x :
+            rewireR == channel_green ? rgb.y :
+            rewireR == channel_blue ? rgb.z :
+            rewireR == channel_alpha ? map.mono :
+            rewireR == channel_inverse_red ? 1.f - rgb.x :
+            rewireR == channel_inverse_green ? 1.f - rgb.y :
+            rewireR == channel_inverse_blue ? 1.f - rgb.z :
+            rewireR == channel_inverse_alpha ? 1.f - map.mono :
+            rewireR == channel_mono ? math::luminance(map.tint) :
+            rewireR == channel_one ? 1.f : 0.f,
+            rewireG == channel_red ? rgb.x :
+            rewireG == channel_green ? rgb.y :
+            rewireG == channel_blue ? rgb.z :
+            rewireG == channel_alpha ? map.mono :
+            rewireG == channel_inverse_red ? 1.f - rgb.x :
+            rewireG == channel_inverse_green ? 1.f - rgb.y :
+            rewireG == channel_inverse_blue ? 1.f - rgb.z :
+            rewireG == channel_inverse_alpha ? 1.f - map.mono :
+            rewireG == channel_mono ? math::luminance(map.tint) :
+            rewireG == channel_one ? 1.f : 0.f,
+            rewireB == channel_red ? rgb.x :
+            rewireB == channel_green ? rgb.y :
+            rewireB == channel_blue ? rgb.z :
+            rewireB == channel_alpha ? map.mono :
+            rewireB == channel_inverse_red ? 1.f - rgb.x :
+            rewireB == channel_inverse_green ? 1.f - rgb.y :
+            rewireB == channel_inverse_blue ? 1.f - rgb.z :
+            rewireB == channel_inverse_alpha ? 1.f - map.mono :
+            rewireB == channel_mono ? math::luminance(map.tint) :
+            rewireB == channel_one ? 1.f : 0.f
+        ),
+            rewireA == channel_red ? rgb.x :
+            rewireA == channel_green ? rgb.y :
+            rewireA == channel_blue ? rgb.z :
+            rewireA == channel_alpha ? map.mono :
+            rewireA == channel_inverse_red ? 1.f - rgb.x :
+            rewireA == channel_inverse_green ? 1.f - rgb.y :
+            rewireA == channel_inverse_blue ? 1.f - rgb.z :
+            rewireA == channel_inverse_alpha ? 1.f - map.mono :
+            rewireA == channel_mono ? math::luminance(map.tint) :
+            rewireA == channel_one ? 1.f : 0.f);
+
+    rgb = float3(result.tint);
+
+    // chroma correction
+    if(hue_shift != 0.f || saturation != 0.f || hue_tint_amnt != 0.f)
+    {
+        // RGB to HSV
+        float min = math::min_value(rgb);
+        float max = math::max_value(rgb);
+        float h = 0.f, s = 0.f, v = max;
+        float delta = max - min;
+
+        if(min != max)
+        {
+            if(max == rgb.x)
+                h = math::fmod(((60.f*((rgb.y - rgb.z)/delta)) + 360.f), 360.f);
+            else if(max == rgb.y)
+                h = math::fmod(((60.f*((rgb.z - rgb.x)/delta)) + 120.f), 360.f);
+            else // max == rgb.z
+                h = math::fmod(((60.f*((rgb.x - rgb.y)/delta)) + 240.f), 360.f);
+        }
+
+        if(max > 0.f)
+        {
+            s = delta / max;
+
+            if(saturation >= 0.f)
+                s += saturation*saturation*0.0001f;
+            else
+                s -= saturation*saturation*0.0001f;
+
+            if(s < 0.f)
+                s = 0.f;
+            else if (s > 1.f)
+                s = 1.f;
+        }
+
+        // apply cromatic corrections
+        h += hue_shift;
+        h += (hue_tint - h)*(hue_tint_amnt*0.01f);
+
+        if(h < 0.f)
+            h += 360.f;
+        else if(h >= 360.f)
+            h -= 360.f;
+
+
+        // HSV to RGB
+        float sv = s*v;
+        h = math::fmod(h / 60.f, 6.f);
+        int idx = int(h);
+        float x = sv * (1.f - math::abs(math::fmod(h, 2.f) - 1.f));
+        float m = v - sv;
+
+        float r=0.f, g=0.f, b=0.f;
+
+        switch(idx)
+        {
+            case 0:
+                r = sv, g = x;
+                break;
+            case 1:
+                r = x, g = sv;
+                break;
+            case 2:
+                g = sv, b = x;
+                break;
+            case 3:
+                g = x, b = sv;
+                break;
+            case 4:
+                r = x, b = sv;
+                break;
+            case 5:
+                r = sv, b = x;
+                break;
+        }
+
+        rgb = float3(r+m, g+m, b+m);
+    }
+
+    //  lightness correction
+    if(lightness_mode == Advanced) // advanced exposure
+    {
+        if(rgb_gamma != 1.f)
+            rgb  = math::pow(rgb, 1.f/rgb_gamma);
+    }
+    else // basic exposure
+    {
+        if(contrast != 0.f)
+        {
+            float c = contrast*2.55f;
+            float f = (259.f * (c + 255.f))/(255.f * (259.f - c));
+            float3 grey(0.5f);
+            rgb = math::clamp((rgb - grey)*f + grey, 0.f, 1.f);
+        }
+
+        if(brightness != 0.f)
+        {
+            rgb = math::clamp(rgb + float3(brightness*0.01), 0.f, 1.f);
+        }
+    }
+
+    result.tint = color(rgb);
+    return result;
+}
+
+// 3dsmax Color Correction Map for Bump
+export float3 ad_3dsmax_color_correction_bump(
+    float3 map = state::normal()
+    [[
+        anno::in_group("Basic parameters"),
+        anno::display_name("Bump map")
+    ]],
+    uniform ad_3dsmax_channel rewireR = channel_red
+    [[
+        anno::in_group("Channels"),
+        anno::display_name("Red"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform ad_3dsmax_channel rewireG = channel_green
+    [[
+        anno::in_group("Channels"),
+        anno::display_name("Green"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform ad_3dsmax_channel rewireB = channel_blue
+    [[
+        anno::in_group("Channels"),
+        anno::display_name("Blue"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform ad_3dsmax_channel rewireA = channel_alpha
+    [[
+        anno::in_group("Channels"),
+        anno::display_name("Alpha"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float hue_shift = 0.f
+    [[
+        anno::in_group("Color"),
+        anno::display_name("Hue shift"),
+        anno::hard_range(-180.f, 180.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float saturation = 0.f
+    [[
+        anno::in_group("Color"),
+        anno::display_name("Saturation"),
+        anno::hard_range(-100.f, 100.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float hue_tint = 0.f
+    [[
+        anno::in_group("Color"),
+        anno::display_name("Hue tint"),
+        anno::hard_range(0.f, 360.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float hue_tint_amnt = 0.f
+    [[
+        anno::in_group("Color"),
+        anno::display_name("Strength"),
+        anno::hard_range(0.f, 100.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform ad_3dsmax_lightness_mode lightness_mode = Standard
+    [[
+        anno::in_group("Lightness"),
+        anno::display_name("Lightness mode"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float brightness = 0.f
+    [[
+        anno::in_group("Lightness"),
+        anno::display_name("Brightness"),
+        anno::hard_range(-100.f, 100.f),
+        anno::unused(),
+        anno::hidden()
+
+    ]],
+    uniform float contrast = 0.f
+    [[
+        anno::in_group("Lightness"),
+        anno::display_name("Contrast"),
+        anno::hard_range(-100.f, 100.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float rgb_gamma = 1.f
+    [[
+        anno::in_group("Lightness"),
+        anno::display_name("RGB gamma"),
+        anno::hard_range(0.01f, 10000.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Bump"),
+        anno::display_name("Bump amount"),
+        anno::hard_range(0.f, 1.f)
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    return math::normalize(math::lerp(state::normal(), map, bump_amount));
+    // return combine_normals(bump_amount, map, 1.f - bump_amount, state::normal());
+
+    // EXPERIMENTAL CODE
+    // if(bump_amount <= 0.f)
+        // return state::normal();
+
+    // // normal xyz to spherical
+    // float disc = math::sqrt(map.x*map.x + map.y*map.y);
+    // float theta = math::atan(disc/map.z);
+    // float phi = math::atan2(map.y, map.x);
+
+    // float t = math::clamp(1.f - theta/math::HALF_PI, 0.f, 1.f); // [0, PI/2] --> [1, 0] mapping
+
+
+    // //  lightness corrections
+    // if(lightness_mode = Advanced)
+    // {
+        // if(rgb_gamma != 1.f)
+            // t  = math::pow(t, 1.f/rgb_gamma);
+    // }
+    // else // basic exposure
+    // {
+        // if(contrast != 0.f)
+        // {
+            // float c = contrast*2.55f;
+            // float f = (259.f * (c + 255.f))/(255.f * (259.f - c));
+            // t = math::clamp((t - 0.5f)*f + 0.5f, 0.f, 1.f);
+        // }
+
+        // if(brightness != 0.f)
+        // {
+            // t = math::clamp(t + (brightness*0.01), 0.f, 1.f);
+        // }
+    // }
+
+    // theta = (1.f - t)*math::HALF_PI; // [1, 0] --> [0, PI/2] mapping
+
+    // // normal spherical to xyz
+    // float3 bump_normal(math::sin(theta)*math::cos(phi), math::sin(theta)*math::sin(phi), math::cos(theta));
+
+    // if(bump_amount >= 1.f)
+        // return bump_normal;
+    // else
+        // return combine_normals(bump_amount, bump_normal, 1.f - bump_amount, state::normal());
+}
+
+// 3dsmax Composite Layer Mask Mode
+uniform color_layer_mode ad_3dsmax_mapmode(uniform int m)
+{
+    return
+        m == 0  ? base::color_layer_blend:
+        m == 1  ? base::color_layer_average:
+        m == 2  ? base::color_layer_add:
+        m == 3  ? base::color_layer_add: //but factor is negative to get subtract!!
+        m == 4  ? base::color_layer_darken:
+        m == 5  ? base::color_layer_multiply:
+        m == 6  ? base::color_layer_colorburn:
+        m == 7  ? base::color_layer_linearburn:
+        m == 8  ? base::color_layer_lighten:
+        m == 9  ? base::color_layer_screen:
+        m == 10 ? base::color_layer_colordodge:
+        m == 11 ? base::color_layer_lineardodge:
+        m == 12 ? base::color_layer_spotlight:
+        m == 13 ? base::color_layer_spotlightblend:
+        m == 14 ? base::color_layer_overlay:
+        m == 15 ? base::color_layer_softlight:
+        m == 16 ? base::color_layer_hardlight:
+        m == 17 ? base::color_layer_pinlight:
+        m == 18 ? base::color_layer_hardmix:
+        m == 19 ? base::color_layer_difference:
+        m == 20 ? base::color_layer_exclusion:
+        m == 21 ? base::color_layer_hue:
+        m == 22 ? base::color_layer_saturation:
+        m == 23 ? base::color_layer_color:
+        m == 24 ? base::color_layer_brightness:
+                  base::color_layer_blend;
+}
+
+// 3dsmax Composite Map
+export texture_return ad_3dsmax_composite
+(
+    // layer 1
+    uniform int blendMode1 = 0
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("1: Blend Mode (unused)"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    texture_return map1 = texture_return()
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("1: Map")
+    ]],
+    texture_return mask1 = texture_return(color(1.f), 1.f)
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("1: Mask")
+    ]],
+    uniform float opacity1 = 0.f
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("1: Opacity"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    // layer2
+    uniform int blendMode2 = 0
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("2: Blend Mode")
+    ]],
+    texture_return map2 = texture_return()
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("2: Map")
+    ]],
+    texture_return mask2 = texture_return(color(1.f), 1.f)
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("2: Mask")
+    ]],
+    uniform float opacity2 = 0.f
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("2: Opacity"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    // layer3
+    uniform int blendMode3 = 0
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("3: Blend Mode")
+    ]],
+    texture_return map3 = texture_return()
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("3: Map")
+    ]],
+    texture_return mask3 = texture_return(color(1.f), 1.f)
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("3: Mask")
+    ]],
+    uniform float opacity3 = 0.f
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("3: Opacity"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    // Layer4
+    uniform int blendMode4 = 0
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("4: Blend Mode")
+    ]],
+    texture_return map4 = texture_return()
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("4: Map")
+    ]],
+    texture_return mask4 = texture_return(color(1.f), 1.f)
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("4: Mask")
+    ]],
+    uniform float opacity4 = 0.f
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("3: Opacity"),
+        anno::hard_range(0.f, 100.f)
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    opacity1 *= mask1.mono*0.01f;
+    texture_return t1 = opacity1 > 0.f ?
+        base::blend_color_layers
+        (
+            layers: base::color_layer[]
+            (
+                base::color_layer
+                (
+                    layer_color: map1.tint,
+                    weight:      opacity1,
+                    mode:        base::color_layer_blend
+                )
+            ),
+            base: color(0.f)
+        )
+        : texture_return(color(0.f), 0.f);
+
+    opacity2 *= mask2.mono*0.01f;
+    texture_return t2 = opacity2 > 0.f ?
+        base::blend_color_layers
+        (
+            layers: base::color_layer[]
+            (
+                base::color_layer
+                (
+                    layer_color: map2.tint,
+                    weight: blendMode2 == 3 ? -opacity2 : opacity2,
+                    mode: ad_3dsmax_mapmode(blendMode2)
+                )
+            ),
+            base: t1.tint
+        )
+        : t1;
+
+    opacity3 *= mask3.mono*0.01f;
+    texture_return t3 = opacity3 > 0.f ?
+        base::blend_color_layers
+        (
+            layers: base::color_layer[]
+            (
+                base::color_layer
+                (
+                    layer_color: map3.tint,
+                    weight: blendMode3 == 3 ? -opacity3 : opacity3,
+                    mode: ad_3dsmax_mapmode(blendMode3)
+                )
+            ),
+            base: t2.tint
+        )
+        : t2;
+
+    opacity4 *= mask4.mono*0.01f;
+    texture_return t4 = opacity4 > 0.f ?
+        base::blend_color_layers
+        (
+            layers: base::color_layer[]
+            (
+                base::color_layer
+                (
+                    layer_color: map4.tint,
+                    weight: blendMode4 == 3 ? -opacity4 : opacity4,
+                    mode: ad_3dsmax_mapmode(blendMode4)
+                )
+            ),
+            base: t3.tint
+        ):
+        t3;
+
+    return t4;
+}
+
+// 3dsmax Composite Map for Bump
+export float3 ad_3dsmax_composite_bump
+(
+    // Layer1
+    uniform int blendMode1 = 0
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("1: Blend Mode"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float3 map1 = state::normal()
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("1: Bump Map")
+    ]],
+    texture_return mask1 = texture_return(color(1.f), 1.f)
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("1: Mask")
+    ]],
+    uniform float opacity1 = 0.f
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("1: Opacity"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    // Layer2
+    uniform int blendMode2 = 0
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("2: Blend Mode"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float3 map2 = state::normal()
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("2: Bump Map")
+    ]],
+    texture_return mask2 = texture_return(color(1.f), 1.f)
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("2: Mask")
+    ]],
+    uniform float opacity2 = 0.f
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("2: Opacity"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    // Layer3
+    uniform int blendMode3 = 0
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("3: Blend Mode"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float3 map3 = state::normal()
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("3: Bump Map")
+    ]],
+    texture_return mask3 = texture_return(color(1.f), 1.f)
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("3: Mask")
+    ]],
+    uniform float opacity3 = 0.f
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("3: Opacity"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    // Layer4
+    uniform int blendMode4 = 0
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("4: Blend Mode"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float3 map4 = state::normal()
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("4: Bump Map")
+    ]],
+    texture_return mask4 = texture_return(color(1.f), 1.f)
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("4: Mask")
+    ]],
+    uniform float opacity4 = 0.f
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("4: Opacity"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float factor = 1.f
+    [[
+        anno::in_group("Composite Layers"),
+        anno::display_name("Bump amount")
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+        float3  n1 = opacity1 > 0.f ?
+            combine_normals(1.f - (opacity1/100.f*mask1.mono), state::normal(), opacity1/100.f*factor*mask1.mono, map1)
+            : state::normal();
+
+        float3  n2 = opacity2 > 0.f ?
+            combine_normals(1.f - (opacity2/100.f*mask2.mono), n1, opacity2/100.f*factor*mask2.mono, map2)
+            : n1;
+
+        float3  n3 = opacity3 > 0.f ?
+            combine_normals(1.f - (opacity3/100.f*mask3.mono), n2, opacity3/100.f*factor*mask3.mono, map3)
+            : n2;
+
+        float3  n4 = opacity4 > 0.f ?
+            combine_normals(1.f - (opacity4/100.f*mask4.mono), n3, opacity4/100.f*factor*mask4.mono, map4)
+            : n3;
+
+        return n4;
+}
+
+// 3dsmax Dent Map
+export texture_return ad_3dsmax_dent
+(
+    // Dent Params
+    color color1 = color(0.f)
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Color #1")
+    ]],
+    color color2 = color(1.f)
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Color #2")
+    ]],
+    uniform float size = 200.f
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Size")
+    ]],
+    uniform float strength = 20.f
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Strength")
+    ]],
+    uniform int iterations = 2
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Iterations")
+    ]],
+
+    // Coords
+    uniform float blur = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Blur"),
+        anno::unused()
+    ]],
+    uniform float3 offset = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Offset")
+    ]],
+    uniform float3 tiling = float3(1.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Tiling")
+    ]],
+    uniform float3 angle = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Angle")
+    ]],
+    uniform float blur_Offset = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Blur Offset"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    // coordType: Object XYZ = 0, World XYZ = 1, Explicit Map Channel = 2, Vertex Color Channel = 3
+    uniform int coordType = 0
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Source")
+    ]],
+    uniform int mapChannel = 1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map Channel")
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    return base::perlin_noise_texture
+    (
+        color1: color1,
+        color2: color2,
+        size: size / 30.0,              // Experimental factor to improve the match
+        noise_levels: iterations,
+        absolute_noise: true,           // Dent is absolute noise
+        noise_threshold_high: (strength != 0 ? 1/(strength) : 1), // Match seems rather close
+        apply_dent: true,
+        uvw: base::transform_coordinate
+        (
+            transform: base::rotation_translation_scale
+            (
+                scaling: tiling,
+                translation: offset,
+                rotation: float3(angle.x,angle.y,angle.z)/180.*math::PI
+            ),
+            coordinate:
+            (
+                coordType == 0 ? // Object XYZ
+                base::coordinate_source(coordinate_system: base::texture_coordinate_object):
+                (
+                    coordType == 1 ? // World XYZ
+                    base::coordinate_source(coordinate_system: base::texture_coordinate_world):
+                    (
+                        // coordType == 2 ? // Explicit Map Channel
+                        // base::coordinate_source(texture_space: mapChannel-1):
+                        base::coordinate_source(texture_space: mapChannel-1) // No support for Vertex Color Channel, fallback to UVs
+                    )
+                )
+            )
+        )
+    );
+}
+
+// 3dsmax Dent Map for Bump
+export float3 ad_3dsmax_dent_bump
+(
+    // Dent Params
+    color color1 = color(0.f)
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Color #1")
+    ]],
+    color color2 = color(1.f)
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Color #2")
+    ]],
+    uniform float size = 200.f
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Size")
+    ]],
+    uniform float strength = 20.f
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Strength")
+    ]],
+    uniform int iterations = 2
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Iterations")
+    ]],
+
+    // Bump
+    uniform float factor = 1.f
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Bump amount")
+    ]],
+
+    // Coords
+    uniform float blur = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Blur"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float3 offset = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Offset")
+    ]],
+    uniform float3 tiling = float3(1.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Tiling")
+    ]],
+    uniform float3 angle = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Angle")
+    ]],
+    uniform float blur_Offset = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Blur Offset"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    // coordType: Object XYZ = 0, World XYZ = 1, Explicit Map Channel = 2, Vertex Color Channel = 3
+    uniform int coordType = 0
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Source")
+    ]],
+    uniform int mapChannel = 1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map Channel")
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    float3 perlin_normal = base::perlin_noise_bump_texture
+    (
+        factor: factor * (strength / 100.f), // Experimental
+        size: size / 30.f,              // Experimental factor to improve the match
+        noise_levels: iterations,
+        absolute_noise: true,           // Dent is absolute noise
+        apply_dent: true,
+        uvw: base::transform_coordinate
+        (
+            transform: base::rotation_translation_scale
+            (
+                scaling: tiling,
+                translation: offset,
+                rotation: float3(angle.x,angle.y,angle.z)/180.f*math::PI
+            ),
+            coordinate:
+            (
+                coordType == 0 ? // Object XYZ
+                base::coordinate_source(coordinate_system: base::texture_coordinate_object):
+                (
+                    coordType == 1 ? // World XYZ
+                    base::coordinate_source(coordinate_system: base::texture_coordinate_world):
+                    (
+                        // coordType == 2 ? // Explicit Map Channel
+                        // base::coordinate_source(texture_space: mapChannel-1):
+                        base::coordinate_source(texture_space: mapChannel-1) // No support for Vertex Color Channel, fallback to UVs
+                    )
+                )
+            )
+        )
+    );
+    float f = math::average(color1 - color2) * factor;
+    return combine_normals( f, perlin_normal, 1.f - f, state::normal() );
+}
+
+// 3dsmax Gradient Ramp Map
+export enum ad_3dsmax_gradient_interpolation
+{
+    custom = 0,
+    easy_in,
+    easy_in_out,
+    easy_out,
+    linear,
+    solid
+};
+
+
+export texture_return ad_3dsmax_gradient_ramp
+(
+    // Gradient Params
+    uniform float[<nb_keys>] gradient_keys = float[](0.f, 50.f, 100.f)
+    [[
+        anno::in_group("Gradient Parameters"),
+        anno::display_name("Gradient Keys")
+    ]],
+    uniform float3[<nb_colors>] gradient_colors = float3[](float3(0.f, 0.f, 0.f), float3(0.5f, 0.5f, 0.5f), float3(1.f, 1.f, 1.f))
+    [[
+        anno::in_group("Gradient Parameters"),
+        anno::display_name("Gradient Colors")
+    ]],
+    uniform int gradient_type = 4
+    [[
+        anno::in_group("Gradient Parameters"),
+        anno::display_name("Gradient Type"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform ad_3dsmax_gradient_interpolation gradient_interpolation = linear
+    [[
+        anno::in_group("Gradient Parameters"),
+        anno::display_name("Interpolation")
+    ]],
+
+    // Noise Params
+    uniform float amount = 1.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Amount"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    // type: regular = 0, fractal = 1, turbulence = 2
+    // 0- Regular (Generates plain noise. Basically the same as fractal noise with levels  at 1.)
+    // 1- Fractal (Generates noise using a fractal algorithm. levels  sets the number of iterations for the fractal noise.)
+    // 2- Turbulence (Generates fractal noise with an absolute value function applied to it to make fault lines.)
+    uniform int type = 0
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Noise Type")
+    ]],
+    uniform float size = 1.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Size")
+    ]],
+    uniform float phase = 0.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Phase")
+    ]],
+    uniform float levels = 4.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Levels")
+    ]],
+    uniform float threshold_low = 0.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Threshold Low")
+    ]],
+    uniform float threshold_high = 1.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Threshold High")
+    ]],
+    uniform float threshold_smooth = 0.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Threshold Smooth"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+
+    // Coords
+    uniform int map_channel = 1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map Channel")
+    ]],
+    uniform float3 offset = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Offset")
+    ]],
+    uniform float3 tiling = float3(1.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Tiling")
+    ]],
+    uniform float3 angle = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Angle")
+    ]],
+    uniform bool u_tile = true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tile"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool v_tile = true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tile"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool u_mirror = false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Mirror")
+    ]],
+    uniform bool v_mirror = false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Mirror")
+    ]],
+    uniform float blur_Offset = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Blur Offset"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform int UVW_Type = 0
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("UVW_Type"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+
+    // Output
+    uniform bool alpha_from_RGB = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Alpha from RGB Intensity"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Bump Amount"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool clamp = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Clamp"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool invert = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Invert"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float output_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Output Amount"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float rgb_level = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB Level"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float rgb_offset = 0.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB Offset"),
+        anno::unused(),
+        anno::hidden()
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    texture_return noise;
+
+    if(amount > 0.f)
+    {
+        noise = base::perlin_noise_texture
+        (
+            size: size/30.f,
+            noise_phase: phase,
+            noise_levels: (type == 0 ? 1 : int(levels)),    // Levels only used for fractal and turbulence noise types
+            absolute_noise: type == 2,                      // If set to true, the appearance of the pattern will be more "billowing" and "turbulent"
+            noise_threshold_high: threshold_high,
+            noise_threshold_low: threshold_low,
+            uvw: base::transform_coordinate
+            (
+                transform: max_rotation_translation_scale
+                (
+                    scaling: tiling,
+                    rotation: angle/180.f*math::PI ,
+                    translation: offset,
+                    u_mirror: u_mirror,
+                    v_mirror: v_mirror
+                ),
+                coordinate: base::coordinate_source(texture_space: map_channel-1)
+            )
+        );
+    }
+
+    float3 position = state::texture_coordinate(0);
+
+    float t = position.x + noise.mono*amount;
+
+    t = t - int(t);
+    if( t < 0.f)
+        t += 1.f;
+    else if( t > 1.f)
+        t -= 1.f;
+
+    t *= 100.f;
+
+    int idx=0;
+    for(int i=0; i<nb_keys-1; i++)
+    {
+        if(gradient_keys[i+1] >= t)
+        {
+            idx = i;
+            break;
+        }
+    }
+
+    color c;
+    switch(gradient_interpolation)
+    {
+        case easy_in:
+            t = (t - gradient_keys[idx])/(gradient_keys[idx+1] - gradient_keys[idx]);
+            c = color(math::lerp( gradient_colors[idx], gradient_colors[idx+1], t*t));
+            break;
+        case easy_in_out:
+            t = (t - gradient_keys[idx])/(gradient_keys[idx+1] - gradient_keys[idx]);
+            c = color(math::lerp( gradient_colors[idx], gradient_colors[idx+1], t*t*(3.f - 2.f*t)));
+            break;
+        case easy_out:
+            t = (t - gradient_keys[idx])/(gradient_keys[idx+1] - gradient_keys[idx]);
+            c = color(math::lerp( gradient_colors[idx], gradient_colors[idx+1], math::sqrt(t)));
+            break;
+        default:
+        case linear:
+            t = (t - gradient_keys[idx])/(gradient_keys[idx+1] - gradient_keys[idx]);
+            c = color(math::lerp( gradient_colors[idx], gradient_colors[idx+1], t));
+            break;
+        case solid:
+            c = color(gradient_colors[idx]);
+            break;
+    }
+
+    return texture_return(c, math::average(c));
+}
+
+// 3dsmax Gradient Ramp Map for Bump
+export float3 ad_3dsmax_gradient_ramp_bump
+(
+    // Gradient Params
+    uniform float[<nb_keys>] gradient_keys = float[](0.f, 50.f, 100.f)
+    [[
+        anno::in_group("Gradient Parameters"),
+        anno::display_name("Gradient Keys"),
+        anno::unused(),
+        anno::hidden()
+
+    ]],
+    uniform float3[<nb_colors>] gradient_colors = float3[](float3(0.f, 0.f, 0.f), float3(0.5f, 0.5f, 0.5f), float3(1.f, 1.f, 1.f))
+    [[
+        anno::in_group("Gradient Parameters"),
+        anno::display_name("Gradient Colors"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform int gradient_type = 5
+    [[
+        anno::in_group("Gradient Parameters"),
+        anno::display_name("Gradient Type"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform ad_3dsmax_gradient_interpolation gradient_interpolation = linear
+    [[
+        anno::in_group("Gradient Parameters"),
+        anno::display_name("Interpolation"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+
+    // Noise Params
+    uniform float amount = 1.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Amount"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    // type: regular = 0, fractal = 1, turbulence = 2
+    // 0- Regular (Generates plain noise. Basically the same as fractal noise with levels  at 1.)
+    // 1- Fractal (Generates noise using a fractal algorithm. levels  sets the number of iterations for the fractal noise.)
+    // 2- Turbulence (Generates fractal noise with an absolute value function applied to it to make fault lines.)
+    uniform int type = 0
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Noise Type")
+    ]],
+    uniform float size = 1.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Size")
+    ]],
+    uniform float phase = 0.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Phase")
+    ]],
+    uniform float levels = 4.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Levels")
+    ]],
+    uniform float threshold_low = 0.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Threshold Low")
+    ]],
+    uniform float threshold_high = 1.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Threshold High")
+    ]],
+    uniform float threshold_smooth = 0.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Threshold Smooth"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+
+    // Bump
+    uniform float factor = 1.f
+    [[
+        anno::in_group("Bump Parameters"),
+        anno::display_name("Bump factor")
+    ]],
+
+    // Coords
+    uniform int map_channel = 1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map Channel")
+    ]],
+    uniform float3 offset = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Offset")
+    ]],
+    uniform float3 tiling = float3(1.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Tiling")
+    ]],
+    uniform float3 angle = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Angle")
+    ]],
+    uniform bool u_tile = true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tile"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool v_tile = true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tile"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool u_mirror = false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Mirror")
+    ]],
+    uniform bool v_mirror = false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Mirror")
+    ]],
+    uniform float blur_Offset = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Blur Offset"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform int UVW_Type = 0
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("UVW_Type"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+
+    // Output
+    uniform bool alpha_from_RGB = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Alpha from RGB Intensity"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Bump Amount"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool clamp = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Clamp"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool invert = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Invert"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float output_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Output Amount"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float rgb_level = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB Level"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float rgb_offset = 0.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB Offset"),
+        anno::unused(),
+        anno::hidden()
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+   float3 perlin_normal = base::perlin_noise_bump_texture
+   (
+        factor: factor,
+        size: size/30.f,
+        noise_phase: phase,
+        noise_levels: (type == 0 ? 1 : int(levels)),    // Levels only used for fractal and turbulence noise types
+        absolute_noise: type == 2,                      // If set to true, the appearance of the pattern will be more "billowing" and "turbulent"
+        noise_threshold_high: threshold_high,
+        noise_threshold_low: threshold_low,
+        uvw: base::transform_coordinate
+        (
+            transform: max_rotation_translation_scale
+            (
+                scaling: tiling,
+                rotation: angle/180.f*math::PI ,
+                translation: offset,
+                u_mirror: u_mirror,
+                v_mirror: v_mirror
+            ),
+            coordinate: base::coordinate_source(texture_space: map_channel-1)
+        )
+    );
+    // return combine_normals( factor, perlin_normal, 1.f-factor, state::normal() );
+
+    return math::normalize(math::lerp(state::normal(), perlin_normal, factor*amount));
+
+}
+
+
+// 3dsmax Falloff Map Type
+export enum ad_3dsmax_falloff_Type
+[[
+    anno::hidden()
+]]
+{
+    Towards_Away,
+    Perpendicular_Parallel,
+    Fresnel,
+    Shadow_Light,
+    Distance_Blend
+};
+
+// 3dsmax Falloff Map directions
+export enum ad_3dsmax_falloff_direction
+[[
+    anno::hidden()
+]]
+{
+    View,
+    Camera_X,
+    Camera_Y,
+    Object,
+    Local_X,
+    Local_Y,
+    Local_Z,
+    World_X,
+    World_Y,
+    World_Z
+};
+
+// 3dsmax Falloff Map
+export texture_return ad_3dsmax_falloff
+(
+    texture_return color1 = texture_return()
+    [[
+        anno::in_group("Falloff"),
+        anno::display_name("Color #1")
+    ]],
+    texture_return color2 = texture_return()
+    [[
+        anno::in_group("Falloff"),
+        anno::display_name("Color #1"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform ad_3dsmax_falloff_Type falloff_type = Perpendicular_Parallel
+    [[
+        anno::in_group("Falloff"),
+        anno::display_name("Falloff type"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform ad_3dsmax_falloff_direction falloff_direction = View
+    [[
+        anno::in_group("Falloff"),
+        anno::display_name("Falloff direction"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    float4x4 node = float4x4()
+    [[
+        anno::in_group("Falloff"),
+        anno::display_name("Node"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float nearDistance = 0.f
+    [[
+        anno::in_group("Falloff"),
+        anno::display_name("Near distance"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float farDistance = 1000000.f
+    [[
+        anno::in_group("Falloff"),
+        anno::display_name("Far distance"),
+        anno::unused(),
+        anno::hidden()
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    return color1;
+}
+
+// 3dsmax Mix Map
+export texture_return ad_3dsmax_mix
+(
+    texture_return color1 = texture_return()
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Color #1")
+    ]],
+    texture_return color2 = texture_return()
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Color #2")
+    ]],
+    float mixAmount = 0.f
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Mix amount"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform bool useCurve = false
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Use curve")
+    ]],
+    uniform float lower = 0.3f
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Lower"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float upper = .7f
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Upper"),
+        anno::hard_range(0.f, 1.f)
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    float t = useCurve ? math::smoothstep(lower, upper, mixAmount) : math::smoothstep(0.0, 1.0, mixAmount);
+
+    return texture_return(
+        math::lerp(color1.tint,color2.tint, t),
+        math::lerp(color1.mono,color2.mono, t));
+}
+
+// 3dsmax Mix Map for Bump
+export float3 ad_3dsmax_mix_bump
+(
+    float3 color1 = state::normal()
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Bump Map #1")
+    ]],
+    float3 color2 = state::normal()
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Bump Map #2")
+    ]],
+    float mixAmount = 0.f
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Mix amount"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform bool useCurve = false
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Use Curve")
+    ]],
+    uniform float lower = 0.3f
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Lower"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+    uniform float upper = .7f
+    [[
+        anno::in_group("Mix parameters"),
+        anno::display_name("Upper"),
+        anno::hard_range(0.f, 1.f)
+    ]],
+
+    // Bump
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Dent Parameters"),
+        anno::display_name("Bump amount")
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    float t = useCurve ? math::smoothstep(lower, upper, mixAmount) : math::smoothstep(0.0, 1.0, mixAmount);
+    float3 mix_normal = math::normalize(math::lerp(color1, color2, t));
+
+    return math::normalize(math::lerp(state::normal(), mix_normal, bump_amount));
+}
+
+// 3dsmax Noise Map
+export texture_return ad_3dsmax_noise
+(
+    // Noise Params
+    color color1 = color(0.f)
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Color #1")
+    ]],
+    color color2 = color(1.f)
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Color #2")
+    ]],
+    uniform float size = 25.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Size")
+    ]],
+    uniform float phase = 0.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Phase")
+    ]],
+    uniform float levels = 3.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Levels")
+    ]],
+    uniform float thresholdLow = 0.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Noise Threshold Low")
+    ]],
+    uniform float thresholdHigh = 1.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Noise Threshold High")
+    ]],
+    // type: regular = 0, fractal = 1, turbulence = 2
+    // 0- Regular (Generates plain noise. Basically the same as fractal noise with levels  at 1.)
+    // 1- Fractal (Generates noise using a fractal algorithm. levels  sets the number of iterations for the fractal noise.)
+    // 2- Turbulence (Generates fractal noise with an absolute value function applied to it to make fault lines.)
+    uniform int type = 1
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Noise Type")
+    ]],
+
+    // Coords
+    uniform float blur = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Blur"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float3 offset = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Offset")
+    ]],
+    uniform float3 tiling = float3(1.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Tiling")
+    ]],
+    uniform float3 angle = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Angle")
+    ]],
+    uniform float blur_Offset = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Blur Offset"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    // coordType: Object XYZ = 0, World XYZ = 1, Explicit Map Channel = 2, Vertex Color Channel = 3
+    uniform int coordType = 0
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Source")
+    ]],
+    uniform int mapChannel = 1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map Channel")
+    ]],
+
+    // Output
+    uniform bool alphaFromRGB = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Alpha from RGB Intensity"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Bump Amount"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool clamp = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Clamp"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool invert = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Invert"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float output_amount = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Output Amount"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float rgb_level = 1.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB Level"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float rgb_offset = 0.f
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB Offset"),
+        anno::unused(),
+        anno::hidden()
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+   return base::perlin_noise_texture
+   (
+        color1: color1,
+        color2: color2,
+        size: size/30.f,
+        noise_phase: phase,
+        noise_levels: (type == 0 ? 1 : int(levels)),    // Levels only used for fractal and turbulence noise types
+        absolute_noise: type == 2,                      // If set to true, the appearance of the pattern will be more "billowing" and "turbulent"
+        noise_threshold_high: thresholdHigh,
+        noise_threshold_low: thresholdLow,
+        uvw: base::transform_coordinate
+        (
+            transform: base::rotation_translation_scale
+            (
+                scaling: tiling,
+                translation: offset,
+                rotation: float3(angle.x,angle.y,angle.z)/180.*math::PI
+            ),
+            coordinate:
+            (
+                coordType == 0 ? // Object XYZ
+                base::coordinate_source(coordinate_system: base::texture_coordinate_object):
+                (
+                    coordType == 1 ? // World XYZ
+                    base::coordinate_source(coordinate_system: base::texture_coordinate_world):
+                    (
+                        // coordType == 2 ? // Explicit Map Channel
+                        // base::coordinate_source(texture_space: mapChannel-1):
+                        base::coordinate_source(texture_space: mapChannel-1) // No support for Vertex Color Channel, fallback to UVs
+                    )
+                )
+            )
+        )
+    );
+}
+
+// 3dsmax Noise Map for Bump
+export float3 ad_3dsmax_noise_bump
+(
+    // Noise Params
+    color color1 = color(0.f)
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Color #1")
+    ]],
+    color color2 = color(1.f)
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Color #2")
+    ]],
+    uniform float size = 25.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Size")
+    ]],
+    uniform float phase = 0.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Phase")
+    ]],
+    uniform float levels = 3.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Levels")
+    ]],
+    uniform float thresholdLow = 0.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Noise Threshold Low")
+    ]],
+    uniform float thresholdHigh = 1.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Noise Threshold High")
+    ]],
+    // type: regular = 0, fractal = 1, turbulence = 2
+    // 0- Regular (Generates plain noise. Basically the same as fractal noise with levels  at 1.)
+    // 1- Fractal (Generates noise using a fractal algorithm. levels  sets the number of iterations for the fractal noise.)
+    // 2- Turbulence (Generates fractal noise with an absolute value function applied to it to make fault lines.)
+    uniform int type = 1
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Noise Type")
+    ]],
+
+    // Bump
+    uniform float factor = 1.f
+    [[
+        anno::in_group("Noise Parameters"),
+        anno::display_name("Bump amount")
+    ]],
+
+    // Coords
+    uniform float blur = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Blur"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float3 offset = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Offset")
+    ]],
+    uniform float3 tiling = float3(1.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Tiling")
+    ]],
+    uniform float3 angle = float3(0.f)
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Angle")
+    ]],
+    uniform float blur_Offset = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Blur Offset"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    // coordType: Object XYZ = 0, World XYZ = 1, Explicit Map Channel = 2, Vertex Color Channel = 3
+    uniform int coordType = 0
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Source")
+    ]],
+    uniform int mapChannel = 1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map Channel")
+    ]],
+
+    // Output
+    uniform bool alphaFromRGB = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Alpha from RGB Intensity"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float bump_amount = 1.0
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Bump Amount"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool clamp = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Clamp"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool invert = false
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Invert"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float output_amount = 1.0
+    [[
+        anno::in_group("Output"),
+        anno::display_name("Output Amount"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float rgb_level = 1.0
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB Level"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float rgb_offset = 0.0
+    [[
+        anno::in_group("Output"),
+        anno::display_name("RGB Offset"),
+        anno::unused(),
+        anno::hidden()
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+   float3 perlin_normal = base::perlin_noise_bump_texture
+   (
+        factor: factor,
+        size: size/30.f,
+        noise_phase: phase,
+        noise_levels: (type == 0 ? 1 : int(levels)),    // Levels only used for fractal and turbulence noise types
+        absolute_noise: type == 2,                      // If set to true, the appearance of the pattern will be more "billowing" and "turbulent"
+        noise_threshold_high: thresholdHigh,
+        noise_threshold_low: thresholdLow,
+        uvw: base::transform_coordinate
+        (
+            transform: base::rotation_translation_scale
+            (
+                scaling: tiling,
+                translation: offset,
+                rotation: float3(angle.x,angle.y,angle.z)/180.*math::PI
+            ),
+            coordinate:
+            (
+                coordType == 0 ? // Object XYZ
+                base::coordinate_source(coordinate_system: base::texture_coordinate_object):
+                (
+                    coordType == 1 ? // World XYZ
+                    base::coordinate_source(coordinate_system: base::texture_coordinate_world):
+                    (
+                        // coordType == 2 ? // Explicit Map Channel
+                        // base::coordinate_source(texture_space: mapChannel-1):
+                        base::coordinate_source(texture_space: mapChannel-1) // No support for Vertex Color Channel, fallback to UVs
+                    )
+                )
+            )
+        )
+    );
+    float f = math::average(color1 - color2) * factor;
+    return combine_normals( f, perlin_normal, 1-f, state::normal() );
+}
+
+// 3dsmax Output Map
+export texture_return ad_3dsmax_output
+(
+    texture_return MAP1 = texture_return()
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Map")
+    ]],
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Bump amount"),
+        anno::unused()
+    ]],
+    uniform bool clamp = false
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Clamp")
+    ]],
+    uniform bool invert = false
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Invert")
+    ]],
+    uniform bool alphaFromRGB = false
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Alpha from RGB intensity")
+    ]],
+    uniform float output_amount = 1.f
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Output amount"),
+        anno::unused()
+    ]],
+    uniform float rgb_level = 1.f
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("RGB level")
+    ]],
+    uniform float rgb_offset = 0.f
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("RGB offset")
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    color rgb(MAP1.tint*rgb_level + rgb_offset);
+
+    if(clamp || invert)
+        rgb = math::clamp(rgb, 0.f, 1.f);
+
+    if(invert)
+        rgb = color(1.f) - rgb;
+
+    return texture_return(rgb, alphaFromRGB ? math::luminance(rgb) : MAP1.mono);
+
+}
+
+// 3dsmax Output Map for Bump
+export float3 ad_3dsmax_output_bump
+(
+    float3 MAP1 = state::normal()
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Map")
+    ]],
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Bump amount")
+    ]],
+    uniform bool clamp = false
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Clamp"),
+        anno::unused()
+    ]],
+    uniform bool invert = false
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Invert")
+    ]],
+    uniform bool alphaFromRGB = false
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Alpha from RGB intensity"),
+        anno::unused()
+    ]],
+    uniform float output_amount = 1.f
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("Output amount"),
+        anno::unused()
+    ]],
+    uniform float rgb_level = 1.f
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("RGB level"),
+        anno::unused()
+    ]],
+    uniform float rgb_offset = 0.f
+    [[
+        anno::in_group("Output Parameters"),
+        anno::display_name("RGB offset"),
+        anno::unused()
+    ]],
+    uniform float base_bump_amount = 1.f
+    [[
+        anno::in_group("Bump"),
+        anno::display_name("Base bump amount"),
+        anno::hard_range(0.f, 1.f)
+    ]]
+
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    float3 normal = MAP1;
+    if(invert)
+    {
+        normal = transform_internal_to_tangent(normal);
+        normal = float3(-normal.x, -normal.y, normal.z);
+        normal = transform_tangent_to_internal(normal);
+    }
+
+    return math::normalize(math::lerp(state::normal(), normal, bump_amount*base_bump_amount));
+}
+
+int rnd_next(int seed) {
+    // xorshift32 using signed int
+    seed ^= seed << 13;
+    seed ^= seed >>> 17;
+    seed ^= seed << 5;
+    return seed;
+}
+
+float rnd_value(int seed)
+{
+    return math::abs(float(seed) * 4.6566e-10f);
+}
+
+// Convert from the HSV color model to the RGB color model
+float3 hsv_to_rgb(float3 hsv)
+{
+    // grayscale?
+    if(hsv.y < limits::FLOAT_MIN)
+        return float3(hsv.z);
+
+    float h_prime = (hsv.x < 1.0f) ? hsv.x * 6.0f : 0.0f; // H * 360.0/60.0
+    float h_floor = math::floor(h_prime);
+    float f = h_prime - h_floor;
+    float zy = hsv.z*hsv.y;
+    float a = hsv.z - zy;
+    float b = hsv.z - zy*f;
+    float c = a + zy*f;
+
+    switch(int(h_floor))
+    {
+        default:
+            // hue out of [0,1] range...
+            // fall through...
+        case 0:
+            return float3(hsv.z, c, a);
+        case 1:
+            return float3(b, hsv.z, a);
+        case 2:
+            return float3(a, hsv.z, c);
+        case 3:
+            return float3(a, b, hsv.z);
+        case 4:
+            return float3(c, a, hsv.z);
+        case 5:
+            return float3(hsv.z, a, b);
+    }
+}
+
+// Convert from the RGB color model to the HSV color model
+export float3 rgb_to_hsv(float3 rgb)
+{
+    float max = math::max(rgb.x, math::max(rgb.y, rgb.z));
+    float min = math::min(rgb.x, math::min(rgb.y, rgb.z));
+    float range = max - min;
+
+    if(range > limits::FLOAT_MIN)
+    {
+        float inv_range = (1.0f/6.0f)/range;
+
+        float saturation = (max > limits::FLOAT_MIN) ? (range / max) : 0.0f;
+        float hue = (saturation != 0.0f) ?
+                 ((max == rgb.x) ? ((rgb.y-rgb.z)*inv_range)               // R is max
+                : (max == rgb.y) ? ((2.0f/6.0f) + (rgb.z-rgb.x)*inv_range) // G is max
+                : ((4.0f/6.0f) + (rgb.x-rgb.y)*inv_range))                 // B is max
+            : 0.0f;                                     // hue is undefined (assume 0)
+
+        return float3((hue >= 0.0f) ? hue : (hue + 1.0f), saturation, max);
+
+    }
+    else // grayscale
+    {
+        return float3(0.f, 0.f, max);
+    }
+}
+
+// 3dsmax Tiles map
+export texture_return ad_3dsmax_tiles
+(
+    // Coordinates
+    uniform int map_channel = 1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map channel")
+    ]],
+    uniform float U_Offset = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Offset")
+    ]],
+    uniform float V_Offset = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Offset")
+    ]],
+    uniform float U_Tiling = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tiling")
+    ]],
+    uniform float V_Tiling = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tiling")
+    ]],
+    uniform bool U_Tile = true //it is actually an error if both mirror and tile are true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tile"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool U_Mirror = false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Mirror")
+    ]],
+    uniform bool V_Tile = true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tile"),
+        anno::unused(),
+        anno::hidden()        
+    ]],
+    uniform bool V_Mirror = false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Mirror")
+    ]],
+    uniform float U_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Angle")
+    ]],
+    uniform float V_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Angle")
+    ]],
+    uniform float W_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("W Angle"),
+        anno::unused(),
+        anno::hidden()        
+    ]],
+    uniform int UVW_Type = 0 //enum?
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("UVW Type"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+
+    // Noise
+    uniform bool use_noise = false
+    [[
+        anno::in_group("Noise"),
+        anno::display_name("Use Noise")
+    ]],
+    uniform float noise_amount = 1.f
+    [[
+        anno::in_group("Noise"),
+        anno::display_name("Amount"),
+        anno::hard_range(0.f, 100.f),
+        anno::enable_if("use_noise")
+    ]],
+    uniform int noise_levels = 1
+    [[
+        anno::in_group("Noise"),
+        anno::display_name("Levels"),
+        anno::hard_range(1, 10),
+        anno::enable_if("use_noise")
+    ]],
+    uniform float noise_size = 1.f
+    [[
+        anno::in_group("Noise"),
+        anno::display_name("Size"),
+        anno::hard_range(0.001f, 100.f),
+        anno::enable_if("use_noise")
+    ]],
+    uniform float noise_phase = 0.f
+    [[
+        anno::in_group("Noise"),
+        anno::display_name("Phase"),
+        anno::hard_range(0.f, 100.f),
+        anno::enable_if("use_noise")
+    ]],
+
+// Standard Controls
+    uniform int preset_type = 5
+    [[
+        anno::in_group("Standard Controls"),
+        anno::display_name("Preset type"),
+        anno::hard_range(0, 7)
+    ]],
+
+// Advanced Controls
+    color tiles_color = color(0.6f)
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Tiles texture")
+    ]],
+    uniform float tiles_horizontal_count = 4.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Horizontal count"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float tiles_vertical_count = 4.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Vertical count"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float tiles_color_variance = 0.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Color variance"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float tiles_fade_variance = 0.05f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Fade variance"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    color grout_color = color(0.2f)
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Grout texture")
+    ]],
+    uniform bool grout_lock_gap_simetry = true
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Gap simetry")
+    ]],
+    uniform float grout_horizontal_gap = 0.5f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Horizontal gap"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float grout_vertical_gap = 0.5f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Vertical gap"),
+        anno::hard_range(0.f, 100.f),
+        anno::enable_if("!grout_lock_gap_simetry")
+    ]],
+    uniform float grout_percent_holes = 0.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Percent holes"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float grout_rought = 0.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Rough"),
+        anno::hard_range(0.f, 200.f)
+    ]],
+    uniform int random_seed = 1444
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Random seed"),
+        anno::hard_range(0, 65535)
+    ]],
+    uniform float line_shift = 0.5f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Line shift"),
+        anno::hard_range(0.f, 100.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float random_shift = 0.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Random shift"),
+        anno::hard_range(0.f, 100.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool row_modify = false
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Row modify"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform int per_row = 2
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Per row"),
+        anno::hard_range(0, 50),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float per_row_change = 1.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Change"),
+        anno::hard_range(0.f, 5.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool column_modify = false
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Column modify"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform int per_column = 2
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Per column"),
+        anno::hard_range(0, 50),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float per_column_change = 1.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Change"),
+        anno::hard_range(0.f, 5.f),
+        anno::unused(),
+        anno::hidden()
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    float3 uvw = state::texture_coordinate(0);
+    float2 uv(0.f, 0.f);
+
+    // use noise?
+    if(use_noise && noise_amount > 0.f)
+    {
+        texture_return nx = base::perlin_noise_texture
+        (
+            size: noise_size/30.f,
+            noise_phase: noise_phase*0.01f,
+            noise_levels: noise_levels,
+            uvw: base::transform_coordinate
+            (
+                transform: max_rotation_translation_scale
+                (
+                    scaling: float3(U_Tiling),
+                    rotation: float3(U_angle/180.f*math::PI),
+                    translation: float3(U_Offset),
+                    u_mirror: U_Mirror,
+                    v_mirror: V_Mirror
+                ),
+                coordinate: base::coordinate_source(texture_space: map_channel-1)
+            )
+        );
+
+        texture_return ny = base::perlin_noise_texture
+        (
+            size: noise_size/30.f,
+            noise_phase: noise_phase*0.01f + 0.5f,
+            noise_levels: noise_levels,
+            uvw: base::transform_coordinate
+            (
+                transform: max_rotation_translation_scale
+                (
+                    scaling: float3(V_Tiling),
+                    rotation: float3(V_angle/180.f*math::PI),
+                    translation: float3(V_Offset),
+                    u_mirror: U_Mirror,
+                    v_mirror: V_Mirror
+                ),
+                coordinate: base::coordinate_source(texture_space: map_channel-1)
+            )
+        );
+
+        uv.x += nx.mono*noise_amount*0.01f;
+        uv.y += ny.mono*noise_amount*0.01f;
+    }
+
+    if(grout_rought > 0.f)
+    {
+        base::texture_coordinate_info tci;
+
+        tci.position *= 30.f;
+        tci.position.z = 1.f;
+        texture_return nx = base::perlin_noise_texture
+        (
+            uvw: tci,
+            noise_levels: 1,
+            absolute_noise: true
+        );
+
+        tci.position.z = 2.f;
+        texture_return ny = base::perlin_noise_texture
+        (
+            uvw: tci,
+            noise_levels: 1,
+            absolute_noise: true
+        );
+
+        uv.x += nx.mono*grout_rought*0.001f;
+        uv.y += ny.mono*grout_rought*0.001f;
+    }
+
+    uv += float2((uvw.x - U_Offset)*U_Tiling, (uvw.y - V_Offset)*V_Tiling);
+    uv = float2(uv.x*tiles_horizontal_count, uv.y*tiles_vertical_count);
+
+    bool is_grout;
+
+    float gap_u = grout_horizontal_gap*0.01f;
+    float gap_v = grout_lock_gap_simetry ? gap_u : grout_vertical_gap*0.01f;
+
+    gap_u *= tiles_horizontal_count;
+    gap_v *= tiles_vertical_count;
+
+    int tile_idx = random_seed;
+
+    switch(preset_type)
+    {
+        case 1: // running bond
+        {
+            if(math::fmod(math::floor(uv.y), 2) > 0.f)
+                uv.x -= 0.5f;
+
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+
+        }
+        break;
+
+        case 2: // common flemish bond
+        {
+            bool odd_row = math::fmod(math::floor(uv.y), 2) > 0.f;
+            if(odd_row)
+            {
+                uv.x = (uv.x + 0.25f)*0.5f;
+
+                tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+                uv -= math::floor(uv);
+                gap_u *= 0.5f;
+
+                if(math::abs(uv.x) > 0.375f)
+                    tile_idx *= 13;
+                else if(math::abs(uv.x) > 0.75f)
+                    tile_idx *= 17;
+
+
+                is_grout =
+                    (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                    ((uv.x - 0.375f) > -gap_u) && ((uv.x - 0.375f) <= gap_u) ||
+                    ((uv.x - 0.75f) > -gap_u) && ((uv.x - 0.75f) <= gap_u) ||
+                    (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+            }
+            else
+            {
+                tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+                uv -= math::floor(uv);
+
+                is_grout =
+                    (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                    (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+            }
+        }
+        break;
+
+        case 3: // english bond
+        {
+            bool odd_row = math::fmod(math::floor(uv.y), 2) > 0.f;
+
+            if(odd_row)
+                uv.x = uv.x*2.f - 0.5f;
+
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            if(odd_row)
+                gap_u *= 2.f;
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+
+        }
+        break;
+
+        case 4: // 1/2 running bond
+        {
+            if(math::fmod(math::floor(uv.y), 2) > 0.f)
+                uv.x -= 0.25f;
+
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+
+        }
+        break;
+
+        case 5: // stack bond
+        {
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+
+        }
+        break;
+
+        case 6: // fine running bond
+        {
+            bool odd_row = math::fmod(math::floor(uv.y), 2) > 0.f;
+
+            if(odd_row)
+            {
+                uv *= 2.f;
+                if(math::fmod(math::floor(uv.y), 2) > 0.f)
+                    uv.x -= 0.5f;
+            }
+
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            if(odd_row)
+            {
+                gap_u *= 2.f;
+                gap_v *= 2.f;
+            }
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+
+        }
+        break;
+
+        case 7: // fine stack bond
+        {
+            bool odd_row = math::fmod(math::floor(uv.y), 2) > 0.f;
+
+            if(odd_row)
+                uv *= 2.f;
+
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            if(odd_row)
+            {
+                gap_u *= 2.f;
+                gap_v *= 2.f;
+            }
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+
+        }
+        break;
+
+        default: // checker
+            is_grout = (math::frac(uv.x) < 0.5f) == (math::frac(uv.y) < 0.5f);
+            break;
+    }
+
+    int tile_idx_seed = rnd_next(tile_idx);
+    float rnd = (rnd_value(tile_idx_seed) - 0.5f);
+
+    // % holes
+    if(!is_grout)
+        is_grout = rnd_value(rnd_next(tile_idx_seed)) < grout_percent_holes*0.01f;
+
+    // color variance, fade variance
+    color tc = tiles_color;
+
+    if(!is_grout && (tiles_color_variance > 0.f || tiles_fade_variance > 0.f))
+    {
+        float3 hsv = rgb_to_hsv(float3(tc));
+
+        // color variance
+        if(tiles_color_variance > 0.f)
+        {
+            float t = rnd*tiles_color_variance*0.25f;
+            
+            if(t < 0.f)
+            {
+                hsv.y = math::clamp(hsv.y + t, 0.f, 1.f);
+            }
+            else
+            {
+                t = math::clamp(t, 0.f, 1.f);
+                
+                hsv.y += (0.f - hsv.y)*t;
+                hsv.z += (0.5f - hsv.z)*t;
+            }
+        }
+        
+        // fade variance
+        if(tiles_fade_variance > 0.f)
+        {
+            hsv.z += rnd*tiles_fade_variance*0.5f;
+            if(hsv.z < 0.f)
+            {
+                hsv.z = 0.f;
+            }
+            else if(hsv.z > 1.f)
+            {
+                hsv.y -= (hsv.z -1.f);
+                if(hsv.y < 0.f)
+                    hsv.y = 0.f;
+                hsv.z = 1.f;
+            }
+        }
+        
+        tc = color(hsv_to_rgb(hsv));
+    }
+
+    texture_return result;
+    result.tint = is_grout ? grout_color : tc;
+    result.mono = math::average(result.tint);
+
+    return result;
+}
+
+
+// 3dsmax Tiles map for bump
+export float3 ad_3dsmax_tiles_bump
+(
+    // Coordinates
+    uniform int map_channel = 1
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("Map channel")
+    ]],
+    uniform float U_Offset = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Offset")
+    ]],
+    uniform float V_Offset = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Offset")
+    ]],
+    uniform float U_Tiling = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tiling")
+    ]],
+    uniform float V_Tiling = 1.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tiling")
+    ]],
+    uniform bool U_Tile = true //it is actually an error if both mirror and tile are true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Tile"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool U_Mirror = false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Mirror")
+    ]],
+    uniform bool V_Tile = true
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Tile"),
+        anno::unused(),
+        anno::hidden()        
+    ]],
+    uniform bool V_Mirror = false
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Mirror")
+    ]],
+    uniform float U_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("U Angle")
+    ]],
+    uniform float V_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("V Angle")
+    ]],
+    uniform float W_angle = 0.f
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("W Angle"),
+        anno::unused(),
+        anno::hidden()        
+    ]],
+    uniform int UVW_Type = 0 //enum?
+    [[
+        anno::in_group("Coordinates"),
+        anno::display_name("UVW Type"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+
+    // Noise
+    uniform bool use_noise = false
+    [[
+        anno::in_group("Noise"),
+        anno::display_name("Use Noise")
+    ]],
+    uniform float noise_amount = 1.f
+    [[
+        anno::in_group("Noise"),
+        anno::display_name("Amount"),
+        anno::hard_range(0.f, 100.f),
+        anno::enable_if("use_noise")
+    ]],
+    uniform int noise_levels = 1
+    [[
+        anno::in_group("Noise"),
+        anno::display_name("Levels"),
+        anno::hard_range(1, 10),
+        anno::enable_if("use_noise")
+    ]],
+    uniform float noise_size = 1.f
+    [[
+        anno::in_group("Noise"),
+        anno::display_name("Size"),
+        anno::hard_range(0.001f, 100.f),
+        anno::enable_if("use_noise")
+    ]],
+    uniform float noise_phase = 0.f
+    [[
+        anno::in_group("Noise"),
+        anno::display_name("Phase"),
+        anno::hard_range(0.f, 100.f),
+        anno::enable_if("use_noise")
+    ]],
+
+// Standard Controls
+    uniform int preset_type = 5
+    [[
+        anno::in_group("Standard Controls"),
+        anno::display_name("Preset type"),
+        anno::hard_range(0, 7)
+    ]],
+
+// Advanced Controls
+    float3 tiles_color = state::normal()
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Tiles texture")
+    ]],
+    uniform float tiles_horizontal_count = 4.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Horizontal count"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float tiles_vertical_count = 4.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Vertical count"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float tiles_color_variance = 0.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Color variance"),
+        anno::hard_range(0.f, 100.f),
+        anno::unused(),
+        anno::hidden()        
+    ]],
+    uniform float tiles_fade_variance = 0.05f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Fade variance"),
+        anno::hard_range(0.f, 100.f),
+        anno::unused(),
+        anno::hidden()        
+    ]],
+    float3 grout_color = state::normal()
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Grout texture")
+    ]],
+    uniform bool grout_lock_gap_simetry = true
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Gap simetry")
+    ]],
+    uniform float grout_horizontal_gap = 0.5f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Horizontal gap"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float grout_vertical_gap = 0.5f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Vertical gap"),
+        anno::hard_range(0.f, 100.f),
+        anno::enable_if("!grout_lock_gap_simetry")
+    ]],
+    uniform float grout_percent_holes = 0.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Percent holes"),
+        anno::hard_range(0.f, 100.f)
+    ]],
+    uniform float grout_rought = 0.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Rough"),
+        anno::hard_range(0.f, 200.f)
+    ]],
+    uniform int random_seed = 1444
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Random seed"),
+        anno::hard_range(0, 65535)
+    ]],
+    uniform float line_shift = 0.5f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Line shift"),
+        anno::hard_range(0.f, 100.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float random_shift = 0.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Random shift"),
+        anno::hard_range(0.f, 100.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool row_modify = false
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Row modify"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform int per_row = 2
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Per row"),
+        anno::hard_range(0, 50),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float per_row_change = 1.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Change"),
+        anno::hard_range(0.f, 5.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform bool column_modify = false
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Column modify"),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform int per_column = 2
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Per column"),
+        anno::hard_range(0, 50),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float per_column_change = 1.f
+    [[
+        anno::in_group("Advanced Controls"),
+        anno::display_name("Change"),
+        anno::hard_range(0.f, 5.f),
+        anno::unused(),
+        anno::hidden()
+    ]],
+    uniform float bump_amount = 1.f
+    [[
+        anno::in_group("Bump"),
+        anno::display_name("Bump amount"),
+        anno::hard_range(0.f, 1.f)
+    ]]
+)
+[[
+    anno::author("NVIDIA Corporation")
+]]
+{
+    float3 uvw = state::texture_coordinate(0);
+    float2 uv(0.f, 0.f);
+
+    // use noise?
+    if(use_noise && noise_amount > 0.f)
+    {
+        texture_return nx = base::perlin_noise_texture
+        (
+            size: noise_size/30.f,
+            noise_phase: noise_phase*0.01f,
+            noise_levels: noise_levels,
+            uvw: base::transform_coordinate
+            (
+                transform: max_rotation_translation_scale
+                (
+                    scaling: float3(U_Tiling),
+                    rotation: float3(U_angle/180.f*math::PI),
+                    translation: float3(U_Offset),
+                    u_mirror: U_Mirror,
+                    v_mirror: V_Mirror
+                ),
+                coordinate: base::coordinate_source(texture_space: map_channel-1)
+            )
+        );
+
+        texture_return ny = base::perlin_noise_texture
+        (
+            size: noise_size/30.f,
+            noise_phase: noise_phase*0.01f + 0.5f,
+            noise_levels: noise_levels,
+            uvw: base::transform_coordinate
+            (
+                transform: max_rotation_translation_scale
+                (
+                    scaling: float3(V_Tiling),
+                    rotation: float3(V_angle/180.f*math::PI),
+                    translation: float3(V_Offset),
+                    u_mirror: U_Mirror,
+                    v_mirror: V_Mirror
+                ),
+                coordinate: base::coordinate_source(texture_space: map_channel-1)
+            )
+        );
+
+        uv.x += nx.mono*noise_amount*0.01f;
+        uv.y += ny.mono*noise_amount*0.01f;
+    }
+
+    if(grout_rought > 0.f)
+    {
+        base::texture_coordinate_info tci;
+
+        tci.position *= 30.f;
+        tci.position.z = 1.f;
+        texture_return nx = base::perlin_noise_texture
+        (
+            uvw: tci,
+            noise_levels: 1,
+            absolute_noise: true
+        );
+
+        tci.position.z = 2.f;
+        texture_return ny = base::perlin_noise_texture
+        (
+            uvw: tci,
+            noise_levels: 1,
+            absolute_noise: true
+        );
+
+        uv.x += nx.mono*grout_rought*0.001f;
+        uv.y += ny.mono*grout_rought*0.001f;
+    }
+
+    uv += float2((uvw.x - U_Offset)*U_Tiling, (uvw.y - V_Offset)*V_Tiling);
+    uv = float2(uv.x*tiles_horizontal_count, uv.y*tiles_vertical_count);
+
+    bool is_grout = false;
+    bool odd_row;
+
+    float du = 0.f, dv = 0.f;
+
+    float gap_u = grout_horizontal_gap*0.01f;
+    float gap_v = grout_lock_gap_simetry ? gap_u : grout_vertical_gap*0.01f;
+
+    gap_u *= tiles_horizontal_count;
+    gap_v *= tiles_vertical_count;
+
+    float tile_edge_u = 0.5f*0.01f;
+    float tile_edge_v = 0.5f*0.01f;
+
+    int tile_idx = random_seed;
+
+    switch(preset_type)
+    {
+        case 1: // running bond
+        {
+            if(math::fmod(math::floor(uv.y), 2) > 0.f)
+                uv.x -= 0.5f;
+
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+        }
+        break;
+
+        case 2: // common flemish bond
+        {
+            odd_row = math::fmod(math::floor(uv.y), 2) > 0.f;
+            if(odd_row)
+            {
+                uv.x = (uv.x + 0.25f)*0.5f;
+
+                tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+                uv -= math::floor(uv);
+                gap_u *= 0.5f;
+                tile_edge_u *= 0.5f;
+
+                if(uv.x > 0.375f)
+                    tile_idx *= 13;
+                else if(uv.x > 0.75f)
+                    tile_idx *= 17;
+
+                is_grout =
+                    (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                    ((uv.x - 0.375f) > -gap_u) && ((uv.x - 0.375f) <= gap_u) ||
+                    ((uv.x - 0.75f) > -gap_u) && ((uv.x - 0.75f) <= gap_u) ||
+                    (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+            }
+            else
+            {
+                tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+                uv -= math::floor(uv);
+
+                is_grout =
+                    (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                    (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+            }
+        }
+        break;
+
+        case 3: // english bond
+        {
+            odd_row = math::fmod(math::floor(uv.y), 2) > 0.f;
+
+            if(odd_row)
+                uv.x = uv.x*2.f - 0.5f;
+
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            if(odd_row)
+            {
+                gap_u *= 2.f;
+                tile_edge_u *= 2.f;
+            }
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+        }
+        break;
+
+        case 4: // 1/2 running bond
+        {
+            if(math::fmod(math::floor(uv.y), 2) > 0.f)
+                uv.x -= 0.25f;
+
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+
+        }
+        break;
+
+        case 5: // stack bond
+        {
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+
+        }
+        break;
+
+        case 6: // fine running bond
+        {
+            odd_row = math::fmod(math::floor(uv.y), 2) > 0.f;
+
+            if(odd_row)
+            {
+                uv *= 2.f;
+                if(math::fmod(math::floor(uv.y), 2) > 0.f)
+                    uv.x -= 0.5f;
+            }
+
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            if(odd_row)
+            {
+                gap_u *= 2.f;
+                gap_v *= 2.f;
+                tile_edge_u *= 2.f;
+                tile_edge_v *= 2.f;
+            }
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+
+        }
+        break;
+
+        case 7: // fine stack bond
+        {
+            odd_row = math::fmod(math::floor(uv.y), 2) > 0.f;
+
+            if(odd_row)
+                uv *= 2.f;
+
+            tile_idx *= int(math::floor(uv.y)*tiles_vertical_count + math::floor(uv.x));
+
+            uv -= math::floor(uv);
+
+            if(odd_row)
+            {
+                gap_u *= 2.f;
+                gap_v *= 2.f;
+                tile_edge_u *= 2.f;
+                tile_edge_v *= 2.f;
+            }
+
+            is_grout =
+                (uv.x < gap_u) || ((1.f - uv.x) < gap_u) ||
+                (uv.y < gap_v) || ((1.f - uv.y) < gap_v);
+
+        }
+        break;
+
+        default: // checker
+            is_grout = (math::frac(uv.x) < 0.5f) == (math::frac(uv.y) < 0.5f);
+            break;
+    }
+
+    // calculate tangential vectors for tile edges.
+    if(!is_grout)
+    {
+        if(preset_type == 2 && odd_row) // common flemish bond
+        {
+            if(uv.x < 0.375f)
+            {
+                if(uv.x < gap_u + tile_edge_u)
+                    du = -(uv.x - gap_u)/tile_edge_u;
+                else if((0.375f - uv.x) < gap_u + tile_edge_u)
+                    du = (0.375f - uv.x + gap_u)/tile_edge_u;
+            }
+            else if (uv.x < 0.75f)
+            {
+                if((uv.x - 0.375f) < gap_u + tile_edge_u)
+                    du = -((uv.x - 0.375f) - gap_u)/tile_edge_u;
+                else if((0.75f - uv.x) < gap_u + tile_edge_u)
+                    du = (0.75f - uv.x + gap_u)/tile_edge_u;
+            }
+            else
+            {
+                if((uv.x - 0.75f) < gap_u + tile_edge_u)
+                    du = -((uv.x - 0.75f) - gap_u)/tile_edge_u;
+                else if((1.f - uv.x) < gap_u + tile_edge_u)
+                    du = (1.f - uv.x + gap_u)/tile_edge_u;
+            }
+        }
+        else // everything else
+        {
+            if(uv.x < gap_u + tile_edge_u)
+                du = -(uv.x - gap_u)/tile_edge_u;
+            else if((1.f - uv.x) < gap_u + tile_edge_u)
+                du = (1.f - uv.x + gap_u)/tile_edge_u;
+        }
+
+        if(uv.y < gap_v + tile_edge_v)
+            dv = -(uv.y - gap_v)/tile_edge_v;
+        else if((1.f - uv.y) < gap_v + tile_edge_v)
+            dv = (1.f - uv.y + gap_v)/tile_edge_v;
+    }
+
+    int tile_idx_seed = rnd_next(tile_idx);
+    // float rnd = (rnd_value(tile_idx_seed) - 0.5f);
+
+    // % holes
+    if(!is_grout)
+        is_grout = rnd_value(rnd_next(tile_idx_seed)) < grout_percent_holes*0.01f;
+
+    if(is_grout)
+    {
+        return grout_color;
+    }
+    else
+    {
+        float3 tiles_normal =
+            state::texture_tangent_u(0) * du +
+            state::texture_tangent_v(0) * dv +
+            tiles_color * 1.f;
+
+        return math::normalize(math::normalize(math::lerp(state::normal(), tiles_normal, bump_amount)));
+    }
+
+}

@@ -1,0 +1,73 @@
+name: Level1_press
+
+task_type: "press"
+controller_type: "press"
+mode: "collect"  # "collect" or "infer"
+
+usd_path: "assets/chemistry_lab/lab_003/lab_003.usd"
+instrument_path: "/World/instrument"
+target_button_path: "/World/target_button"
+sub_obj_path: "/World/target_button/button"
+distractor_button1_path: "/World/distractor_button_1"
+distractor_button2_path: "/World/distractor_button_2"
+
+max_episodes: 100
+
+button_types: 1
+
+button_material_paths:
+ - /World/Looks/OmniPBR_Button_Red
+ - /World/Looks/OmniPBR_Button_Blue
+ - /World/Looks/OmniPBR_Button_DeepGray
+ - /World/Looks/OmniPBR_Button_Yellow
+ - /World/Looks/OmniPBR_Button_Gray
+ - /World/Looks/OmniPBR_Button_Green
+
+infer:
+  type: "local"
+  obs_names: {"camera_1_rgb": 'camera_1_rgb', "camera_2_rgb": 'camera_2_rgb'}
+  policy_model_path: ""
+  policy_config_path: ""
+  normalizer_path: ""
+  host: "127.0.0.1"
+  port: 8000
+  n_obs_steps: 1
+  timeout: 30
+  max_retries: 3
+
+cameras:
+  - prim_path: "/World/Camera1"
+    name: "camera_1"
+    translation: [-0.28673, -3.51678, 1.46281]
+    resolution: [256, 256]
+    focal_length: 6
+    orientation: [0.72889, 0.68336, -0.02857, -0.03028]
+    image_type: "rgb" 
+
+  - prim_path: "/World/Camera2"
+    name: "camera_2"
+    translation: [0.1, -0.08, 3.01252]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.70711, 0, 0, -0.70711]
+    image_type: "rgb"
+
+  - prim_path: "/World/Franka/panda_hand/arm_camera"
+    name: "camera_3"
+    resolution: [256, 256]
+    image_type: "rgb"
+
+robot:
+  type: "franka"
+  position: [-0.4, -0, 0.71]
+
+collector:
+  type: "default"
+  compression: gzip  
+
+hydra:
+  run:
+    dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+
+multi_run:
+  run_dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}

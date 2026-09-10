@@ -1,0 +1,65 @@
+name: Level4_LiquidMixing
+
+task_type: "LiquidMixing"
+controller_type: "LiquidMixing"
+
+mode: "collect"
+usd_path: "assets/chemistry_lab/lab_003/clock.usd"
+
+max_episodes: 50
+
+infer:
+  type: "local"
+  obs_names: {"camera_1_rgb": 'camera_1_rgb', "camera_2_rgb": 'camera_2_rgb'}
+
+  policy_model_path: "outputs/train/2025.07.29/17.08.44_train_act_image_pick_act/checkpoints/latest.ckpt"
+  policy_config_path: "outputs/train/2025.07.29/17.08.44_train_act_image_pick_act/.hydra/config.yaml"
+  normalizer_path: "outputs/train/2025.07.29/17.08.44_train_act_image_pick_act/checkpoints/normalize.ckpt"
+
+  host: "101.126.156.90"
+  port: 10023
+  n_obs_steps: 3
+  timeout: 30
+  max_retries: 3
+
+  is_test_material: False
+
+task:
+  max_steps: 4000
+
+cameras:
+  - prim_path: "/World/Camera1"
+    name: "camera_1"
+    translation: [2.4, 0, 2.4]
+    resolution: [1920, 1080]
+    focal_length: 4
+    orientation: [0.61237, 0.35355, 0.35355, 0.61237]
+    image_type: "rgb" 
+
+  # - prim_path: "/World/Camera2"
+  #   name: "camera_2"
+  #   translation: [0.1, 0, 2.5]
+  #   resolution: [256, 256]
+  #   focal_length: 4
+  #   orientation: [0.70711, 0, 0, -0.70711]
+  #   image_type: "rgb"
+
+  # - prim_path: "/World/Franka/panda_hand/arm_camera"
+  #   name: "camera_3"
+  #   resolution: [256, 256]
+  #   image_type: "rgb"
+
+robot:
+  type: "franka"
+  position: [-0.4, -0, 0.71]
+
+collector:
+  type: "default"
+  compression: gzip
+
+hydra:
+  run:
+    dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+
+multi_run:
+  run_dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name} 

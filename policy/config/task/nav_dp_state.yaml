@@ -1,0 +1,29 @@
+name: nav_dp_state
+
+dataset_path: outputs/nav/nav_dataset_20250523_011359/data.hdf5
+obs_keys: &obs_keys ['robot_position', 'joint_position']
+
+shape_meta: &shape_meta
+  obs:
+    robot_position:
+      shape: [3]  # x, y, theta
+      type: low_dim
+    joint_positions:
+      shape: [12]  # 7 joints
+      type: low_dim
+  action:
+    shape: [12] # 7 joints + 2 gripper
+
+dataset:
+  _target_: policy.dataset.nav_dataset.NavDataset
+  shape_meta: *shape_meta
+  dataset_path: ${task.dataset_path}
+  horizon: ${horizon}
+  pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
+  pad_after: ${eval:'${n_action_steps}-1'}
+  n_obs_steps: ${dataset_obs_steps}
+  n_latency_steps: ${n_latency_steps}
+  use_cache: True
+  seed: 42
+  val_ratio: 0.1
+  max_train_episodes: null

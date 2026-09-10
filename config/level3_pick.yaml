@@ -1,0 +1,127 @@
+# ============================================================================
+# Use materials from test_materials.
+# Use materials from materials.
+# ============================================================================
+
+# ========== Basic configuration ==========
+# Name fields.
+vla_model_type: "smolvla"                    # VLA model type, such as smolvla, xvla, groot, or pi0.
+task_name: "level3_pick"                     # Task name.
+train_steps: 20000                           # Training step count.
+name: ${vla_model_type}_${task_name}_${train_steps}_${max_episodes}  # Task type corresponding to a class in tasks/.
+
+task_type: "pick"                          # Optional values include pick, place, press, shake, stir, and openclose.
+                                           # Controller type corresponding to a class in controllers/.
+
+controller_type: "pick"                    # Controls the robot and collects data.
+                                           # Run mode.
+
+mode: "infer"                            # collect: use scripted controllers to collect demonstrations.
+                                           # infer: use a trained policy.
+                                           # ========== Scene configuration ==========
+
+# USD scene path used by Isaac Sim.
+usd_path: "assets/chemistry_lab/lab_001/lab_001.usd"  # ========== Collection settings ==========
+
+# Maximum episode count; each episode is one complete task attempt.
+max_episodes: 120                          # ========== Inference settings ==========
+
+# Inference type: local or remote.
+infer:
+  type: "remote"                            # Observation name mapping for policy inputs.
+  
+  obs_names: {"camera_1_rgb": 'camera_1_rgb', "camera_2_rgb": 'camera_2_rgb', "camera_3_rgb": 'camera_3_rgb'}  
+                                           # Trained policy checkpoint path.
+  
+  policy_model_path: ""                    # Policy configuration path.
+  policy_config_path: ""                   # Normalizer checkpoint path.
+  normalizer_path: ""                      # Remote inference server address.
+  
+  host: "117.148.167.87"                        # Remote inference server port.
+  port: 40001                               # Number of observation frames supplied to the policy.
+  n_obs_steps: 1                           # Inference request timeout in seconds.
+  timeout: 30                              # Maximum retries after an inference failure.
+  max_retries: 3                           # True by default; main.py runs True and False sequentially.
+
+  is_test_material: True                   # True selects test_materials.
+                                           # False selects training materials.
+                                           # ========== Task settings ==========
+  
+# Maximum steps per episode before forced termination.
+task:
+  max_steps: 1000                          # Target object configuration list; Level 3 supports multiple objects.
+  
+  obj_paths:                               # Object Prim path in the USD scene.
+    - path: "/World/conical_bottle02"      # Random placement range for the object.
+      position_range:                      # X range [min, max] in meters.
+        x: [0.21, 0.36]                    # Y range.
+        y: [-0.08, 0.08]                   # Z range; a fixed height places the object on the table.
+        z: [0.82, 0.82]                    # Second conical flask.
+    - path: "/World/conical_bottle03"      # Third conical flask.
+      position_range:
+        x: [0.21, 0.36]
+        y: [-0.08, 0.08]
+        z: [0.82, 0.82]
+    - path: "/World/conical_bottle04"      # Material settings for visual generalization.
+      position_range:
+        x: [0.21, 0.36]
+        y: [-0.08, 0.08]
+        z: [0.82, 0.82]
+        
+  material_paths:                          # Object path receiving the material, here the table.
+    - path: /World/table/surface           # Materials used for training.
+      materials:                           # Dark-blue plastic.
+        - "/World/Looks/Material1_plastic_dark_blue"    # Wood grain.
+        - "/World/Looks/Material2_wood"                  # Dark-green plastic.
+        - "/World/Looks/Material3_plastic_dark_green"   # Light-white plastic.
+        - "/World/Looks/Material4_plastic_light_white"  # Black.
+        - "/World/Looks/Material5_black"                 # Materials used for OOD evaluation.
+      test_materials:                      # Light-blue plastic.
+        - "/World/Looks/Material6_plastic_light_blue"   # Stainless steel.
+        - "/World/Looks/Material7_stainless"             # ========== Camera settings ==========
+
+# Camera 1 Prim path in the USD scene.
+cameras:
+  - prim_path: "/World/Camera1"            # Camera name used in saved keys such as camera_1_rgb.
+    name: "camera_1"                       # Camera position [x, y, z] in meters.
+    translation: [2, 0, 2]                 # Image resolution [width, height].
+    resolution: [256, 256]                 # Focal length in millimeters.
+    focal_length: 6                        # Camera orientation quaternion [w, x, y, z].
+    orientation: [0.61237, 0.35355, 0.35355, 0.61237]  # Image type: rgb, depth, pointcloud, or segmentation.
+    image_type: "rgb"                      # Use rgb+depth to collect multiple modalities.
+                                           # Camera 2: top-down view.
+
+  - prim_path: "/World/Camera2"            # Camera 3: eye-in-hand view.
+    name: "camera_2"
+    translation: [0.1, 0, 2.5]
+    resolution: [256, 256]
+    focal_length: 6
+    orientation: [0.70711, 0, 0, -0.70711]
+    image_type: "rgb"
+
+  - prim_path: "/World/Franka/panda_hand/arm_camera"   # The arm camera follows the end effector; translation and orientation are not required.
+    name: "camera_3"
+    resolution: [256, 256]
+    image_type: "rgb"
+    # ========== Robot settings ==========
+
+# Robot type, for example "franka" for Panda.
+robot:
+  type: "franka"                           # Robot base position [x, y, z] in meters.
+  position: [-0.4, -0, 0.71]               # ========== Collector settings ==========
+
+# Collector type; "default" writes standard HDF5.
+collector:
+  type: "default"                          # Compression: null disables compression; gzip is recommended.
+  compression: gzip                        # gzip can greatly reduce image storage.
+                                           # ========== Hydra settings ==========
+
+# Output format: outputs/collect/<date>/<time>_<task>/.
+hydra:
+  run:
+    dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+    # Multi-run output directory, matching hydra.run.dir.
+
+multi_run:
+  run_dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+  # Multi-run output directory, matching hydra.run.dir.

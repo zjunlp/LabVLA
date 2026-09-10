@@ -1,0 +1,31 @@
+name: nav_dp_image
+
+image_shape: [3, 84, 84]
+dataset_path: outputs/nav/nav_dataset_20250523_011359/data.hdf5
+obs_keys: &obs_keys ['cam_01', 'cam_02', 'cam_03', 'joint_positions']
+
+shape_meta: &shape_meta
+  obs:
+    cam_01:
+      shape: ${task.image_shape}
+      type: rgb
+    cam_02:
+      shape: ${task.image_shape}
+      type: rgb
+    cam_03:
+      shape: ${task.image_shape}
+      type: rgb
+    joint_positions:
+      shape: [12]  # x, y, theta
+      type: low_dim
+  action:
+    shape: [12] # 7 joints + 2 gripper
+
+dataset:
+  _target_: policy.dataset.nav_dataset.NavDataset
+  shape_meta: *shape_meta
+  dataset_path: ${task.dataset_path}
+  horizon: ${horizon}
+  n_obs_steps: ${dataset_obs_steps}
+  seed: 42
+  val_ratio: 0.1

@@ -1,0 +1,104 @@
+# Pour task configuration.
+vla_model_type: "smolvla"                    # VLA model type.
+task_name: "level3_pickpour"                 # Task name.
+train_steps: 30000                           # Training step count.
+name: ${vla_model_type}_${task_name}_${train_steps}_${max_episodes}  # Compose the run name.
+
+task_type: "pickpour"
+controller_type: "pickpour"
+
+mode: "infer"  # "collect" or "infer"
+
+usd_path: "assets/chemistry_lab/lab_001/lab_001.usd"
+target_path: "/World/beaker1"
+
+max_episodes: 120
+
+infer:
+  type: "remote"
+  obs_names: {"camera_1_rgb": 'camera_1_rgb', "camera_2_rgb": 'camera_2_rgb', "camera_3_rgb": 'camera_3_rgb'}
+  
+  policy_model_path: "outputs/train/2025.05.07/17.06.34_train_dp3_PourLiquid/checkpoints/epoch=0040-train_loss=0.001.ckpt"
+  policy_config_path: "outputs/train/2025.05.07/17.06.34_train_dp3_PourLiquid/.hydra/config.yaml"
+  normalizer_path: "outputs/train/2025.05.07/17.06.34_train_dp3_PourLiquid/checkpoints/normalize.ckpt"
+  
+  host: "117.148.167.87" ## 117.148.167.97 223.109.239.32
+  port: 40004
+  n_obs_steps: 1
+  timeout: 30
+  max_retries: 3
+
+  is_test_material: True
+  gripper_tighten_amount: 0.00    # PourLiquid does not need extra gripper tightening.
+
+task:
+  max_steps: 1500
+  left_pos:
+    x: [0.2, 0.3]
+    y: [-0.3, -0.2]
+    z: [0.86, 0.86]
+  obj_paths:
+    - path: "/World/graduated_cylinder_03"
+      position_range:
+        x: [0.25, 0.35]
+        y: [0.0, 0.1]
+        z: [0.81, 0.81]
+    - path: "/World/conical_bottle03"
+      position_range:
+        x: [0.25, 0.35]
+        y: [0.0, 0.1]
+        z: [0.81, 0.81]
+    - path: "/World/beaker2"
+      position_range:
+        x: [0.25, 0.35]
+        y: [0.0, 0.1]
+        z: [0.84, 0.84]
+        
+  material_paths:
+    - path: /World/table/surface
+      materials:
+        - "/World/Looks/Material1_plastic_dark_blue"
+        - "/World/Looks/Material2_wood"
+        - "/World/Looks/Material3_plastic_dark_green"
+        - "/World/Looks/Material5_black"
+        - "/World/Looks/Material6_plastic_light_blue"
+      test_materials:
+        - "/World/Looks/Material4_plastic_light_white"
+        - "/World/Looks/Material7_stainless"
+
+cameras:
+  - prim_path: "/World/Camera1"
+    name: "camera_1"
+    translation: [2, -0.1, 2.12]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.61237, 0.35355, 0.35355, 0.61237]
+    image_type: "rgb"
+
+  - prim_path: "/World/Camera2"
+    name: "camera_2"
+    translation: [0.1, -0.1, 3]
+    resolution: [256, 256]
+    focal_length: 5
+    orientation: [0.70711, 0, 0, -0.70711]
+    image_type: "rgb"
+
+  - prim_path: "/World/Franka/panda_hand/arm_camera"
+    name: "camera_3"
+    resolution: [256, 256]
+    image_type: "rgb"
+
+robot:
+  type: "franka"
+  position: [-0.4, -0, 0.71]
+
+collector:
+  type: "default"
+  compression: gzip 
+
+hydra:
+  run:
+    dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}
+
+multi_run:
+  run_dir: outputs/${mode}/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}

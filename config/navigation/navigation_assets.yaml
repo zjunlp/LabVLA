@@ -1,0 +1,8 @@
+assets:
+- name: "lab_3"
+  barrier_image_path: "assets/navigation/barrier/lab_1.png"
+  scene_asset_path: "assets/navigation_lab/navigation_lab_01/lab.usd"
+  scene_scale: [ 1.0, 1.0, 1.0 ]
+  offset_radius: 0.6
+  x_bounds: [-7.925000286102295, 9.174999809265136]
+  y_bounds: [-1.5250000715255738, 4.175000286102295]
